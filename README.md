@@ -8,7 +8,7 @@ Anti-forensic kill-switch that waits for a change on your USB ports and then imm
 ## Usage
 ### GUI
 
-## CLI (Standalone)
+### CLI (Standalone)
 
 ## Development
 
