@@ -40,19 +40,17 @@ alt="stable version" >
 <!--- Title -->
 
 <div align="center">
-  <h1>swiftGuard</h1> 
+  <h1></h1> 
 </div>
 
 <!--- Description -->
 
 <div align="center">
-swiftGuard is an anti-forensic macOS tray application designed to safeguard your system by monitoring USB ports. 
+Anti-forensic macOS tray application designed to safeguard your system by monitoring USB ports. 
 It ensures the security of your device by automatically initiating a system shutdown or hibernation whenever an 
 unauthorized device is connected or a connected device is removed. It offers the flexibility to whitelist 
 designated devices, to select an action to execute and to set a countdown timer, allowing to disarm the 
-shutdown process. Please report bugs and errors via the <a 
-href="https://github.
-com/Lennolium/swiftGuard/issues">Issues</a> tab. 
+shutdown process.
 <br><br>
 
 [![Donate](https://img.shields.io/badge/Donate-Paypal-blue?style=flat-square&logo=paypal)](https://www.paypal.me/smogg)
@@ -65,7 +63,7 @@ com/Lennolium/swiftGuard/issues">Issues</a> tab.
 
 <!--- Table of contents -->
 
-## <ins>Contents</ins>
+## Contents
 
 - [Features](#features)
 - [Installation](#installation)
@@ -80,7 +78,7 @@ com/Lennolium/swiftGuard/issues">Issues</a> tab.
 
 <!--- Features -->
 
-## <ins>Features</ins>
+## Features
 
 - __Monitoring:__ Continuously monitors USB ports for device activity.
 - __Whitelisting:__ Allows users to whitelist authorized devices, ensuring 
@@ -100,14 +98,14 @@ com/Lennolium/swiftGuard/issues">Issues</a> tab.
 
 <!--- Installation -->
 
-## <ins>Installation</ins>
+## Installation
 
 1. Download the latest release from the <a href="https://github.com/Lennolium/swiftGuard/releases">Releases</a> tab.
-2. Open the downloaded swiftGuard.dmg file.
+2. Open the downloaded `swiftGuard.dmg` file.
 3. Drag the swiftGuard application into the Applications folder.
-4. Grant necessary permissions by opening System Preferences > 
-   Security & Privacy > Privacy > Accessibility and adding swiftGuard to 
-   the list of applications. Do the same for Automation.
+4. Grant necessary permissions by opening `System Preferences > 
+   Security & Privacy > Privacy > Accessibility` and adding swiftGuard to 
+   the list of applications. Do the same for `Automation`.
 5. Open the swiftGuard application from the Applications folder.
 6. swiftGuard should now appear in the macOS system tray.
 
@@ -115,9 +113,9 @@ com/Lennolium/swiftGuard/issues">Issues</a> tab.
 
 <!--- Usage -->
 
-## <ins>Usage</ins>
+## Usage
 
-### <ins>GUI</ins>
+### GUI
 
 1. Open the swiftGuard application from the Applications folder.
 2. Click on the application icon in the macOS system tray to open the 
@@ -141,7 +139,7 @@ except you add them to the whitelist.
 
 &nbsp;
 
-### <ins>CLI</ins>
+### CLI
 
 You can also run swiftGuard from the command line standalone as simple Python script without GUI. This is useful if
 you want to run swiftGuard on a headless system or if you want to save some system resources. You will lose the ability
@@ -185,7 +183,7 @@ file in the `src/swiftGuard` folder.
 
 <!--- Development -->
 
-## <ins>Development</ins>
+## Development
 
 As an open-source project, I strive for transparency and collaboration in my development process. I greatly 
 appreciate any contributions members of our community can provide. Whether you are fixing bugs, proposing features, 
@@ -193,17 +191,17 @@ improving documentation, or spreading awareness - your involvement strengthens t
 [code of conduct](https://www.contributor-covenant.org/version/1/4/code-of-conduct/) to understand how we work together 
 respectfully.
 
-- Bug Report: If you are experiencing an issue while using the application, please [create an issue](https://github.com/Lennolium/swiftGuard/issues/new/choose).
-- Feature Request: Make this project better by [submitting a feature request](https://github.com/Lennolium/swiftGuard/issues/new/choose).
-- Documentation: Improve our documentation by [adding a wiki entry](https://github.com/Lennolium/swiftGuard/issues/new/choose).
-- Community Support: Help others on [GitHub Discussions](https://github.com/Lennolium/swiftGuard/discussions).
+- __Bug Report:__ If you are experiencing an issue while using the application, please [create an issue](https://github.com/Lennolium/swiftGuard/issues/new/choose).
+- __Feature Request:__ Make this project better by [submitting a feature request](https://github.com/Lennolium/swiftGuard/issues/new/choose).
+- __Documentation:__ Improve our documentation by [adding a wiki entry](https://github.com/Lennolium/swiftGuard/issues/new/choose).
+- __Community Support:__ Help others on [GitHub Discussions](https://github.com/Lennolium/swiftGuard/discussions).
 
 
 &nbsp;
 
 <!--- Credits -->
 
-## <ins>Credits</ins>
+## Credits
 
 This application is heavily inspired and based on project 
 [usbkill](https://github.com/hephaest0s/usbkill) by Hephaestos.
@@ -219,7 +217,7 @@ their own projects.
 
 <!--- License -->
 
-## <ins>License</ins>
+## License
 
 Provided under the terms of the [GNU GPL3 License](https://www.gnu.org/licenses/gpl-3.0.en.html).
 
