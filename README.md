@@ -209,8 +209,8 @@ improving documentation, or spreading awareness - your involvement strengthens t
 respectfully.
 
 - __Bug Report:__ If you are experiencing an issue while using the application, please [create an issue](https://github.com/Lennolium/swiftGuard/issues/new/choose).
-- __Feature Request:__ Make this project better by [submitting a feature request](https://github.com/Lennolium/swiftGuard/issues/new/choose).
-- __Documentation:__ Improve our documentation by [adding a wiki entry](https://github.com/Lennolium/swiftGuard/issues/new/choose).
+- __Feature Request:__ Make this project better by [submitting a feature request](https://github.com/Lennolium/swiftGuard/discussions/2).
+- __Documentation:__ Improve our documentation by [adding a wiki page](https://github.com/Lennolium/swiftGuard/wiki).
 - __Community Support:__ Help others on [GitHub Discussions](https://github.com/Lennolium/swiftGuard/discussions).
 
 

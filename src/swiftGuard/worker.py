@@ -23,7 +23,8 @@ Separate multiple devices with a comma and a space. Example:
 devices = ('apple_vendor_id', '12a8', '000012345ABCD123456789',
 'iPhone 13 Pro'), ('0123', '6110', '00001234ABCDE123', 'UsbStick')
 
-For iPhone, please use the full name. Example: iPhone -> iPhone 13 Pro.
+For Apple devices, use the full name. Example: iPhone -> iPhone 13 Pro.
+A list of all full names can be found in the helpers.py file.
 
 ALTERNATIVE: Insert USB device, start the application (GUI) and add the
 device to the whitelist in the settings menu. Close the application and
