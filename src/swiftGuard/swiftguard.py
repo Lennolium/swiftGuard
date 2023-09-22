@@ -997,18 +997,17 @@ class TrayApp:
             "click on the corresponding device entry.\n\n"
             "4. If manipulation is detected by swiftGuard, an alert will "
             "appear in the main menu. Clicking on it will reset the "
-            "alarm.\n\n"
+            "alarm. The Exit button will not work.\n\n"
             "5. You can set a delay (0 - 60 seconds) and an action "
             "(Shutdown or Hibernate) in the settings menu. The delay "
             "determines how long swiftGuard will wait for you to reset "
             "the alarm before executing the action.\n\n"
             "Notes: swiftGuard alerts you if devices are removed "
-            "that "
-            "were connected before or while the application was started, "
+            "that were connected before or while the application was started, "
             "except you add them to the whitelist. Connecting new devices "
-            "will always trigger an alert, if they are not whitelisted. "
-            "For running the script in standalone mode, check the project "
-            "repository on GitHub for instructions.\n"
+            "will always trigger an alert, if these devices are not "
+            "whitelisted. For running the script in standalone mode, check the "
+            "project repository on GitHub for instructions.\n"
         )
 
         # Add app logo.

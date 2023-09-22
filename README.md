@@ -66,6 +66,7 @@ shutdown process.
 ## Contents
 
 - [Features](#features)
+- [Screenshots](#screenshots)
 - [Installation](#installation)
 - [Usage](#usage)
     - [GUI](#gui)
@@ -93,6 +94,20 @@ shutdown process.
    of your data.
 - __Open Source:__ Provides transparency and 
   allows community contributions for continuous development.
+
+&nbsp;
+
+<!--- Screenshots -->
+
+## Screenshots
+
+<div align="center">  
+<picture>
+  <source srcset="./img/screenshots.png" width="600vw">
+  <img alt="Application Screenshots" src="./img/screenshots.png" width="600vw">
+</picture>
+</div>
+<br>
 
 &nbsp;
 
@@ -125,14 +140,14 @@ shutdown process.
 even if they are not connected.
 5. To add or remove a device from the whitelist, simply click on the corresponding device entry.
 6. If manipulation is detected, an alert (`Manipulation`) will appear in the main menu. Clicking on it 
-will reset the alarm.
+will reset the alarm. The `Exit` button will not work.
 7. In the `Settings` menu you can set a delay (0 - 60 seconds) and an action (`Shutdown` or `Hibernate`). The delay
 determines how long swiftGuard will wait for you to reset/defuse the alarm before executing the action.
             
 **Notes:** 
 - swiftGuard alerts you if devices are removed that were connected before or while the application was started,
 except you add them to the whitelist. 
-- Connecting new devices will always trigger an alert, if they are not whitelisted.
+- Connecting new devices will always trigger an alert, if they these devices are not whitelisted.
 - If you encounter any problems, please check the log file in the `~/Library/Logs/swiftGuard` folder.
 - Your settings and whitelisted devices are stored in the `~/Library/Preferences/swiftGuard/swiftguard.ini` file.
 
@@ -219,6 +234,6 @@ their own projects.
 
 ## License
 
-Provided under the terms of the [GNU GPL3 License](https://www.gnu.org/licenses/gpl-3.0.en.html).
+Provided under the terms of the [GNU GPL3 License](https://www.gnu.org/licenses/gpl-3.0.en.html) © Lennart Haack 2023.
 
 See [LICENSE](https://github.com/Lennolium/swiftGuard/blob/main/LICENSE) file for details.
