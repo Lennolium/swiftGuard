@@ -1,0 +1,13 @@
+blank_issues_enabled: false
+contact_links:
+  - name: ❓ Support Question
+    url: https://github.com/Lennolium/swiftGuard/discussions
+    about: Get friendly support from the community on our forum.
+
+  - name: ✨ Request a feature
+    url: https://github.com/Lennolium/swiftGuard/discussions/
+    about: Learn how to request a new feature.
+
+  - name: 🤵 Get Professional Support & Customizations
+    url: mailto:lennart-haack@mail.de?subject=swiftGuard%20Priority%20Support%20and%20Customizations
+    about: Skip the line and get priority support directly from me.
