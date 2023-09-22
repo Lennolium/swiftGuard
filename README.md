@@ -2,9 +2,9 @@
 
 <div align="center">  
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./img/banner_dark.png" width="600vw">
-  <source media="(prefers-color-scheme: light)" srcset="./img/banner_light.png" width="600vw">
-  <img alt="Application Banner" src="./img/banner_light.png" width="600vw">
+  <source media="(prefers-color-scheme: dark)" srcset="./img/banner/banner_dark.png" width="600vw">
+  <source media="(prefers-color-scheme: light)" srcset="./img/banner/banner_light.png" width="600vw">
+  <img alt="Application Banner" src="./img/banner/banner_light.png" width="600vw">
 </picture>
 </div>
 <br>
@@ -103,8 +103,9 @@ shutdown process.
 
 <div align="center">  
 <picture>
-  <source srcset="./img/screenshots.png" width="600vw">
-  <img alt="Application Screenshots" src="./img/screenshots.png" width="600vw">
+  <source srcset="./img/screenshots/screenshots.png" width="600vw">
+  <img alt="Application Screenshots" src="./img/screenshots/screenshots.png" width="600vw">
+<figcaption>Left: Manipulation button to defuse the alarm. Right: Whitelist and Settings menu.</figcaption>
 </picture>
 </div>
 <br>
