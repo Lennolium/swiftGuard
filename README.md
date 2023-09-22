@@ -105,8 +105,9 @@ shutdown process.
 <picture>
   <source srcset="./img/screenshots/screenshots.png" width="600vw">
   <img alt="Application Screenshots" src="./img/screenshots/screenshots.png" width="600vw">
-<figcaption>Left: Manipulation button to defuse the alarm. Right: Whitelist and Settings menu.</figcaption>
 </picture>
+  
+*__Left:__ Manipulation button to defuse the alarm. __Right:__ Whitelist and Settings menu.*
 </div>
 <br>
 
