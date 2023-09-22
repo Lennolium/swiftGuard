@@ -193,7 +193,7 @@ file in the `src/swiftGuard` folder.
     ```
 
 **Notes:**
-- Settings/whitelist: `~/Library/Preferences/swiftGuard/swiftguard.ini`
+- Settings/Whitelist: `~/Library/Preferences/swiftGuard/swiftguard.ini`
 - Logs: `~/Library/Logs/swiftGuard/swiftguard.log`
    
 &nbsp;
