@@ -149,7 +149,7 @@ determines how long swiftGuard will wait for you to reset/defuse the alarm befor
 **Notes:** 
 - swiftGuard alerts you if devices are removed that were connected before or while the application was started,
 except you add them to the whitelist. 
-- Connecting new devices will always trigger an alert, if they these devices are not whitelisted.
+- Connecting new devices will always trigger an alert, if these devices are not whitelisted.
 - If you encounter any problems, please check the log file in the `~/Library/Logs/swiftGuard` folder.
 - Your settings and whitelisted devices are stored in the `~/Library/Preferences/swiftGuard/swiftguard.ini` file.
 
@@ -205,13 +205,14 @@ file in the `src/swiftGuard` folder.
 As an open-source project, I strive for transparency and collaboration in my development process. I greatly 
 appreciate any contributions members of our community can provide. Whether you are fixing bugs, proposing features, 
 improving documentation, or spreading awareness - your involvement strengthens the project. Please review the 
-[code of conduct](https://www.contributor-covenant.org/version/1/4/code-of-conduct/) to understand how we work together 
+[code of conduct](https://github.com/Lennolium/swiftGuard/blob/main/.github/CODE_OF_CONDUCT.md) to understand how we work together 
 respectfully.
 
 - __Bug Report:__ If you are experiencing an issue while using the application, please [create an issue](https://github.com/Lennolium/swiftGuard/issues/new/choose).
 - __Feature Request:__ Make this project better by [submitting a feature request](https://github.com/Lennolium/swiftGuard/discussions/2).
 - __Documentation:__ Improve our documentation by [adding a wiki page](https://github.com/Lennolium/swiftGuard/wiki).
 - __Community Support:__ Help others on [GitHub Discussions](https://github.com/Lennolium/swiftGuard/discussions).
+- __Security Report:__ Report critical security issues via our [template](https://github.com/Lennolium/swiftGuard/blob/main/.github/SECURITY.md).
 
 
 &nbsp;

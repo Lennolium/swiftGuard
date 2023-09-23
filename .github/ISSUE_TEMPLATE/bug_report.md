@@ -25,4 +25,4 @@ labels: "Bug: Needs Confirmation 🧐"
 <!-- Give me an explanation of what should be happening -->
 
 ## Additional details / screenshots
-<!-- Screenshots, console output, logs, etc are extremely helpful -->
+<!-- Screenshots, console output, logs, etc. are extremely helpful -->

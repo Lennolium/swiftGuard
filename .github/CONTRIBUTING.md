@@ -1,7 +1,7 @@
 # Contributing
 
 As an open-source project, I strive for transparency and collaboration in my development process. 
-I greatly appreciate any contributions members of our community can provide. Whether you are fixing bugs, proposing features, 
+I greatly appreciate any contributions members of the community can provide. Whether you are fixing bugs, proposing features, 
 improving documentation, or spreading awareness - your involvement strengthens the project. Please review the [code of conduct](https://github.com/Lennolium/swiftGuard/blob/main/.github/CODE_OF_CONDUCT.md) to 
 understand how we work together respectfully.
 
