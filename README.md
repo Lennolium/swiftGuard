@@ -47,9 +47,9 @@ alt="stable version" >
 
 <div align="center">
 Anti-forensic macOS tray application designed to safeguard your system by monitoring USB ports. 
-It ensures the security of your device by automatically initiating a system shutdown or hibernation whenever an 
-unauthorized device is connected or a connected device is removed. It offers the flexibility to whitelist 
-designated devices, to select an action to execute and to set a countdown timer, allowing to disarm the 
+It ensures your device's security by automatically initiating either a system shutdown or hibernation 
+if an unauthorized device connects or a connected device is unplugged. It offers the flexibility to whitelist 
+designated devices, to select an action to be executed and to set a countdown timer, allowing to disarm the 
 shutdown process.
 <br><br>
 
@@ -117,7 +117,7 @@ shutdown process.
 
 ## Installation
 
-1. Download the latest release from the <a href="https://github.com/Lennolium/swiftGuard/releases">Releases</a> tab.
+1. Obtain the most recent version by downloading it from [Releases](https://github.com/Lennolium/swiftGuard/releases).
 2. Open the downloaded `swiftGuard.dmg` file.
 3. Drag the swiftGuard application into the Applications folder.
 4. Grant necessary permissions by opening `System Preferences > 
@@ -158,12 +158,13 @@ except you add them to the whitelist.
 
 ### CLI
 
-You can also run swiftGuard from the command line standalone as simple Python script without GUI. This is useful if
-you want to run swiftGuard on a headless system or if you want to save some system resources. You will lose the ability
-to defuse the shutdown process via the GUI, but you can instead kill the swiftGuard process via the command line. 
-Settings and whitelists are stored in the same location as the GUI version, and can be edited manually. 
-For examples, configuration and further information, please refer to the [worker.py](https://github.com/Lennolium/swiftGuard/blob/main/src/swiftGuard/worker.py) 
-file in the `src/swiftGuard` folder.
+You can run swiftGuard as a simple Python script from the command line without a graphical user interface (GUI). 
+This is useful when operating swiftGuard on a headless system or saving system resources. However, you will lose the 
+ability to defuse the shutdown process via the GUI, but you can kill the swiftGuard process from the command line 
+instead. The preferences and whitelists are stored in the same location as the GUI version and can be edited 
+manually. For further information, please refer to the [worker.py](https://github.com/Lennolium/swiftGuard/blob/main/src/swiftGuard/worker.py) 
+file located in the `src/swiftGuard` directory.
+
 
 1. Open a terminal and navigate to the desired directory.
     ```bash
