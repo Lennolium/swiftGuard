@@ -73,6 +73,7 @@ shutdown process.
     - [GUI](#gui)
     - [CLI](#cli)
 - [Development](#development)
+- [Roadmap](#roadmap)
 - [Credits](#credits)
 - [License](#license)
 
@@ -131,8 +132,7 @@ regulations. swiftGuard helps maintain compliance by preventing unauthorized dat
 
 > **Important**: Make sure you use FileVault, macOS's built-in disk encryption feature, encrypt your entire disk, 
 > ensuring that your data remains secure even if your device falls into the wrong hands. 
-> Otherwise, unauthorized users may gain access to your data easily. `System Preferences > 
-   Security & Privacy > Security > FileVault` Do NOT enable iCloud Recovery! 
+> Otherwise, unauthorized users may gain access to your data easily. `System Preferences > Security & Privacy > Security > FileVault` Do NOT enable iCloud Recovery! 
 
 > **Tip**: You might also want to use a cord to attach a USB key to your wrist. Then plug the key into your computer and 
 > run swiftGuard. If your computer is robbed, the USB is removed and the computer shuts down immediately.
@@ -146,11 +146,16 @@ regulations. swiftGuard helps maintain compliance by preventing unauthorized dat
 1. Obtain the most recent version by downloading it from [Releases](https://github.com/Lennolium/swiftGuard/releases).
 2. Open the downloaded `swiftGuard.dmg` file.
 3. Drag the swiftGuard application into the Applications folder.
-4. Grant necessary permissions by opening `System Preferences > 
-   Security & Privacy > Privacy > Accessibility` and adding swiftGuard to 
+4. Grant necessary permissions by opening `System Preferences > Security & Privacy > Privacy > Accessibility` and adding swiftGuard to 
    the list of applications. Do the same for `Automation`.
-5. Open the swiftGuard application from the Applications folder.
-6. swiftGuard should now appear in the macOS system tray.
+5. For startup at login, open `System Preferences > General > Login Items` and add swiftGuard to the list of applications.
+6. Open the swiftGuard application from the Applications folder.
+7. swiftGuard should now appear in the macOS system tray.
+
+__Note:__
+- If you get a warning that the application is from an _unidentified developer_, you have to open
+`System Preferences > Security & Privacy > Security` and click `Open Anyway`
+to allow the application to run. Alternatively, you can right-click on the application icon and select `Open`.
 
 &nbsp;
 
@@ -201,20 +206,25 @@ file located in the `/src` directory.
     ```bash
     git clone https://github.com/Lennolium/swiftGuard.git
     ```
-   
-3. Navigate to the source directory.
+
+3. Navigate to the swiftGuard directory.
     ```bash
-    cd swiftGuard/src/swiftGuard
+    cd swiftGuard
     ```
 
-4. Install the requirements in a new virtual environment.
+4. Install the [requirements](https://github.com/Lennolium/swiftGuard/blob/main/requirements.txt) in a new virtual environment.
     ```bash
     python3 -m venv venv
     source venv/bin/activate
     pip3 install -r requirements.txt
     ```
+   
+5. Navigate to the src directory.
+    ```bash
+    cd src
+    ```
 
-5. Run the worker.py.
+6. Run the worker.py.
     ```bash
     python3 worker.py
     ```
@@ -240,6 +250,20 @@ respectfully.
 - __Documentation:__ Improve our documentation by [adding a wiki page](https://github.com/Lennolium/swiftGuard/wiki).
 - __Community Support:__ Help others on [GitHub Discussions](https://github.com/Lennolium/swiftGuard/discussions).
 - __Security Report:__ Report critical security issues via our [template](https://github.com/Lennolium/swiftGuard/blob/main/.github/SECURITY.md).
+
+
+&nbsp;
+
+<!--- Roadmap -->
+
+## Roadmap
+
+| **Now**           | **Next**            | **Later** |
+|-------------------|---------------------|-----------|
+| Unit tests        | Linux support       | CI/CD     |
+| Code quality      | Bluetooth detection | Website   |
+| Translations      | Auto update         | Docs/Wiki |
+| Code sign (Apple) | Auto start          |           |
 
 
 &nbsp;
