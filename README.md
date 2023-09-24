@@ -67,6 +67,7 @@ shutdown process.
 
 - [Features](#features)
 - [Screenshots](#screenshots)
+- [Why?](#why)
 - [Installation](#installation)
 - [Usage](#usage)
     - [GUI](#gui)
@@ -81,7 +82,7 @@ shutdown process.
 
 ## Features
 
-- __Monitoring:__ Continuously monitors USB ports for device activity.
+- __Monitoring:__ Continuously monitors USB ports for device activity, even in sleep mode.
 - __Whitelisting:__ Allows users to whitelist authorized devices, ensuring 
   hassle-free connectivity.
 - __Discrete:__ Operates in the macOS system tray, minimizing 
@@ -110,6 +111,31 @@ shutdown process.
 *__Left:__ Manipulation button to defuse the alarm. __Right:__ Whitelist and Settings menu.*
 </div>
 <br>
+
+&nbsp;
+
+<!--- Why -->
+
+### Why should I care?
+
+A few reasons to use this tool:
+
+- __Anti-Forensic Measures:__ In case the police or other thugs break in. The police often use a [mouse jiggler](https://en.wikipedia.org/wiki/Mouse_jiggler)
+to prevent the screen saver or sleep mode from being activated.
+- __Prevent Data Exfiltration:__ You do not want someone adding or copying documents to or from your computer via USB.
+- __Public Environments:__ If you frequently use your Mac in public places like libraries or cafes, swiftGuard 
+acts as an additional layer of security against physical attacks in a [potentially vulnerable](https://www.ccn.com/fbi-illegally-stole-ross-ulbrichts-laptop-brought-silk-road/) settings.
+- __Server Protection:__ You want to improve the security of your home or company server (e.g. your Raspberry Pi, NAS, etc.).
+- __Data Protection Regulations:__ Many industries and organizations are subject to strict data protection 
+regulations. swiftGuard helps maintain compliance by preventing unauthorized data transfers and access through USB ports.
+
+> **Important**: Make sure you use FileVault, macOS's built-in disk encryption feature, encrypt your entire disk, 
+> ensuring that your data remains secure even if your device falls into the wrong hands. 
+> Otherwise, unauthorized users may gain access to your data easily. `System Preferences > 
+   Security & Privacy > Security > FileVault` Do NOT enable iCloud Recovery! 
+
+> **Tip**: You might also want to use a cord to attach a USB key to your wrist. Then plug the key into your computer and 
+> run swiftGuard. If your computer is robbed, the USB is removed and the computer shuts down immediately.
 
 &nbsp;
 
