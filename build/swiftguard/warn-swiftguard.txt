@@ -1,0 +1,59 @@
+
+This file lists modules PyInstaller was not able to find. This does not
+necessarily mean this module is required for running your program. Python and
+Python 3rd-party packages include a lot of conditional or optional modules. For
+example the module 'ntpath' only exists on Windows, whereas the module
+'posixpath' only exists on Posix systems.
+
+Types if import:
+* top-level: imported at the top-level - look at these first
+* conditional: imported within an if-statement
+* delayed: imported within a function
+* optional: imported within a try-except-statement
+
+IMPORTANT: Do NOT post this list to the issue-tracker. Use it as a basis for
+            tracking down the missing module yourself. Thanks!
+
+missing module named pyimod02_importers - imported by /Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/PyInstaller/hooks/rthooks/pyi_rth_pkgutil.py (delayed)
+missing module named org - imported by pickle (optional)
+missing module named nt - imported by os (delayed, conditional, optional), ntpath (optional), shutil (conditional), importlib._bootstrap_external (conditional), ctypes (delayed, conditional)
+missing module named winreg - imported by importlib._bootstrap_external (conditional), platform (delayed, optional), mimetypes (optional), darkdetect._windows_detect (top-level), urllib.request (delayed, conditional, optional)
+excluded module named _frozen_importlib - imported by importlib (optional), importlib.abc (optional), zipimport (top-level)
+missing module named _frozen_importlib_external - imported by importlib._bootstrap (delayed), importlib (optional), importlib.abc (optional), zipimport (top-level)
+missing module named _winapi - imported by encodings (delayed, conditional, optional), ntpath (optional), subprocess (conditional), mimetypes (optional)
+missing module named msvcrt - imported by subprocess (optional), getpass (optional)
+missing module named 'org.python' - imported by copy (optional), xml.sax (delayed, conditional)
+missing module named 'java.lang' - imported by platform (delayed, optional), xml.sax._exceptions (conditional)
+missing module named worker - imported by /Users/lennart/Documents/Programmieren/CharmProjects/Privat/Projekte/swiftGuard/src/swiftguard/swiftguard.py (top-level)
+missing module named resources - imported by /Users/lennart/Documents/Programmieren/CharmProjects/Privat/Projekte/swiftGuard/src/swiftguard/swiftguard.py (top-level)
+missing module named helpers - imported by /Users/lennart/Documents/Programmieren/CharmProjects/Privat/Projekte/swiftGuard/src/swiftguard/swiftguard.py (top-level), /Users/lennart/Documents/Programmieren/CharmProjects/Privat/Projekte/swiftGuard/src/swiftguard/worker.py (top-level)
+missing module named ExceptionHandling.NSStackTraceKey - imported by ExceptionHandling (top-level), PyObjCTools.Debugging (top-level)
+missing module named ExceptionHandling.NSLogUncaughtExceptionMask - imported by ExceptionHandling (top-level), PyObjCTools.Debugging (top-level)
+missing module named ExceptionHandling.NSLogAndHandleEveryExceptionMask - imported by ExceptionHandling (top-level), PyObjCTools.Debugging (top-level)
+missing module named ExceptionHandling.NSExceptionHandler - imported by ExceptionHandling (top-level), PyObjCTools.Debugging (top-level)
+missing module named objc.super - imported by objc (top-level), PyObjCTools.AppHelper (top-level)
+missing module named Foundation.NSTimer - imported by Foundation (top-level), PyObjCTools.AppHelper (top-level)
+missing module named Foundation.NSThread - imported by Foundation (top-level), PyObjCTools.AppHelper (top-level)
+missing module named Foundation.NSRunLoop - imported by Foundation (top-level), PyObjCTools.AppHelper (top-level)
+missing module named Foundation.NSNotificationCenter - imported by Foundation (top-level), PyObjCTools.AppHelper (top-level)
+missing module named Foundation.NSLog - imported by Foundation (top-level), PyObjCTools.AppHelper (top-level), PyObjCTools.Debugging (top-level)
+missing module named Foundation.NSDefaultRunLoopMode - imported by Foundation (top-level), PyObjCTools.AppHelper (top-level)
+missing module named Foundation.NSDate - imported by Foundation (top-level), PyObjCTools.AppHelper (top-level)
+missing module named Foundation.NSAutoreleasePool - imported by Foundation (top-level), PyObjCTools.AppHelper (top-level)
+missing module named AppKit.NSRunAlertPanel - imported by AppKit (top-level), PyObjCTools.AppHelper (top-level)
+missing module named AppKit.NSApplicationMain - imported by AppKit (top-level), PyObjCTools.AppHelper (top-level)
+missing module named AppKit.NSApplicationDidFinishLaunchingNotification - imported by AppKit (top-level), PyObjCTools.AppHelper (top-level)
+missing module named AppKit.__bundle__ - imported by AppKit (top-level), AppKit._nsapp (top-level)
+missing module named objc.nosuchclass_error - imported by objc (top-level), objc._lazyimport (top-level)
+missing module named objc.loadBundle - imported by objc (top-level), objc._lazyimport (top-level)
+missing module named objc.getClassList - imported by objc (top-level), objc._lazyimport (top-level)
+missing module named objc.NULL - imported by objc (top-level), objc._properties (top-level)
+missing module named objc._C_BOOL - imported by objc (top-level), objc._properties (top-level)
+missing module named Foundation.NSUserDefaults - imported by Foundation (optional), darkdetect._mac_detect (optional)
+missing module named Foundation.NSKeyValueChangeNewKey - imported by Foundation (optional), darkdetect._mac_detect (optional)
+missing module named Foundation.NSKeyValueObservingOptionNew - imported by Foundation (optional), darkdetect._mac_detect (optional)
+missing module named Foundation.NSObject - imported by Foundation (optional), darkdetect._mac_detect (optional), PyObjCTools.AppHelper (top-level), PyObjCTools.Debugging (top-level)
+missing module named Foundation.NSBundle - imported by Foundation (top-level), Foundation._functiondefines (top-level)
+missing module named vms_lib - imported by platform (delayed, optional)
+missing module named java - imported by platform (delayed)
+missing module named _winreg - imported by platform (delayed, optional)

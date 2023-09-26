@@ -155,7 +155,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-build/
+# build/
 develop-eggs/
 # dist/
 downloads/
@@ -175,7 +175,7 @@ MANIFEST
 
 # PyInstaller
 *.manifest
-*.spec
+#*.spec
 
 # Installer logs
 pip-log.txt

@@ -1,0 +1,35 @@
+Editing: 
+https://socialify.git.ci/Lennolium/swiftGuard?description=1&font=Raleway&forks=1&issues=1&logo=https%3A%2F%2Fgithub.com%2FLennolium%2FswiftGuard%2Fblob%2Fmain%2Fimg%2Flogo%2Flogo_macos%402x.png%3Fraw%3Dtrue&name=1&owner=1&pattern=Charlie%20Brown&stargazers=1&theme=Auto
+
+HTML:
+<img src="https://socialify.git.ci/Lennolium/swiftGuard/image?description=1&font=Raleway&forks=1&issues=1&logo=https%3A%2F%2Fgithub.com%2FLennolium%2FswiftGuard%2Fblob%2Fmain%2Fimg%2Flogo%2Flogo_macos%402x.png%3Fraw%3Dtrue&name=1&owner=1&pattern=Charlie%20Brown&stargazers=1&theme=Auto" alt="swiftGuard" width="640" height="320" />
+
+Markdown:
+![swiftGuard](https://socialify.git.ci/Lennolium/swiftGuard/image?description=1&font=Raleway&forks=1&issues=1&logo=https%3A%2F%2Fgithub.com%2FLennolium%2FswiftGuard%2Fblob%2Fmain%2Fimg%2Flogo%2Flogo_macos%402x.png%3Fraw%3Dtrue&name=1&owner=1&pattern=Charlie%20Brown&stargazers=1&theme=Auto)
+
+
+Advertising:
+# Revive of USBKill with GUI, New Features & Bug Fixes
+
+[![GitHub stars](https://img.shields.io/github/stars/Lennolium/swiftGuard?label=Stars&color=yellow)](https://github.com/Lennolium/swiftGuard/stargazers)
+
+swiftGuard is an open-source macOS tray application that builds upon the original USBKill by hephaest0s. It's designed for convenient use with a graphical user interface (GUI) and introduces several new features and bug fixes.
+
+## Features
+
+- **Monitoring**: Continuously monitors USB ports for device activity, even in sleep mode.
+- **Whitelisting**: Easily whitelist authorized devices to ensure hassle-free connectivity.
+- **Discrete**: Operates discreetly in the macOS system tray, minimizing interruptions.
+- **Customizable**: Configure various settings, including action (shutdown/hibernate), countdown timer, and whitelist.
+- **Lightweight**: Designed to consume minimal system resources for optimal performance.
+- **Privacy**: Does not require an internet connection, ensuring the privacy of your data.
+- **Open Source**: Provides transparency and allows community contributions for continuous development.
+
+## Get Started
+
+Visit the [GitHub Repository](https://github.com/Lennolium/swiftGuard) to explore the code, contribute to development, or download the latest release.
+
+<div align="center"> 
+<a href="https://github.com/Lennolium/swiftGuard" > 
+<img src="https://socialify.git.ci/Lennolium/swiftGuard/image?description=1&font=Raleway&forks=1&issues=1&logo=https%3A%2F%2Fgithub.com%2FLennolium%2FswiftGuard%2Fblob%2Fmain%2Fimg%2Flogo%2Flogo_macos%402x.png%3Fraw%3Dtrue&name=1&owner=1&pattern=Charlie%20Brown&stargazers=1&theme=Auto" alt="swiftGuard" width="500" height="250" /> </div>
+

@@ -130,10 +130,6 @@ acts as an additional layer of security against physical attacks in a [potential
 - __Data Protection Regulations:__ Many industries and organizations are subject to strict data protection 
 regulations. swiftGuard helps maintain compliance by preventing unauthorized data transfers and access through USB ports.
 
-> **Important**: Make sure you use FileVault, macOS's built-in disk encryption feature, encrypt your entire disk, 
-> ensuring that your data remains secure even if your device falls into the wrong hands. 
-> Otherwise, unauthorized users may gain access to your data easily. `System Preferences > Security & Privacy > Security > FileVault` Do NOT enable iCloud Recovery! 
-
 > **Tip**: You might also want to use a cord to attach a USB key to your wrist. Then plug the key into your computer and 
 > run swiftGuard. If your computer is robbed, the USB is removed and the computer shuts down immediately.
 
@@ -146,16 +142,22 @@ regulations. swiftGuard helps maintain compliance by preventing unauthorized dat
 1. Obtain the most recent version by downloading it from [Releases](https://github.com/Lennolium/swiftGuard/releases).
 2. Open the downloaded `swiftGuard.dmg` file.
 3. Drag the swiftGuard application into the Applications folder.
-4. Grant necessary permissions by opening `System Preferences > Security & Privacy > Privacy > Accessibility` and adding swiftGuard to 
-   the list of applications. Do the same for `Automation`.
+4. Grant necessary permissions by opening `System Preferences > Security & Privacy > Privacy > Automation` and adding swiftGuard to 
+   the list of applications.
 5. For startup at login, open `System Preferences > General > Login Items` and add swiftGuard to the list of applications.
 6. Open the swiftGuard application from the Applications folder.
 7. swiftGuard should now appear in the macOS system tray.
+8. Test at least once if the shutdown or hibernation is executed correctly. On first run you will be asked to grant the necessary
+permissions by macOS.
 
-__Note:__
-- If you get a warning that the application is from an _unidentified developer_, you have to open
-`System Preferences > Security & Privacy > Security` and click `Open Anyway`
-to allow the application to run. Alternatively, you can right-click on the application icon and select `Open`.
+&nbsp;
+> **Important**: Make sure you use FileVault, macOS's built-in disk encryption feature, encrypt your entire disk, 
+> ensuring that your data remains secure even if your device falls into the wrong hands. 
+> Otherwise, unauthorized users may gain access to your data easily: `System Preferences > Security & Privacy > Security > FileVault` > Do NOT enable iCloud Recovery!
+
+>__Note:__ If you get a warning that the application is from an _unidentified developer_, you have to open
+>`System Preferences > Security & Privacy > Security` and click `Open Anyway`
+>to allow the application to run. Alternatively, you can right-click on the application icon and select `Open`.
 
 &nbsp;
 
@@ -176,13 +178,15 @@ even if they are not connected.
 will reset the alarm. The `Exit` button will not work.
 7. In the `Settings` menu you can set a delay (0 - 60 seconds) and an action (`Shutdown` or `Hibernate`). The delay
 determines how long swiftGuard will wait for you to reset/defuse the alarm before executing the action.
-            
-**Notes:** 
-- swiftGuard alerts you if devices are removed that were connected before or while the application was started,
-except you add them to the whitelist. 
-- Connecting new devices will always trigger an alert, if these devices are not whitelisted.
-- If you encounter any problems, please check the log file in the `~/Library/Logs/swiftGuard` folder.
-- Your settings and whitelisted devices are stored in the `~/Library/Preferences/swiftGuard/swiftguard.ini` file.
+          
+&nbsp;  
+
+>**Notes:** 
+>- swiftGuard alerts you if devices are removed that were connected before or while the application was started,
+>except you add them to the whitelist. 
+>- Connecting new devices will always trigger an alert, if these devices are not whitelisted.
+>- If you encounter any problems, please check the log file in the `~/Library/Logs/swiftGuard` folder.
+>- Your settings and whitelisted devices are stored in the `~/Library/Preferences/swiftGuard/swiftguard.ini` file.
 
 
 &nbsp;
@@ -193,8 +197,8 @@ You can run swiftGuard as a simple Python script from the command line without a
 This is useful when operating swiftGuard on a headless system or saving system resources. However, you will lose the 
 ability to defuse the shutdown process via the GUI, but you can kill the swiftGuard process from the command line 
 instead. The preferences and whitelists are stored in the same location as the GUI version and can be edited 
-manually. For further information, please refer to the [worker.py](https://github.com/Lennolium/swiftGuard/blob/main/src/worker.py) 
-file located in the `/src` directory.
+manually. For further information, please refer to the [worker.py](https://github.com/Lennolium/swiftGuard/blob/main/src/swiftguard/worker.py) 
+file located in the `/src/swiftguard` directory.
 
 
 1. Open a terminal and navigate to the desired directory.
@@ -221,17 +225,18 @@ file located in the `/src` directory.
    
 5. Navigate to the src directory.
     ```bash
-    cd src
+    cd src/swiftguard
     ```
 
 6. Run the worker.py.
     ```bash
     python3 worker.py
     ```
+&nbsp;
 
-**Notes:**
-- Settings/Whitelist: `~/Library/Preferences/swiftGuard/swiftguard.ini`
-- Logs: `~/Library/Logs/swiftGuard/swiftguard.log`
+>**Notes:**
+>- Settings/Whitelist: `~/Library/Preferences/swiftGuard/swiftguard.ini`
+>- Logs: `~/Library/Logs/swiftGuard/swiftguard.log`
    
 &nbsp;
 
@@ -258,12 +263,12 @@ respectfully.
 
 ## Roadmap
 
-| **Now**           | **Next**            | **Later** |
-|-------------------|---------------------|-----------|
-| Unit tests        | Linux support       | CI/CD     |
-| Code quality      | Bluetooth detection | Website   |
-| Translations      | Auto update         | Docs/Wiki |
-| Code sign (Apple) | Auto start          |           |
+| **Now**                   | **Next**            | **Later**               |
+|---------------------------|---------------------|-------------------------|
+| Unit tests                | Linux support       | CI/CD                   |
+| Code quality              | Bluetooth detection | Website/Docs/Wiki       |
+| Translations              | Auto update         | Encrypted configuration |
+| Package for Apple silicon | Auto start          | Code sign (Apple)       |
 
 
 &nbsp;
