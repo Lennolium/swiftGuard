@@ -12,11 +12,11 @@
 <!--- Badges -->
 
 <div align="center"> 
-  <a href="#" > 
-    <img src="https://img.shields.io/github/repo-size/Lennolium/swiftGuard?label=Repo%20Size&color=orange" alt="repo size" >
+  <a href="https://github.com/Lennolium/swiftGuard/branches" > 
+    <img src="https://img.shields.io/github/last-commit/Lennolium/swiftGuard?label=Last%20Updated&color=orange" alt="last updated" >
   <a></a>  
-   <a href="https://github.com/Lennolium/swiftGuard/branches" > 
-    <img src="https://img.shields.io/github/last-commit/Lennolium/swiftGuard?label=Last%20Updated&color=green" alt="last updated" >
+   <a href="https://app.codacy.com/gh/Lennolium/swiftGuard/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade" > 
+    <img src="https://app.codacy.com/project/badge/Grade/7e4271efc8894c9fab80e2f27f896a87" alt="code quality" >
     <a></a>
    <a href="https://github.com/Lennolium/swiftGuard/commits/master" > 
     <img src="https://img.shields.io/github/commit-activity/m/Lennolium/swiftGuard?label=Commit%20Activity" 
@@ -30,8 +30,8 @@ alt="stable version" >
     <img src="https://img.shields.io/github/issues-raw/Lennolium/swiftGuard?label=Open%20Issues&color=critical" alt="open issues" >
   <a href="https://github.com/Lennolium/swiftGuard/issues?q=is%3Aissue+is%3Aclosed" > 
     <img src="https://img.shields.io/github/issues-closed-raw/Lennolium/swiftGuard?label=Closed%20Issues&color=inactive" alt="closed issues" > 
-     <a href="https://tinyurl.com/opinionoffriends" > 
-    <img src="https://img.shields.io/badge/Rating-★★★★★-yellow" alt="rating" >
+     <a href="#" > 
+    <img src="https://img.shields.io/github/repo-size/Lennolium/swiftGuard?label=Repo%20Size&color=yellow" alt="repo size" >
   <a href="https://github.com/Lennolium/swiftGuard/blob/main/LICENSE" > 
     <img src="https://img.shields.io/github/license/Lennolium/swiftGuard?label=License&color=blueviolet" alt="License" > 
   <a></a> </a> </a> </a> </a> </a> </a> </a> </a>
