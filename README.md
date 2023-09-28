@@ -282,7 +282,7 @@ that it is secure and reliable for all users. I am grateful for any feedback reg
 address them as quickly as possible. Please refer to the [security policy](https://github.com/Lennolium/swiftGuard/blob/main/.github/SECURITY.md) for more information.
 
 Additionally, I let my code be checked by several code quality and security tools (Bandit, Black, Codacy, CodeQL, PMD CPD, Prospector, Pylint, Pysa, Pyre, Trivy, Radon). 
-The results can be found by clicking on the badges below. These routines are no replacement for a manual code and security audit, but they help to find errors and vulnerabilities.
+The results can be found by clicking on the badges below. These routines are **no replacement for a manual code and security audit**, but they help to find errors and vulnerabilities.
 Please note that the results of these tools are not always accurate and may contain false positives.
 
 <div align="center"> 
