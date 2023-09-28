@@ -45,6 +45,8 @@ alt="stable version" >
 
 <!--- Description -->
 
+
+
 <div align="center">
 Anti-forensic macOS tray application designed to safeguard your system by monitoring USB ports. 
 It ensures your device's security by automatically initiating either a system shutdown or hibernation 
@@ -67,7 +69,7 @@ shutdown process.
 
 - [Features](#features)
 - [Screenshots](#screenshots)
-- [Why should I care?](#why-should-i-care)
+- [Why should you care?](#why-should-you-care)
 - [Installation](#installation)
 - [Usage](#usage)
     - [GUI](#gui)
@@ -117,7 +119,7 @@ shutdown process.
 
 <!--- Why -->
 
-### Why should you care?
+## Why should you care?
 
 A few reasons to use this tool:
 
@@ -256,7 +258,6 @@ respectfully.
 - __Community Support:__ Help others on [GitHub Discussions](https://github.com/Lennolium/swiftGuard/discussions).
 - __Security Report:__ Report critical security issues via our [template](https://github.com/Lennolium/swiftGuard/blob/main/.github/SECURITY.md).
 
-
 &nbsp;
 
 <!--- Roadmap -->
@@ -271,6 +272,38 @@ respectfully.
 | Package for Apple silicon | Auto start                                           | Code sign (Apple)       |
 | Security audit            | More actions (wipe ram, delete files/folders, email) | User defined actions    |
 
+&nbsp;
+
+<!--- Security -->
+
+## Security & Code Quality
+Regarding swiftGuard is a security application and therefore security is of the utmost importance. I am committed to ensuring
+that it is secure and reliable for all users. I am grateful for any feedback regarding security issues and will do my best to 
+address them as quickly as possible. Please refer to the [security policy](https://github.com/Lennolium/swiftGuard/blob/main/.github/SECURITY.md) for more information.
+
+Additionally, I let my code be checked by several code quality and security tools (Bandit, Black, Codacy, CodeQL, PMD CPD, Prospector, Pylint, Pysa, Pyre, Trivy, Radon). 
+The results can be found by clicking on the badges below. These routines are no replacement for a manual code and security audit, but they help to find errors and vulnerabilities.
+Please note that the results of these tools are not always accurate and may contain false positives.
+
+<div align="center"> 
+  <a href="https://app.codacy.com/gh/Lennolium/swiftGuard/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade" > 
+    <img src="https://app.codacy.com/project/badge/Grade/7e4271efc8894c9fab80e2f27f896a87" alt="Codacy" >
+  <a></a>  
+   <a href="https://github.com/Lennolium/swiftGuard/actions/workflows/black.yml" > 
+    <img src="https://github.com/Lennolium/swiftGuard/actions/workflows/black.yml/badge.svg" alt="Black" >
+    <a></a>
+   <a href="https://github.com/Lennolium/swiftGuard/actions/workflows/github-code-scanning/codeql" > 
+    <img src="https://github.com/Lennolium/swiftGuard/actions/workflows/github-code-scanning/codeql/badge.svg" 
+alt="CodeQL" >
+     <a></a>
+  <a href="https://github.com/Lennolium/swiftGuard/actions/workflows/pyre.yml" > 
+    <img src="https://github.com/Lennolium/swiftGuard/actions/workflows/pyre.yml/badge.svg?event=status" 
+alt="Pyre" >
+     <br>
+  <a href="https://github.com/Lennolium/swiftGuard/actions/workflows/pysa.yml" > 
+    <img src="https://github.com/Lennolium/swiftGuard/actions/workflows/pysa.yml/badge.svg?event=status" alt="Pysa" >
+  </a> </a> </a> </a> </a>
+</div>
 
 &nbsp;
 
