@@ -9,5 +9,5 @@ jobs:
       - uses: actions/checkout@v3
       - uses: psf/black@stable
         with:
-          options: "--verbose"
+          options: "--verbose --line-length 79"
           src: "./src/swiftguard"
