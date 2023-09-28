@@ -50,11 +50,9 @@ def shutdown():
 
     # AppleScript: slower, but only way to shut down without sudo.
     osascript_path = "/usr/bin/osascript"
-    sd_process = subprocess.run([
-            osascript_path,
-            "-e",
-            'tell app "System Events" to shut down'],
-            )  # nosec
+    sd_process = subprocess.run(
+        [osascript_path, "-e", 'tell app "System Events" to shut down'],
+    )  # nosec
 
     # Check exit code of osascript for success.
     if sd_process.returncode != 0:
@@ -78,11 +76,9 @@ def hibernate():
 
     # Second method/try (AppleScript, slower).
     osascript_path = "/usr/bin/osascript"
-    subprocess.run([
-            osascript_path, 
-            "-e", 
-            'tell app "System Events" to sleep'],
-            )  # nosec
+    subprocess.run(
+        [osascript_path, "-e", 'tell app "System Events" to sleep'],
+    )  # nosec
 
     # Return to prevent multiple execution.
     return
@@ -106,8 +102,9 @@ def log(svt, msg, verbose=False):
                 os.mkdir(os.path.dirname(LOG_FILE))
 
             # Copy log file to log dir.
-            shutil.copy(os.path.join(APP_PATH, "install", "swiftguard.log"),
-                        LOG_FILE)
+            shutil.copy(
+                os.path.join(APP_PATH, "install", "swiftguard.log"), LOG_FILE
+            )
 
         except Exception as e:
             # Print error and exit.
@@ -148,23 +145,28 @@ def log(svt, msg, verbose=False):
 
     # Log current USB state
     if verbose:
-
         system_profiler_path = "/usr/sbin/system_profiler"
 
-        verbose_process = subprocess.run([system_profiler_path, "SPUSBDataType"],
-                                         stdout=subprocess.PIPE,
-                                         stderr=subprocess.PIPE,
-                                         text=True)  # nosec
+        verbose_process = subprocess.run(
+            [system_profiler_path, "SPUSBDataType"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )  # nosec
 
         # Check exit code of fdesetup for success.
         if verbose_process.returncode != 0:
-            contents += (f"------ Current state: ------\n"
-                         f"Could not get current USB state! Error: "
-                         f"{verbose_process.stdout.strip()}")
+            contents += (
+                f"------ Current state: ------\n"
+                f"Could not get current USB state! Error: "
+                f"{verbose_process.stdout.strip()}"
+            )
 
         else:
-            contents += (f"------ Current state: ------\n"
-                         f"{verbose_process.stdout.strip()}")
+            contents += (
+                f"------ Current state: ------\n"
+                f"{verbose_process.stdout.strip()}"
+            )
 
     # Write log to file.
     with open(LOG_FILE, "a+") as log:
@@ -214,12 +216,10 @@ def config_load(config):
     else:
         restore_needed = False
 
-
     if restore_needed:
         print("okkk restore")
     else:
         print("okkk no restore")
-
 
     # Defaulting some values if incorrect or not set.
     default_needed = False
@@ -308,16 +308,17 @@ def config_write(config):
 
 
 def check_encryption():
+    # TODO: docstring
     # macOS: Check if FileVault (fv) is enabled.
     if CURRENT_PLATFORM == "DARWIN":
-
         fv_command = ["/usr/bin/fdesetup", "isactive"]
 
-
-        fv_process = subprocess.run(fv_command,
-                                          stdout=subprocess.PIPE,
-                                          stderr=subprocess.PIPE,
-                                          text=True)  # nosec
+        fv_process = subprocess.run(
+            fv_command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )  # nosec
 
         # Check exit code of fdesetup for success.
         if fv_process.returncode != 0:
@@ -371,12 +372,17 @@ def startup():
     # manually add swiftGuard to the list of apps with permissions in
     # System Preferences -> Security & Privacy -> Privacy -> Automation.
     osascript_path = "/usr/bin/osascript"
-    permission_automation = subprocess.call([osascript_path,
-                                             '-e', 'tell application "System '
-                                             'Events"',
-                                             '-e', 'keystroke ""',
-                                             '-e', 'end tell']
-                                            )  # nosec
+    permission_automation = subprocess.call(
+        [
+            osascript_path,
+            "-e",
+            'tell application "System ' 'Events"',
+            "-e",
+            'keystroke ""',
+            "-e",
+            "end tell",
+        ]
+    )  # nosec
 
     if permission_automation == 1:
         # Log error.
@@ -403,8 +409,11 @@ def startup():
         log(1, "FileVault is disabled. Sensitive data SHOULD be encrypted.")
 
     else:
-        log(1, f"Could not determine encryption status of host system! Error: "
-               f"{enc_status}.")
+        log(
+            1,
+            f"Could not determine encryption status of host system! Error: "
+            f"{enc_status}.",
+        )
 
     # If no config file exists, copy the default config file.
     if not os.path.isfile(CONFIG_FILE):
@@ -414,8 +423,10 @@ def startup():
                 os.mkdir(os.path.dirname(CONFIG_FILE))
 
             # Copy config file to config dir.
-            shutil.copy(os.path.join(APP_PATH, "install", "swiftguard.ini"),
-                        CONFIG_FILE)
+            shutil.copy(
+                os.path.join(APP_PATH, "install", "swiftguard.ini"),
+                CONFIG_FILE,
+            )
 
         except Exception as e:
             # Log error.
@@ -744,18 +755,22 @@ def usb_devices():
 
     # Run system_profiler and capture its output.
     result = subprocess.run(
-            [system_profiler_path, "SPUSBDataType", "-xml",
-             "-detailLevel", "mini"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=False,
-            )  # nosec
+        [
+            system_profiler_path,
+            "SPUSBDataType",
+            "-xml",
+            "-detailLevel",
+            "mini",
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=False,
+    )  # nosec
 
     if result.returncode != 0:
         # Handle the error case.
         res_stderr = result.stderr.decode("utf-8").strip()
-        log(1, f"Error while running system_profiler: "
-               f"{res_stderr}.")
+        log(1, f"Error while running system_profiler: " f"{res_stderr}.")
         return []
 
     # Load the XML output using plistlib.
@@ -863,4 +878,4 @@ def bt_devices():
     :return: A list of bluetooth devices
     """
 
-    pass
+    return

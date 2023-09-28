@@ -51,8 +51,9 @@ from PySide6.QtGui import QAction, QIcon, QKeySequence, QPixmap
 from PySide6.QtWidgets import QApplication, QMenu, QMessageBox, QSystemTrayIcon
 
 from helpers import config_load, config_write, log, startup, usb_devices
+# pylint: disable=unused-import
 # noinspection PyUnresolvedReferences
-from resources import resources_rc
+from resources import resources_rc  # noqa: F401
 from worker import Worker
 
 # Constants.
@@ -161,7 +162,8 @@ class ToggleEntry:
                 self.entry.setToolTip(self.states[1].lstrip())
 
         # Connect the entry to the function.
-        self.entry.triggered.connect(lambda: self.toggle())
+        # self.entry.triggered.connect(lambda: self.toggle())
+        self.entry.triggered.connect(partial(self.toggle))
 
     def toggle(self):
         """
@@ -260,10 +262,9 @@ class SubMenu:
             self.submenu.addAction(entry.entry)
 
             # Connect the entry to the exclusive toggling function.
+            # ...connect(partial(lambda entry: self.toggle_excl(entry), entry))
             if self.exclusive:
-                entry.entry.triggered.connect(
-                    partial(lambda entry: self.toggle_excl(entry), entry)
-                )
+                entry.entry.triggered.connect(partial(self.toggle_excl, entry))
 
     def toggle_excl(self, entry_clicked):
         """
@@ -937,7 +938,7 @@ class TrayApp:
         entry08 = ToggleEntry(
             self.config_update,
             ["60 s", "      60 s"],
-            QIcon(self.resources["usb-connection"]),
+            QIcon(self.resources["checkmark"]),
             self.config["User"]["delay"] == "60",
         )
 
