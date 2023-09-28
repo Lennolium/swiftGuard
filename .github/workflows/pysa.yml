@@ -44,7 +44,7 @@ jobs:
         with:
           # To customize these inputs:
           # See https://github.com/facebook/pysa-action#inputs
-          repo-directory: './src/swiftguard'
-          requirements-path: './requirements.txt'
+          repo-directory: './'
+          requirements-path: 'requirements.txt'
           infer-types: true
           include-default-sapp-filters: true
