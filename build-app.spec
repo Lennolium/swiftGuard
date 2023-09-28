@@ -1,10 +1,15 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+# Intel: 'x86_64', Apple Silicon: 'arm64'
 app_arch = 'x86_64'
 
 binary_name = 'swiftGuard.app'
 
+# Major.Minor.Patch
 app_version = '0.0.1'
+
+# Year.BuildNumber
+build_version = '2023.1'
 
 added_files = [
     ('src/swiftguard/resources', 'resources'),
@@ -83,6 +88,10 @@ app = BUNDLE(
     info_plist={
             'NSPrincipalClass': 'NSApplication',
             'LSUIElement': True,
-            'CFBundleDevelopmentRegion': 'English',
+            'CFBundleDevelopmentRegion': 'en',
+            'CFBundleVersion': build_version,
+            'NSHumanReadableCopyright': 'Copyright © 2023, Lennart Haack.',
+            'LSApplicationCategoryType': 'public.app-category.utilities',
+            'NSAppleEventsUsageDescription': 'swiftGuard is requesting access to System Events to provide the ability to shutdown and hibernate your Mac.\nThis permission will NEVER be used for any other purpose.',
             },
 )

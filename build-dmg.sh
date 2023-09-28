@@ -32,11 +32,6 @@ create-dmg \
   "dmg/swiftGuard.dmg" \
   "dist/dmg-temp/"
 
-echo "[INFO] Generating sha256 checksum file ..."
-
-# Generate sha256 hash file of installer.
-sha256sum "dmg/swiftGuard.dmg" > dmg/checksum.sha256
-
 echo "[INFO] Deleting temp files and folders ..."
 
 # Empty the dmg-temp folder.
@@ -44,6 +39,14 @@ rm -R dist/dmg-temp/*
 
 # Delete the dmg-temp folder.
 rm -r dist/dmg-temp
+
+echo "[INFO] Generating sha256 checksum file ..."
+
+# Generate sha256 hash file of installer and check it.
+cd dmg
+sha256sum "swiftGuard.dmg" > SHA256SUM
+sha256sum -c SHA256SUM
+
 
 echo "[INFO] swiftGuard.dmg and checksum.sha256 created in /dmg folder"
 

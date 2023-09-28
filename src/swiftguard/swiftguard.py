@@ -28,8 +28,9 @@ https://github.com/Lennolium/swiftGuard/blob/main/LICENSE
 __author__ = "Lennart Haack"
 __email__ = "lennart-haack@mail.de"
 __license__ = "GNU GPLv3"
-__version__ = "0.0.1"
-__date__ = "2023-09-21"
+__version__ = "0.0.2"
+__build__ = "2023.2"
+__date__ = "2023-09-28"
 __status__ = "Prototype"
 
 # Imports.
@@ -644,13 +645,13 @@ class TrayApp:
             self.worker_thread.finished.connect(self.worker.stop)
             self.worker_thread.start()
 
-            # Log.
-            log(
-                0,
-                "The main worker thread for manipulation "
-                "detection started.",
-                True,
-            )
+            # # Log.
+            # log(
+            #     0,
+            #     "The main worker thread for manipulation "
+            #     "detection started.",
+            #     True,
+            # )
 
         else:
             # Stop the worker thread.
@@ -668,8 +669,7 @@ class TrayApp:
             # Log.
             log(
                 0,
-                "The main worker thread for manipulation detection "
-                "stopped.",
+                "STOPPED guarding the USB ports ...",
             )
 
     def defuse(self):
@@ -1054,8 +1054,8 @@ class TrayApp:
 
         # Bold text.
         msg_box.setText(
-            "swiftGuard\n\nVersion 0.0.1 \n\n\nMade with ❤️ by "
-            "Lennolium" + "                                           "
+            f"swiftGuard\n\nVersion {__version__} ({__build__})\n\n\nMade "
+            f"with ❤️ by Lennolium" + "                                       "
         )
 
         # Smaller, informative text.

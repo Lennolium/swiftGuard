@@ -155,9 +155,10 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-# build/
+build/
 develop-eggs/
 # dist/
+dist/swiftGuard
 downloads/
 eggs/
 .eggs/
@@ -294,3 +295,6 @@ poetry.toml
 
 # LSP config files
 pyrightconfig.json
+
+# Bandit
+bandit-env/

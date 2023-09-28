@@ -35,8 +35,9 @@ start this script. The device should be allowed now.
 __author__ = "Lennart Haack"
 __email__ = "lennart-haack@mail.de"
 __license__ = "GNU GPLv3"
-__version__ = "0.0.1"
-__date__ = "2023-09-21"
+__version__ = "0.0.2"
+__build__ = "2023.2"
+__date__ = "2023-09-28"
 __status__ = "Prototype"
 
 # Imports.
@@ -148,7 +149,7 @@ class Worker(QObject):
         self.defused = False
 
         # Write to logs that loop is starting.
-        log(0, "Start guarding the USB ports ...")
+        log(0, "Start guarding the USB ports ...", verbose=True)
 
         # Main loop.
         while self.running:
@@ -272,7 +273,7 @@ def main():
     if exit_code == 1:
         log(
             2,
-            (f"Startup failed, check logs at {LOG_FILE}" + "\nExiting " "..."),
+            f"Startup failed, check logs at {LOG_FILE}.\nExiting ...",
         )
         sys.exit(1)
 

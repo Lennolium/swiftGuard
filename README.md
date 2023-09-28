@@ -117,7 +117,7 @@ shutdown process.
 
 <!--- Why -->
 
-### Why should I care?
+### Why should you care?
 
 A few reasons to use this tool:
 
@@ -125,7 +125,7 @@ A few reasons to use this tool:
 to prevent the screen saver or sleep mode from being activated.
 - __Prevent Data Exfiltration:__ You do not want someone adding or copying documents to or from your computer via USB.
 - __Public Environments:__ If you frequently use your Mac in public places like libraries or cafes, swiftGuard 
-acts as an additional layer of security against physical attacks in a [potentially vulnerable](https://www.ccn.com/fbi-illegally-stole-ross-ulbrichts-laptop-brought-silk-road/) settings.
+acts as an additional layer of security against physical attacks in a [potentially vulnerable](https://www.ccn.com/fbi-illegally-stole-ross-ulbrichts-laptop-brought-silk-road/) setting.
 - __Server Protection:__ You want to improve the security of your home or company server (e.g. your Raspberry Pi, NAS, etc.).
 - __Data Protection Regulations:__ Many industries and organizations are subject to strict data protection 
 regulations. swiftGuard helps maintain compliance by preventing unauthorized data transfers and access through USB ports.
@@ -220,7 +220,7 @@ file located in the `/src/swiftguard` directory.
     ```bash
     python3 -m venv venv
     source venv/bin/activate
-    pip3 install -r requirements.txt
+    pip install -r requirements.txt
     ```
    
 5. Navigate to the src directory.
@@ -263,12 +263,13 @@ respectfully.
 
 ## Roadmap
 
-| **Now**                   | **Next**            | **Later**               |
-|---------------------------|---------------------|-------------------------|
-| Unit tests                | Linux support       | CI/CD                   |
-| Code quality              | Bluetooth detection | Website/Docs/Wiki       |
-| Translations              | Auto update         | Encrypted configuration |
-| Package for Apple silicon | Auto start          | Code sign (Apple)       |
+| **Now**                   | **Next**                                             | **Later**               |
+|---------------------------|------------------------------------------------------|-------------------------|
+| Unit tests                | Linux support                                        | CI/CD                   |
+| Code quality              | Bluetooth detection                                  | Website/Docs/Wiki       |
+| Translations              | Auto update                                          | Encrypted configuration |
+| Package for Apple silicon | Auto start                                           | Code sign (Apple)       |
+| Security audit            | More actions (wipe ram, delete files/folders, email) | User defined actions    |
 
 
 &nbsp;
