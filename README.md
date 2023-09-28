@@ -53,6 +53,7 @@ designated devices, to select an action to be executed and to set a countdown ti
 shutdown process.
 <br><br>
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/0ce680d8fe8f47ff86e9b1c97800f1ba)](https://app.codacy.com/gh/Lennolium/swiftGuard?utm_source=github.com&utm_medium=referral&utm_content=Lennolium/swiftGuard&utm_campaign=Badge_Grade)
 [![Donate](https://img.shields.io/badge/Donate-Paypal-blue?style=flat-square&logo=paypal)](https://www.paypal.me/smogg)
 [![BuyMeACoffee](https://img.shields.io/badge/Buy%20me%20a-Coffee-f5d132?style=flat-square&logo=buymeacoffee)](https://buymeacoffee.com/lennolium)
 </div>
