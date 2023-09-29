@@ -173,6 +173,40 @@ def log(svt, msg, verbose=False):
         log.write(contents)
 
 
+def config_create(force_restore=False):
+    # TODO: docstring.
+
+    # If no config file exists, copy the default config file.
+    if not os.path.isfile(CONFIG_FILE) or force_restore:
+        try:
+            # If no config dir exists, create it.
+            if not os.path.isdir(os.path.dirname(CONFIG_FILE)):
+                os.mkdir(os.path.dirname(CONFIG_FILE))
+
+            # Copy config file to config dir or overwrite existing one.
+            shutil.copy(
+                os.path.join(APP_PATH, "install", "swiftguard.ini"),
+                CONFIG_FILE,
+            )
+
+        except Exception as e:
+            # Log error.
+            log(
+                2,
+                f"Could not create config file at {CONFIG_FILE}! "
+                f"Error: {e}.",
+            )
+
+            # Return exit code 1 (Error occurred).
+            return 1
+
+        # Log success.
+        log(0, f"Created config file at {CONFIG_FILE}.")
+
+        # Return exit code 0 (Success).
+        return 0
+
+
 def config_load(config):
     """
     The config_load function loads the config file and checks if its
@@ -187,9 +221,10 @@ def config_load(config):
         config.read(CONFIG_FILE, encoding="utf-8")
 
     except (
-        configparser.MissingSectionHeaderError or configparser.ParsingError
+        configparser.MissingSectionHeaderError,
+        configparser.ParsingError,
     ) as e:
-        # Log error and exit.
+        # Log error.
         log(
             2,
             "Config file is not valid. Please check your config file "
@@ -197,12 +232,10 @@ def config_load(config):
             f"\nError: {e}",
         )
 
-        # Exit program.
+        # Exit program. TODO: use exitcodes.
         sys.exit(1)
 
     # Check if config file has all needed sections and options.
-    # TODO: if not, overwrite config file with default one (new func).
-
     if not config.has_option("Application", "version"):
         restore_needed = True
     elif not config.has_option("User", "action"):
@@ -216,10 +249,9 @@ def config_load(config):
     else:
         restore_needed = False
 
+    # Overwrite config file with default one.
     if restore_needed:
-        print("okkk restore")
-    else:
-        print("okkk no restore")
+        config_create(force_restore=True)
 
     # Defaulting some values if incorrect or not set.
     default_needed = False
@@ -322,19 +354,29 @@ def check_encryption():
 
         # Check exit code of fdesetup for success.
         if fv_process.returncode != 0:
-            return fv_process.stderr.strip()
+            log(
+                1,
+                f"Could not determine encryption status of host system! "
+                f"Error: {fv_process.stderr.strip()}.",
+            )
+
+            return 1
 
         if fv_process.stdout.strip():
             # FileVault is enabled.
-            return True
+            log(0, "FileVault is enabled (recommended).")
+            return 0
 
         else:
             # FileVault is disabled.
-            return False
+            log(
+                1, "FileVault is disabled. Sensitive data SHOULD be encrypted."
+            )
+            return 0
 
     # Linux: Check if LUKS is enabled (WiP).
     else:
-        pass
+        raise NotImplementedError
 
 
 def startup():
@@ -390,7 +432,8 @@ def startup():
             1,
             "Looks like swiftGuard has not its needed "
             "Permission granted! Go to System Preferences -> Security & "
-            "Privacy -> Privacy -> Automation and add swiftGuard manually! "
+            "Privacy -> Privacy -> Automation and add swiftGuard "
+            "manually! "
             "If done and Warning persists test if swiftGuard can shutdown"
             "your system by connecting a new USB device. If so, you can "
             "ignore this warning.",
@@ -400,48 +443,18 @@ def startup():
         log(0, "Looks like swiftGuard has its needed permission granted.")
 
     # Check if user has FileVault enabled (highly recommended).
-    enc_status = check_encryption()
+    enc_exit_code = check_encryption()
 
-    if enc_status:
-        log(0, "FileVault is enabled (recommended).")
+    if enc_exit_code == 1:
+        # Return error exit code 1 to main program.
+        return None, 1
 
-    elif not enc_status:
-        log(1, "FileVault is disabled. Sensitive data SHOULD be encrypted.")
+    # Copy default config file to CONFIG_FILE location.
+    config_exit_code = config_create()
 
-    else:
-        log(
-            1,
-            f"Could not determine encryption status of host system! Error: "
-            f"{enc_status}.",
-        )
-
-    # If no config file exists, copy the default config file.
-    if not os.path.isfile(CONFIG_FILE):
-        try:
-            # If no config dir exists, create it.
-            if not os.path.isdir(os.path.dirname(CONFIG_FILE)):
-                os.mkdir(os.path.dirname(CONFIG_FILE))
-
-            # Copy config file to config dir.
-            shutil.copy(
-                os.path.join(APP_PATH, "install", "swiftguard.ini"),
-                CONFIG_FILE,
-            )
-
-        except Exception as e:
-            # Log error.
-            log(
-                2,
-                f"Could not create config file at {CONFIG_FILE}! "
-                f"Error: {e}.",
-            )
-
-            # Return error exit code 1 to main to exit program.
-            return None, 1
-
-        else:
-            # Log info.
-            log(0, f"Created config file at {CONFIG_FILE}.")
+    if config_exit_code == 1:
+        # Return error exit code 1 to main program.
+        return None, 1
 
     # Load settings from config file.
     config_parser = configparser.ConfigParser()
@@ -802,15 +815,14 @@ def usb_devices():
                     vendor_id = DEVICE_RE[1].findall(result["vendor_id"])[0]
                 except IndexError:
                     # Assume this is not a standard vendor_id (probably
-                    # apple_vendor_id instead of 0x....)
+                    # apple_vendor_id instead of 0x....).
                     vendor_id = result["vendor_id"]
 
                 # Product ID.
                 try:
                     product_id = DEVICE_RE[1].findall(result["product_id"])[0]
                 except IndexError:
-                    # Assume this is not a standard product_id (probably
-                    # apple_vendor_id instead of 0x....)
+                    # Assume this is not a standard product_id (0x....).
                     product_id = result["product_id"]
 
                 # Serial number.
@@ -878,4 +890,4 @@ def bt_devices():
     :return: A list of bluetooth devices
     """
 
-    return
+    raise NotImplementedError
