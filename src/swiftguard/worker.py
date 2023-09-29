@@ -51,7 +51,7 @@ from time import sleep
 
 from PySide6.QtCore import QObject, Signal
 
-from helpers import hibernate, log, shutdown, startup, usb_devices
+from swiftguard.helpers import hibernate, log, shutdown, startup, usb_devices
 
 # Constants.
 CURRENT_PLATFORM = os.uname()[0].upper()

@@ -1,0 +1,37 @@
+[tool.poetry]
+name = "swiftguard"
+version = "0.0.2"
+description = "Anti-forensic macOS application designed to safeguard your system by monitoring USB ports"
+authors = [
+  "Lennart Haack <lennart-haack@mail.de>"
+]
+license = "GNU General Public License v3 (GPLv3)"
+readme = "README.md"
+repository = "https://github.com/Lennolium/swiftGuard"
+include = ["src/swiftguard/swiftguard.ini"]
+
+
+[tool.poetry.scripts]
+swiftguard = "swiftguard.worker:main"
+
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.12"
+PySide6 = "^6.5.2"
+darkdetect = "^0.8.0"
+black = "^23.9.1"
+bandit = "^1.7.5"
+
+
+[tool.poetry.group.dev.dependencies]
+pyinstaller = "^6.0.0"
+pyinstaller-hooks-contrib = "^2023.9"
+
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/Lennolium/swiftGuard/issues"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

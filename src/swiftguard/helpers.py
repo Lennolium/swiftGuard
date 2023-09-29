@@ -94,24 +94,15 @@ def log(svt, msg, verbose=False):
     :return: None
     """
 
-    # First startup: Check if log file exists.
+    # First startup: prepare directories for keeping log file.
     if not os.path.isfile(LOG_FILE):
         try:
             # Make sure there is a logging folder.
             if not os.path.isdir(os.path.dirname(LOG_FILE)):
                 os.mkdir(os.path.dirname(LOG_FILE))
 
-            # Copy log file to log dir.
-            shutil.copy(
-                os.path.join(APP_PATH, "install", "swiftguard.log"), LOG_FILE
-            )
-
         except Exception as e:
             # Print error and exit.
-            print(
-                f"\n[ERROR] Could not create log file at {LOG_FILE}!"
-                f"\nError: {e}."
-            )
             sys.exit(
                 f"\n[ERROR] Could not create log file at "
                 f"{LOG_FILE}!\nError: {e}."
