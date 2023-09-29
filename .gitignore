@@ -297,4 +297,6 @@ poetry.toml
 pyrightconfig.json
 
 # Bandit
-bandit-env/dist
+bandit-env/
+
+dist
