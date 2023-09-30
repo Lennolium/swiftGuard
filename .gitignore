@@ -157,8 +157,7 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-# dist/
-dist/swiftGuard
+dist/
 downloads/
 eggs/
 .eggs/
@@ -298,5 +297,3 @@ pyrightconfig.json
 
 # Bandit
 bandit-env/
-
-dist
