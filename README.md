@@ -199,46 +199,53 @@ You can run swiftGuard as a simple Python script from the command line without a
 This is useful when operating swiftGuard on a headless system or saving system resources. However, you will lose the 
 ability to defuse the shutdown process via the GUI, but you can kill the swiftGuard process from the command line 
 instead. The preferences and whitelists are stored in the same location as the GUI version and can be edited 
-manually. For further information, please refer to the [worker.py](https://github.com/Lennolium/swiftGuard/blob/main/src/swiftguard/worker.py) 
-file located in the `/src/swiftguard` directory.
-
+manually. For further information, please refer to the [src/swiftguard/worker.py](https://github.com/Lennolium/swiftGuard/blob/main/src/swiftguard/worker.py) file.
 
 1. Open a terminal and navigate to the desired directory.
-    ```bash
-    cd ~/Desktop
-    ```
+
+   ```bash
+   cd ~/Desktop
+   ```
 
 2. Clone the repository.
-    ```bash
-    git clone https://github.com/Lennolium/swiftGuard.git
-    ```
+
+   ```bash
+   git clone https://github.com/Lennolium/swiftGuard.git
+   ```
 
 3. Navigate to the swiftGuard directory.
-    ```bash
-    cd swiftGuard
-    ```
 
-4. Install the [requirements](https://github.com/Lennolium/swiftGuard/blob/main/requirements.txt) in a new virtual environment.
-    ```bash
-    python3 -m venv venv
-    source venv/bin/activate
-    pip install -r requirements.txt
-    ```
-   
-5. Navigate to the src directory.
-    ```bash
-    cd src/swiftguard
-    ```
+   ```bash
+   cd swiftGuard
+   ```
 
-6. Run the worker.py.
-    ```bash
-    python3 worker.py
-    ```
-&nbsp;
+4. Create a virtual environment and install _poetry_ package.
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   pip install poetry
+   ```
+5. Install `swiftguard` in development mode
 
->**Notes:**
->- Settings/Whitelist: `~/Library/Preferences/swiftGuard/swiftguard.ini`
->- Logs: `~/Library/Logs/swiftGuard/swiftguard.log`
+   ```bash
+   poetry install
+   ```
+
+   This will install _swiftguard_ cli and python package in virtual environment `venv/bin/swiftguard` and
+   `venv/lib/python3.11/site-packages` in a development mode, allowing you to change code in `src/swiftguard/worker.py`
+   and immediately try it in termanal.
+
+6. Run the cli.
+
+   ```bash
+   swiftguard
+   ```
+
+> **Notes:**
+>
+> - Settings/Whitelist: `~/Library/Preferences/swiftGuard/swiftguard.ini`
+> - Logs: `~/Library/Logs/swiftGuard/swiftguard.log` **WARNING:** be aware that log file is not rotated (for now) so
+>   please take care of it's size after allowing `swiftguard` to run for some time.
    
 &nbsp;
 
@@ -304,6 +311,18 @@ alt="Pyre" >
     <img src="https://github.com/Lennolium/swiftGuard/actions/workflows/pysa.yml/badge.svg?event=status" alt="Pysa" >
   </a> </a> </a> </a> </a>
 </div>
+
+&nbsp;
+
+<!-- Contributors -->
+
+## Contributors
+
+Thank you so much for giving feedback, implementing features and improving the code and project!
+
+<a href = "https://github.com/Lennolium/swiftGuard/graphs/contributors">
+  <img src = "https://contrib.rocks/image?repo=Lennolium/swiftguard"/>
+</a>
 
 &nbsp;
 

@@ -19,16 +19,16 @@ __status__ = "Prototype"
 
 # Imports.
 import configparser
+import logging
 import os
+import platform
 import plistlib
 import re
 import shutil
 import subprocess  # nosec
-import sys
-from datetime import datetime
 
 # Constants.
-CURRENT_PLATFORM = os.uname()[0].upper()
+CURRENT_PLATFORM = platform.uname()[0].upper()
 USER_HOME = os.path.expanduser("~")
 APP_PATH = os.path.dirname(os.path.realpath(__file__))
 CONFIG_FILE = f"{USER_HOME}/Library/Preferences/swiftguard/swiftguard.ini"
@@ -39,6 +39,9 @@ DEVICE_RE = [
     re.compile(".+ID\s(?P<id>\w+:\w+)"),
     re.compile("0x([0-9a-z]{4})"),
 ]
+
+# Child logger.
+LOGGER = logging.getLogger(__name__)
 
 
 def shutdown():
@@ -84,93 +87,32 @@ def hibernate():
     return
 
 
-def log(svt, msg, verbose=False):
-    """
-    The log function is used to log messages to the log file.
+def usb_state():
+    # TODO: docstring. Get a brief overview of the current USB devices.
+    system_profiler_path = "/usr/sbin/system_profiler"
 
-    :param svt: Determine the severity level of the log message
-    :param msg: Specify the message to log
-    :param verbose: Print the current usb state
-    :return: None
-    """
+    verbose_process = subprocess.run(
+        [system_profiler_path, "SPUSBDataType"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )  # nosec
 
-    # First startup: Check if log file exists.
-    if not os.path.isfile(LOG_FILE):
-        try:
-            # Make sure there is a logging folder.
-            if not os.path.isdir(os.path.dirname(LOG_FILE)):
-                os.mkdir(os.path.dirname(LOG_FILE))
-
-            # Copy log file to log dir.
-            shutil.copy(
-                os.path.join(APP_PATH, "install", "swiftguard.log"), LOG_FILE
-            )
-
-        except Exception as e:
-            # Print error and exit.
-            print(
-                f"\n[ERROR] Could not create log file at {LOG_FILE}!"
-                f"\nError: {e}."
-            )
-            sys.exit(
-                f"\n[ERROR] Could not create log file at "
-                f"{LOG_FILE}!\nError: {e}."
-            )
-
-        else:
-            # Log info.
-            msg += (
-                f"\n{datetime.now().strftime('[%Y/%m/%d %H:%M:%S]')}"
-                f" [INFO] Created log file at {LOG_FILE}."
-            )
-
-    # Severity level (0 = info, 1 = warning, 2 = error).
-    if svt == 0:
-        contents = (
-            f"{datetime.now().strftime('[%Y/%m/%d %H:%M:%S]')}"
-            f" [INFO] {msg} \n"
-        )
-
-    elif svt == 1:
-        contents = (
-            f"{datetime.now().strftime('[%Y/%m/%d %H:%M:%S]')}"
-            f" [WARNING] {msg} \n"
+    # Check exit code of fdesetup for success.
+    if verbose_process.returncode != 0:
+        msg = (
+            f"\n------ Current state: ------\n"
+            f"Could not get current USB state! Error: "
+            f"{verbose_process.stdout.strip()}"
         )
 
     else:
-        contents = (
-            f"{datetime.now().strftime('[%Y/%m/%d %H:%M:%S]')}"
-            f" [ERROR] {msg} \n"
+        msg = (
+            f"\n------ Current state: ------\n"
+            f"{verbose_process.stdout.strip()}"
         )
 
-    # Log current USB state
-    if verbose:
-        system_profiler_path = "/usr/sbin/system_profiler"
-
-        verbose_process = subprocess.run(
-            [system_profiler_path, "SPUSBDataType"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-        )  # nosec
-
-        # Check exit code of fdesetup for success.
-        if verbose_process.returncode != 0:
-            contents += (
-                f"------ Current state: ------\n"
-                f"Could not get current USB state! Error: "
-                f"{verbose_process.stdout.strip()}"
-            )
-
-        else:
-            contents += (
-                f"------ Current state: ------\n"
-                f"{verbose_process.stdout.strip()}"
-            )
-
-    # Write log to file.
-    with open(LOG_FILE, "a+") as log:
-        log.write(contents)
+    return msg
 
 
 def config_create(force_restore=False):
@@ -179,7 +121,7 @@ def config_create(force_restore=False):
     # If no config file exists, copy the default config file.
     if not os.path.isfile(CONFIG_FILE) or force_restore:
         try:
-            # If no config dir exists, create it.
+            # If no config directory exists, create it.
             if not os.path.isdir(os.path.dirname(CONFIG_FILE)):
                 os.mkdir(os.path.dirname(CONFIG_FILE))
 
@@ -190,21 +132,12 @@ def config_create(force_restore=False):
             )
 
         except Exception as e:
-            # Log error.
-            log(
-                2,
-                f"Could not create config file at {CONFIG_FILE}! "
-                f"Error: {e}.",
+            raise e from RuntimeError(
+                f"Could not create config file at {CONFIG_FILE}!\n"
+                f"Error: {e}"
             )
 
-            # Return exit code 1 (Error occurred).
-            return 1
-
-        # Log success.
-        log(0, f"Created config file at {CONFIG_FILE}.")
-
-        # Return exit code 0 (Success).
-        return 0
+        LOGGER.info(f"Created config file at {CONFIG_FILE}.")
 
 
 def config_load(config):
@@ -224,19 +157,16 @@ def config_load(config):
         configparser.MissingSectionHeaderError,
         configparser.ParsingError,
     ) as e:
-        # Log error.
-        log(
-            2,
-            "Config file is not valid. Please check your config file "
-            f"at {CONFIG_FILE} for missing sections.\nExiting..."
-            f"\nError: {e}",
-        )
-
-        # Exit program. TODO: use exitcodes.
-        sys.exit(1)
+        LOGGER.error(f"Error while parsing config file: {e}.")
+        LOGGER.warning("Config file will be overwritten with default values.")
+        restore_needed = True
 
     # Check if config file has all needed sections and options.
     if not config.has_option("Application", "version"):
+        restore_needed = True
+    elif not config.has_option("Application", "log"):
+        restore_needed = True
+    elif not config.has_option("Application", "log_level"):
         restore_needed = True
     elif not config.has_option("User", "action"):
         restore_needed = True
@@ -249,50 +179,51 @@ def config_load(config):
     else:
         restore_needed = False
 
-    # Overwrite config file with default one.
+    # Overwrite config file with default one and read it again.
     if restore_needed:
         config_create(force_restore=True)
+        config.read(CONFIG_FILE, encoding="utf-8")
+
+        # Further checks are not needed, because of overwrite.
+        return config
 
     # Defaulting some values if incorrect or not set.
     default_needed = False
+
+    log_dest = config["Application"]["log"]
+
+    # Check length of string (4: 'file' to 20: 'file, syslog, stdout').
+    if not 3 < len(log_dest) < 21:
+        config["Application"]["log"] = "file"
+        log_dest = config["Application"]["log"]
+        default_needed = True
+
+    log_dest = log_dest.split(", ")
+
+    # Check if 'log to' options are valid (file, syslog, stdout).
+    for dest in log_dest:
+        if dest not in ["file", "syslog", "stdout"]:
+            config["Application"]["log"] = "file"
+            default_needed = True
+
+    # Check if log_level is in valid bounds (1,2,...,5).
+    if config["Application"]["log_level"] not in ["1", "2", "3", "4", "5"]:
+        config["Application"]["log_level"] = "2"
+        default_needed = True
 
     # Check if action is valid option.
     if config["User"]["action"] not in ["shutdown", "hibernate"]:
         config["User"]["action"] = "shutdown"
         default_needed = True
 
-        # Log warning.
-        log(
-            1,
-            "Action set to default value 'shutdown', because "
-            f"of invalid value in config file at {CONFIG_FILE}.",
-        )
-
     # Check if delay is convertable to an integer and not negative.
-    if config["User"]["delay"] == "":
+    if not config["User"]["delay"].isdecimal():
         config["User"]["delay"] = "0"
         default_needed = True
-    elif not config["User"]["delay"].isdecimal():
-        config["User"]["delay"] = "0"
-        default_needed = True
-
-        # Log warning.
-        log(
-            1,
-            "Delay set to default value '0', because of "
-            f"invalid value in config file at {CONFIG_FILE}.",
-        )
 
     elif int(config["User"]["delay"]) < 0:
         config["User"]["delay"] = "0"
         default_needed = True
-
-        # Log warning.
-        log(
-            1,
-            "Delay set to default value '0', because of "
-            f"negative value in config file at {CONFIG_FILE}.",
-        )
 
     # Check if check_interval is convertable to a float.
     try:
@@ -301,27 +232,17 @@ def config_load(config):
         config["User"]["check_interval"] = "1.0"
         default_needed = True
 
-        # Log warning.
-        log(
-            1,
-            "Check interval set to default value '1.0', because "
-            f"of invalid value in config file at {CONFIG_FILE}.",
-        )
-
     # Check if check_interval is negative.
     if float(config["User"]["check_interval"]) <= 0:
         config["User"]["check_interval"] = "0.5"
         default_needed = True
 
-        # Log warning.
-        log(
-            1,
-            "Check interval set to default value '0.5', because of "
-            f"negative value in config file at {CONFIG_FILE}.",
-        )
-
     # If default values were needed, write config file on disk.
     if default_needed:
+        LOGGER.warning(
+            f"One or more values in {CONFIG_FILE} were incorrect or not set. "
+            f"Corrected them to default values and wrote config file on disk.",
+        )
         config_write(config)
 
     return config
@@ -354,29 +275,38 @@ def check_encryption():
 
         # Check exit code of fdesetup for success.
         if fv_process.returncode != 0:
-            log(
-                1,
-                f"Could not determine encryption status of host system! "
+            LOGGER.error(
+                "Could not determine encryption status of host system! "
                 f"Error: {fv_process.stderr.strip()}.",
             )
-
-            return 1
+            return
 
         if fv_process.stdout.strip():
             # FileVault is enabled.
-            log(0, "FileVault is enabled (recommended).")
-            return 0
+            LOGGER.info("FileVault is enabled (recommended).")
 
         else:
             # FileVault is disabled.
-            log(
-                1, "FileVault is disabled. Sensitive data SHOULD be encrypted."
+            LOGGER.warning(
+                "FileVault is disabled. Sensitive data SHOULD be encrypted.",
             )
-            return 0
 
     # Linux: Check if LUKS is enabled (WiP).
     else:
         raise NotImplementedError
+
+
+def check_os():
+    if CURRENT_PLATFORM.startswith("DARWIN"):
+        LOGGER.info("Host system is supported (macOS).")
+
+    elif CURRENT_PLATFORM.startswith("LINUX"):
+        # LOGGER.info("Host system is supported (Linux).")
+        # return 0, "LINUX"
+        raise NotImplementedError
+
+    else:
+        raise RuntimeError(f"Host system not supported: {CURRENT_PLATFORM}")
 
 
 def startup():
@@ -386,29 +316,15 @@ def startup():
     config file in case it does not exist yet. It returns and exit code
     of 0 if all checks passed and an exit code of 1 if not.
 
-    :return: config and exit code
+    :return: exit code, config, logger
     """
 
-    # Start logging.
-    log(0, "--------- Startup: ---------")
-    log(0, "Starting swiftGuard and running startup checks ...")
-
-    log(0, f"You are running swiftGuard version: {__version__}")
+    LOGGER.info("--------- Startup: ---------")
+    LOGGER.info("Starting swiftGuard and running startup checks ...")
+    LOGGER.info(f"You are running swiftGuard version: {__version__}")
 
     # First check if host system is supported (macOS so far).
-    if not CURRENT_PLATFORM.startswith("DARWIN"):
-        # Log error.
-        log(
-            2,
-            f"This program only supports macOS, not {CURRENT_PLATFORM}! "
-            f"Exiting ...",
-        )
-
-        # Return exit code 1 to main to exit program.
-        return None, 1
-
-    else:
-        log(0, "Host system is supported (macOS).")
+    check_os()
 
     # Ask for macOS permission. In case of problems the user has to
     # manually add swiftGuard to the list of apps with permissions in
@@ -428,7 +344,7 @@ def startup():
 
     if permission_automation == 1:
         # Log error.
-        log(
+        LOGGER.warning(
             1,
             "Looks like swiftGuard has not its needed "
             "Permission granted! Go to System Preferences -> Security & "
@@ -440,21 +356,13 @@ def startup():
         )
 
     else:
-        log(0, "Looks like swiftGuard has its needed permission granted.")
+        LOGGER.info("Looks like swiftGuard has its needed permission granted.")
 
     # Check if user has FileVault enabled (highly recommended).
-    enc_exit_code = check_encryption()
-
-    if enc_exit_code == 1:
-        # Return error exit code 1 to main program.
-        return None, 1
+    check_encryption()
 
     # Copy default config file to CONFIG_FILE location.
-    config_exit_code = config_create()
-
-    if config_exit_code == 1:
-        # Return error exit code 1 to main program.
-        return None, 1
+    config_create()
 
     # Load settings from config file.
     config_parser = configparser.ConfigParser()
@@ -498,8 +406,7 @@ def startup():
 
     # Application version check.
     if config["Application"]["version"] != __version__:
-        log(
-            0,
+        LOGGER.info(
             f"You are running an outdated version of swiftGuard"
             f"({__version__}). Updating to latest version...",
         )
@@ -514,14 +421,12 @@ def startup():
         config_write(config)
 
     else:
-        # Log info.
-        log(0, "You are running the latest version of swiftGuard.")
+        LOGGER.info("You are running the latest version of swiftGuard.")
 
     # All startup checks finished without critical errors.
-    log(0, "Startup checks done and swiftGuard ready to run!")
+    LOGGER.info("Startup checks done and swiftGuard ready to run!")
 
-    # Return created config and exit code 0 to worker (checks passed).
-    return config, 0
+    return config
 
 
 def apple_lookup(name, bcd):  # sourcery skip: move-assign
@@ -781,10 +686,10 @@ def usb_devices():
     )  # nosec
 
     if result.returncode != 0:
-        # Handle the error case.
-        res_stderr = result.stderr.decode("utf-8").strip()
-        log(1, f"Error while running system_profiler: " f"{res_stderr}.")
-        return []
+        # Handle the critical error case (main task of this function, so
+        # raise an exception).
+        e = result.stderr.decode("utf-8").strip()
+        raise RuntimeError(f"Not able to detect USB devices! Error: {e}")
 
     # Load the XML output using plistlib.
     df = plistlib.loads(result.stdout)

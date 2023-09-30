@@ -298,3 +298,5 @@ pyrightconfig.json
 
 # Bandit
 bandit-env/
+
+dist

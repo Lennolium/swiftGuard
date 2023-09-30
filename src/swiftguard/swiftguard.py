@@ -37,6 +37,7 @@ __status__ = "Prototype"
 import configparser
 import datetime
 import os
+import platform
 import signal
 import sys
 import webbrowser
@@ -50,18 +51,23 @@ from PySide6.QtCore import QThread, QTimer, Qt
 from PySide6.QtGui import QAction, QIcon, QKeySequence, QPixmap
 from PySide6.QtWidgets import QApplication, QMenu, QMessageBox, QSystemTrayIcon
 
-from helpers import config_load, config_write, log, startup, usb_devices
+from helpers import config_load, config_write, startup, usb_devices
 # pylint: disable=unused-import
 # noinspection PyUnresolvedReferences
 from resources import resources_rc  # noqa: F401
+from utils import LogCount, add_handler, create_logger
 from worker import Worker
 
 # Constants.
-CURRENT_PLATFORM = os.uname()[0].upper()
+CURRENT_PLATFORM = platform.uname()[0].upper()
 USER_HOME = os.path.expanduser("~")
 APP_PATH = os.path.dirname(os.path.realpath(__file__))
 CONFIG_FILE = f"{USER_HOME}/Library/Preferences/swiftguard/swiftguard.ini"
 LOG_FILE = f"{USER_HOME}/Library/Logs/swiftguard/swiftguard.log"
+
+# Root logger and log counter.
+LOG_COUNT = LogCount()
+LOGGER = create_logger(LOG_COUNT)
 
 # Resource paths.
 LIGHT = {
@@ -83,6 +89,19 @@ DARK = {
     "app-icon": ":/resources/dark/statusbar-macos@2x.png",
     "app-logo": ":/resources/dark/logo-macos@2x.png",
 }
+
+
+# Handle uncaught exceptions and log them to CRITICAL.
+def handle_exception(exc_type, exc_value, exc_traceback):
+    # Do not log KeyboardInterrupt (Ctrl+C).
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+
+    LOGGER.critical(
+        "Uncaught Exception:",
+        exc_info=(exc_type, exc_value, exc_traceback),
+    )
 
 
 class ToggleEntry:
@@ -162,7 +181,6 @@ class ToggleEntry:
                 self.entry.setToolTip(self.states[1].lstrip())
 
         # Connect the entry to the function.
-        # self.entry.triggered.connect(lambda: self.toggle())
         self.entry.triggered.connect(partial(self.toggle))
 
     def toggle(self):
@@ -262,7 +280,6 @@ class SubMenu:
             self.submenu.addAction(entry.entry)
 
             # Connect the entry to the exclusive toggling function.
-            # ...connect(partial(lambda entry: self.toggle_excl(entry), entry))
             if self.exclusive:
                 entry.entry.triggered.connect(partial(self.toggle_excl, entry))
 
@@ -383,22 +400,31 @@ class TrayApp:
         ]:
             signal.signal(sig, self.exit_handler)
 
+        # Set the exception hook.
+        sys.excepthook = handle_exception
+
         # Set the current OS theme and corresponding resources.
         self.theme = darkdetect.theme()
         self.resources = LIGHT if self.theme == "Light" else DARK
-        # Initialize the config and run startup checks.
-        self.config, exit_code = startup()
 
-        # Check if startup was successful (exit_code = 1 -> error).
-        if exit_code == 1:
-            log(
-                2,
-                (
-                    f"Startup failed, check logs at {LOG_FILE}"
-                    + "\nExiting ..."
-                ),
-            )
-            sys.exit(1)
+        # Initialize the config and run startup checks.
+        self.config = startup()
+
+        log_dest = self.config["Application"]["log"].split(", ")
+        for dest in log_dest:
+            # Logging to file is default (can not be disabled).
+            if dest == "file":
+                continue
+            elif dest == "syslog":
+                add_handler(LOGGER, "syslog")
+        
+            elif dest == "stdout":
+                add_handler(LOGGER, "stdout")
+
+        # Get log level from config file and apply it to the root logger.
+        # 1 = DEBUG, 2 = INFO, 3 = WARNING, 4 = ERROR, 5 = CRITICAL.
+        log_level = int(self.config["Application"]["log_level"]) * 10
+        LOGGER.setLevel(log_level)
 
         # OS theme listener: checks for theme changes every 2 seconds in
         # a separate thread.
@@ -572,7 +598,9 @@ class TrayApp:
                     # Remove device from whitelist.
                     self.config["Whitelist"]["devices"] = str(allowed)[1:-1]
 
-                    log(0, f"Remove device from whitelist: {device_menu}")
+                    LOGGER.info(
+                        f"Remove device from whitelist: " f"{device_menu}."
+                    )
 
                     break
 
@@ -602,7 +630,7 @@ class TrayApp:
                     self.config["Whitelist"]["devices"] += f", {device}"
 
                 # Log the added device.
-                log(0, f"Add device to whitelist: {device_menu}")
+                LOGGER.info(f"Add device to whitelist: {device_menu}.")
 
                 # Write the updated config to disk.
                 config_write(self.config)
@@ -646,14 +674,6 @@ class TrayApp:
             self.worker_thread.finished.connect(self.worker.stop)
             self.worker_thread.start()
 
-            # # Log.
-            # log(
-            #     0,
-            #     "The main worker thread for manipulation "
-            #     "detection started.",
-            #     True,
-            # )
-
         else:
             # Stop the worker thread.
             self.worker.running = False
@@ -668,8 +688,7 @@ class TrayApp:
                 pass
 
             # Log.
-            log(
-                0,
+            LOGGER.info(
                 "STOPPED guarding the USB ports ...",
             )
 
@@ -707,7 +726,7 @@ class TrayApp:
         # Update the device menu.
         self.menu_devices_update(start_up=True)
 
-        log(0, "The worker was stopped after defusing.")
+        LOGGER.info("The worker was STOPPED after defusing!")
 
     def manipulation(self):
         """
@@ -758,7 +777,7 @@ class TrayApp:
             self.config["User"]["delay"] = "60"
 
         else:
-            log(1, f"Unknown menu settings button was pressed: {button}.")
+            LOGGER.info(f"Unknown menu settings button was pressed: {button}.")
 
         # Write the updated config to disk.
         config_write(self.config)
@@ -823,7 +842,7 @@ class TrayApp:
             self.menu_devices_update(start_up=True)
 
             # Log.
-            log(0, f"Application theme changed: {self.theme}.")
+            LOGGER.info(f"Application theme changed: {self.theme}.")
 
     def create_tray_icon(self):
         """
@@ -1106,21 +1125,25 @@ class TrayApp:
         # If the manipulation was detected, do not exit the application,
         # if user presses the "Exit" menu item. Defusing before exiting
         # is required.
-        if self.menu_tamper.isVisible():
-            return
 
-        # Stop and delete the theme thread to prevent memory leaks.
-        self.theme_worker_handle(False)
+        try:
+            if self.menu_tamper.isVisible():
+                return
 
-        # Stop and delete the connected devices thread.
-        self.usb_worker_handle(False)
+            # Stop and delete the theme thread to prevent memory leaks.
+            self.theme_worker_handle(False)
 
-        # Stop and delete the worker thread.
-        self.worker_handle("Inactive")
+            # Stop and delete the connected devices thread.
+            self.usb_worker_handle(False)
+
+            # Stop and delete the worker thread.
+            self.worker_handle("Inactive")
+
+        except Exception:
+            pass
 
         # Log.
-        log(0, "Exiting the application properly ...")
-
+        LOGGER.info("Exiting the application properly ...")
         self.app.quit()
         sys.exit(0)
 
