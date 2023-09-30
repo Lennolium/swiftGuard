@@ -53,9 +53,9 @@ def shutdown():
 
     # AppleScript: slower, but only way to shut down without sudo.
     osascript_path = "/usr/bin/osascript"
-    sd_process = subprocess.run(
+    sd_process = subprocess.run(  # nosec B603
         [osascript_path, "-e", 'tell app "System Events" to shut down'],
-    )  # nosec
+    )
 
     # Check exit code of osascript for success.
     if sd_process.returncode != 0:
@@ -75,13 +75,13 @@ def hibernate():
 
     # First method/try (pmset, faster).
     pmset_path = "/usr/bin/pmset"
-    subprocess.run([pmset_path, "sleepnow"])  # nosec
+    subprocess.run([pmset_path, "sleepnow"])  # nosec B603
 
     # Second method/try (AppleScript, slower).
     osascript_path = "/usr/bin/osascript"
-    subprocess.run(
+    subprocess.run(  # nosec B603
         [osascript_path, "-e", 'tell app "System Events" to sleep'],
-    )  # nosec
+    )
 
     # Return to prevent multiple execution.
     return
@@ -91,12 +91,12 @@ def usb_state():
     # TODO: docstring. Get a brief overview of the current USB devices.
     system_profiler_path = "/usr/sbin/system_profiler"
 
-    verbose_process = subprocess.run(
+    verbose_process = subprocess.run(  # nosec B603
         [system_profiler_path, "SPUSBDataType"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
-    )  # nosec
+    )
 
     # Check exit code of fdesetup for success.
     if verbose_process.returncode != 0:
@@ -266,12 +266,12 @@ def check_encryption():
     if CURRENT_PLATFORM == "DARWIN":
         fv_command = ["/usr/bin/fdesetup", "isactive"]
 
-        fv_process = subprocess.run(
+        fv_process = subprocess.run(  # nosec B603
             fv_command,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-        )  # nosec
+        )
 
         # Check exit code of fdesetup for success.
         if fv_process.returncode != 0:
@@ -330,7 +330,7 @@ def startup():
     # manually add swiftGuard to the list of apps with permissions in
     # System Preferences -> Security & Privacy -> Privacy -> Automation.
     osascript_path = "/usr/bin/osascript"
-    permission_automation = subprocess.call(
+    permission_automation = subprocess.call(  # nosec B603
         [
             osascript_path,
             "-e",
@@ -340,7 +340,7 @@ def startup():
             "-e",
             "end tell",
         ]
-    )  # nosec
+    )
 
     if permission_automation == 1:
         # Log error.
@@ -672,7 +672,7 @@ def usb_devices():
     system_profiler_path = "/usr/sbin/system_profiler"
 
     # Run system_profiler and capture its output.
-    result = subprocess.run(
+    result = subprocess.run(  # nosec B603
         [
             system_profiler_path,
             "SPUSBDataType",
@@ -683,7 +683,7 @@ def usb_devices():
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=False,
-    )  # nosec
+    )
 
     if result.returncode != 0:
         # Handle the critical error case (main task of this function, so

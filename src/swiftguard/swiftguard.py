@@ -417,7 +417,7 @@ class TrayApp:
                 continue
             elif dest == "syslog":
                 add_handler(LOGGER, "syslog")
-        
+
             elif dest == "stdout":
                 add_handler(LOGGER, "stdout")
 
@@ -1140,7 +1140,7 @@ class TrayApp:
             self.worker_handle("Inactive")
 
         except Exception:
-            pass
+            pass  # nosec
 
         # Log.
         LOGGER.info("Exiting the application properly ...")
