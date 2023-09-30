@@ -345,14 +345,12 @@ def startup():
     if permission_automation == 1:
         # Log error.
         LOGGER.warning(
-            1,
             "Looks like swiftGuard has not its needed "
             "Permission granted! Go to System Preferences -> Security & "
             "Privacy -> Privacy -> Automation and add swiftGuard "
-            "manually! "
-            "If done and Warning persists test if swiftGuard can shutdown"
-            "your system by connecting a new USB device. If so, you can "
-            "ignore this warning.",
+            "manually! If done and Warning persists test if swiftGuard can "
+            "shutdown your system by connecting a new USB device. If so, "
+            "you can ignore this warning."
         )
 
     else:
