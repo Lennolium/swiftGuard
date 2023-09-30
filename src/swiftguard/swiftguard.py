@@ -1139,8 +1139,8 @@ class TrayApp:
             # Stop and delete the worker thread.
             self.worker_handle("Inactive")
 
-        except Exception:
-            pass  # nosec
+        except Exception:  # nosec B110
+            pass
 
         # Log.
         LOGGER.info("Exiting the application properly ...")
