@@ -199,7 +199,7 @@ You can run swiftGuard as a simple Python script from the command line without a
 This is useful when operating swiftGuard on a headless system or saving system resources. However, you will lose the 
 ability to defuse the shutdown process via the GUI, but you can kill the swiftGuard process from the command line 
 instead. The preferences and whitelists are stored in the same location as the GUI version and can be edited 
-manually. For further information, please refer to the [src/swiftguard/worker.py](https://github.com/Lennolium/swiftGuard/blob/main/src/swiftguard/worker.py) file.
+manually. For further information, please refer to the [src/swiftguard/cli.py](https://github.com/Lennolium/swiftGuard/blob/main/src/swiftguard/cli.py) file.
 
 1. Open a terminal and navigate to the desired install directory.
 
