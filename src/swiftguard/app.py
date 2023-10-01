@@ -54,12 +54,8 @@ from PySide6.QtWidgets import QApplication, QMenu, QMessageBox, QSystemTrayIcon
 # pylint: disable=unused-import
 # noinspection PyUnresolvedReferences
 from swiftguard.resources import resources_rc  # noqa: F401
-from swiftguard.utils.helpers import (
-    config_load,
-    config_write,
-    startup,
-    usb_devices,
-    )
+from swiftguard.utils.helpers import (config_load, config_write, startup,
+                                      usb_devices, )
 from swiftguard.utils.log import LogCount, add_handler, create_logger
 from swiftguard.utils.workers import WorkerUsb
 
