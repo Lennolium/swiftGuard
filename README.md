@@ -76,6 +76,8 @@ shutdown process.
     - [CLI](#cli)
 - [Development](#development)
 - [Roadmap](#roadmap)
+- [Security & Code Quality](#security--code-quality)
+- [Contributors](#contributors)
 - [Credits](#credits)
 - [License](#license)
 
