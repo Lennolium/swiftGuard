@@ -134,7 +134,7 @@ def config_create(force_restore=False):
         except Exception as e:
             raise e from RuntimeError(
                 f"Could not create config file at {CONFIG_FILE}!\n"
-                f"Error: {e}"
+                f"Error: {str(e)}"
             )
 
         LOGGER.info(f"Created config file at {CONFIG_FILE}.")
@@ -157,7 +157,7 @@ def config_load(config):
         configparser.MissingSectionHeaderError,
         configparser.ParsingError,
     ) as e:
-        LOGGER.error(f"Error while parsing config file: {e}.")
+        LOGGER.error(f"Error while parsing config file: {str(e)}.")
         LOGGER.warning("Config file will be overwritten with default values.")
         restore_needed = True
 
@@ -263,7 +263,7 @@ def config_write(config):
 def check_encryption():
     # TODO: docstring
     # macOS: Check if FileVault (fv) is enabled.
-    if CURRENT_PLATFORM == "DARWIN":
+    if CURRENT_PLATFORM.startswith("DARWIN"):
         fv_command = ["/usr/bin/fdesetup", "isactive"]
 
         fv_process = subprocess.run(  # nosec B603
@@ -687,7 +687,7 @@ def usb_devices():
         # Handle the critical error case (main task of this function, so
         # raise an exception).
         e = result.stderr.decode("utf-8").strip()
-        raise RuntimeError(f"Not able to detect USB devices! Error: {e}")
+        raise RuntimeError(f"Not able to detect USB devices! Error: {str(e)}")
 
     # Load the XML output using plistlib.
     df = plistlib.loads(result.stdout)

@@ -51,12 +51,17 @@ from PySide6.QtCore import QThread, QTimer, Qt
 from PySide6.QtGui import QAction, QIcon, QKeySequence, QPixmap
 from PySide6.QtWidgets import QApplication, QMenu, QMessageBox, QSystemTrayIcon
 
-from helpers import config_load, config_write, startup, usb_devices
 # pylint: disable=unused-import
 # noinspection PyUnresolvedReferences
-from resources import resources_rc  # noqa: F401
-from utils import LogCount, add_handler, create_logger
-from worker import Worker
+from swiftguard.resources import resources_rc  # noqa: F401
+from swiftguard.utils.helpers import (
+    config_load,
+    config_write,
+    startup,
+    usb_devices,
+    )
+from swiftguard.utils.log import LogCount, add_handler, create_logger
+from swiftguard.utils.workers import WorkerUsb
 
 # Constants.
 CURRENT_PLATFORM = platform.uname()[0].upper()
@@ -664,7 +669,7 @@ class TrayApp:
         if state == "Guarding":
             # Start the worker thread.
             self.worker_thread = QThread()
-            self.worker = Worker(self.config)
+            self.worker = WorkerUsb(self.config)
 
             self.worker.tampered.connect(self.manipulation)
             # self.worker.executed.connect(self.action_executed)
