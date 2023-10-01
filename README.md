@@ -219,33 +219,38 @@ manually. For further information, please refer to the [src/swiftguard/worker.py
    cd swiftGuard
    ```
 
-4. Create a virtual environment and install `poetry` package.
+4. Create a virtual environment and activate it.
    ```bash
    python3 -m venv venv
    source venv/bin/activate
    pip install poetry
    ```
-5. Install `swiftGuard` in development mode.
+   
+5. Install `poetry` in the venv.
+    ```bash
+   pip install poetry
+   ```
+
+6. Install `swiftguard` in development mode.
 
    ```bash
    poetry install
    ```
 
-   This will install swiftGuard as python package in the virtual environment `venv/bin/swiftguard` and
-   `venv/lib/python3.11/site-packages` in development mode, allowing you to change code in `src/swiftguard`
-   and immediately see it reflected in the CLI.
+   This installs swiftguard and its python packages in the virtual environment `venv/bin/swiftguard` and `venv/lib/python3.11/site-packages` in development mode, so you can 
+   change code in the `src/swiftguard` folder and immediately test it in the terminal.
 
-6. Run it.
+7. Run it in CLI mode.
 
    ```bash
    swiftguard
    ```
+   GUI mode: `swiftguardgui`
 
 > **Notes:**
 >
 > - Settings/Whitelist: `~/Library/Preferences/swiftGuard/swiftguard.ini`
-> - Logs: `~/Library/Logs/swiftGuard/swiftguard.log` **WARNING:** be aware that log file is not rotated (for now) so
->   please take care of it's size after allowing `swiftguard` to run for some time.
+> - Logs: `~/Library/Logs/swiftGuard/swiftguard.log` (Logs are rotated every 2 MB with a maximum of 5 files.)
    
 &nbsp;
 
