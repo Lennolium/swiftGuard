@@ -29,6 +29,6 @@ LOG_FILE = f"{USER_HOME}/Library/Logs/swiftguard/swiftguard.log"
 
 # Precompiled regex for device detection.
 DEVICE_RE = [
-    re.compile(".+ID\s(?P<id>\w+:\w+)"),
+    re.compile(".+ID\s(?P<id>\w+:\w+)"),  # noqa: W605
     re.compile("0x([0-9a-z]{4})"),
 ]

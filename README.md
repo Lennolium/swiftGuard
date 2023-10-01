@@ -201,7 +201,7 @@ ability to defuse the shutdown process via the GUI, but you can kill the swiftGu
 instead. The preferences and whitelists are stored in the same location as the GUI version and can be edited 
 manually. For further information, please refer to the [src/swiftguard/worker.py](https://github.com/Lennolium/swiftGuard/blob/main/src/swiftguard/worker.py) file.
 
-1. Open a terminal and navigate to the desired directory.
+1. Open a terminal and navigate to the desired install directory.
 
    ```bash
    cd ~/Desktop
@@ -219,23 +219,23 @@ manually. For further information, please refer to the [src/swiftguard/worker.py
    cd swiftGuard
    ```
 
-4. Create a virtual environment and install _poetry_ package.
+4. Create a virtual environment and install `poetry` package.
    ```bash
    python3 -m venv venv
    source venv/bin/activate
    pip install poetry
    ```
-5. Install `swiftguard` in development mode
+5. Install `swiftGuard` in development mode.
 
    ```bash
    poetry install
    ```
 
-   This will install _swiftguard_ cli and python package in virtual environment `venv/bin/swiftguard` and
-   `venv/lib/python3.11/site-packages` in a development mode, allowing you to change code in `src/swiftguard/worker.py`
-   and immediately try it in termanal.
+   This will install swiftGuard as python package in the virtual environment `venv/bin/swiftguard` and
+   `venv/lib/python3.11/site-packages` in development mode, allowing you to change code in `src/swiftguard`
+   and immediately see it reflected in the CLI.
 
-6. Run the cli.
+6. Run it.
 
    ```bash
    swiftguard

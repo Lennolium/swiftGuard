@@ -52,7 +52,6 @@ from PySide6.QtWidgets import QApplication, QMenu, QMessageBox, QSystemTrayIcon
 # pylint: disable=unused-import
 # noinspection PyUnresolvedReferences
 from swiftguard.resources import resources_rc  # noqa: F401
-from swiftguard.utils import autostart
 from swiftguard.utils.helpers import (
     config_load,
     config_write,
@@ -381,8 +380,6 @@ class TrayApp:
 
         :return: None
         """
-
-        print("lol called aus app.py:", autostart.lol())
 
         # Initialize the Qt Application.
         self.app = QApplication(sys.argv)
