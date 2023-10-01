@@ -21,7 +21,13 @@ __status__ = "Prototype"
 # Imports.
 import argparse
 
-if __name__ == "__main__":
+from swiftguard.utils.helpers import check_os
+
+
+def main():
+    # Check if host OS is supported.
+    check_os()
+
     # Create argument parser to let the user choose between CLI and GUI.
     parser = argparse.ArgumentParser(
         prog="swiftGuard",
@@ -67,3 +73,7 @@ if __name__ == "__main__":
         from swiftguard import cli
 
         cli.main()
+
+
+if __name__ == "__main__":
+    main()

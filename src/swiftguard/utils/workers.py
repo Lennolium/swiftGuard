@@ -42,27 +42,19 @@ __status__ = "Prototype"
 
 # Imports.
 import logging
-import os
-import platform
 from ast import literal_eval
 from collections import Counter
 from time import sleep
 
 from PySide6.QtCore import QObject, Signal
 
+from swiftguard.const import CONFIG_FILE
 from swiftguard.utils.helpers import (
     hibernate,
     shutdown,
     usb_devices,
     usb_state,
     )
-
-# Constants.
-CURRENT_PLATFORM = platform.uname()[0].upper()
-USER_HOME = os.path.expanduser("~")
-APP_PATH = os.path.dirname(os.path.realpath(__file__))
-CONFIG_FILE = f"{USER_HOME}/Library/Preferences/swiftguard/swiftguard.ini"
-LOG_FILE = f"{USER_HOME}/Library/Logs/swiftguard/swiftguard.log"
 
 # Child logger.
 LOGGER = logging.getLogger(__name__)

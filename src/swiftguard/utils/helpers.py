@@ -21,24 +21,11 @@ __status__ = "Prototype"
 import configparser
 import logging
 import os
-import platform
 import plistlib
-import re
 import shutil
 import subprocess  # nosec
 
-# Constants.
-CURRENT_PLATFORM = platform.uname()[0].upper()
-USER_HOME = os.path.expanduser("~")
-APP_PATH = os.path.dirname(os.path.realpath(__file__))
-CONFIG_FILE = f"{USER_HOME}/Library/Preferences/swiftguard/swiftguard.ini"
-LOG_FILE = f"{USER_HOME}/Library/Logs/swiftguard/swiftguard.log"
-
-# Precompiled regex for device detection.
-DEVICE_RE = [
-    re.compile(".+ID\s(?P<id>\w+:\w+)"),
-    re.compile("0x([0-9a-z]{4})"),
-]
+from swiftguard.const import APP_PATH, CONFIG_FILE, CURRENT_PLATFORM, DEVICE_RE
 
 # Child logger.
 LOGGER = logging.getLogger(__name__)
@@ -293,7 +280,7 @@ def check_encryption():
 
     # Linux: Check if LUKS is enabled (WiP).
     else:
-        raise NotImplementedError
+        raise NotImplementedError("Linux-support is still work in progress.")
 
 
 def check_os():
@@ -303,7 +290,7 @@ def check_os():
     elif CURRENT_PLATFORM.startswith("LINUX"):
         # LOGGER.info("Host system is supported (Linux).")
         # return 0, "LINUX"
-        raise NotImplementedError
+        raise NotImplementedError("Linux-support is still work in progress.")
 
     else:
         raise RuntimeError(f"Host system not supported: {CURRENT_PLATFORM}")
@@ -793,4 +780,4 @@ def bt_devices():
     :return: A list of bluetooth devices
     """
 
-    raise NotImplementedError
+    raise NotImplementedError("Bluetooth detection is still work in progress.")

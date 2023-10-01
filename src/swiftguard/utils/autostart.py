@@ -18,15 +18,9 @@ __status__ = "Prototype"
 # Imports.
 import logging
 import os
-import platform
 import shutil
 
-# Constants.
-CURRENT_PLATFORM = platform.uname()[0].upper()
-USER_HOME = os.path.expanduser("~")
-APP_PATH = os.path.dirname(os.path.realpath(__file__))[:-6]
-CONFIG_FILE = f"{USER_HOME}/Library/Preferences/swiftguard/swiftguard.ini"
-LOG_FILE = f"{USER_HOME}/Library/Logs/swiftguard/swiftguard.log"
+from swiftguard.const import APP_PATH, CURRENT_PLATFORM, USER_HOME
 
 # Child logger.
 LOGGER = logging.getLogger(__name__)
@@ -66,7 +60,7 @@ def add_autostart():
 
     # Linux: Create systemd service (WiP).
     else:
-        raise NotImplementedError("Linux is not supported yet.")
+        raise NotImplementedError("Linux-support is still work in progress.")
         # # Debian based, e.g. Ubuntu: Create systemd service.
         # # See https://linuxhandbook.com/create-systemd-services/
         # user_systemd_dest =

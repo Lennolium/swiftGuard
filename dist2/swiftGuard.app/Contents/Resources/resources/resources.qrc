@@ -1,0 +1,18 @@
+<RCC>
+  <qresource prefix="resources">
+    <file>light/checkmark.svg</file>
+    <file>light/logo-macos@2x.png</file>
+    <file>light/shield-check.svg</file>
+    <file>light/shield-slash.svg</file>
+    <file>light/shield-tamper.svg</file>
+    <file>light/statusbar-macos@2x.png</file>
+    <file>light/usb-connection.svg</file>
+    <file>dark/checkmark.svg</file>
+    <file>dark/logo-macos@2x.png</file>
+    <file>dark/shield-check.svg</file>
+    <file>dark/shield-slash.svg</file>
+    <file>dark/shield-tamper.svg</file>
+    <file>dark/statusbar-macos@2x.png</file>
+    <file>dark/usb-connection.svg</file>
+  </qresource>
+</RCC>

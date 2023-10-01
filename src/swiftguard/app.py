@@ -36,8 +36,6 @@ __status__ = "Prototype"
 # Imports.
 import configparser
 import datetime
-import os
-import platform
 import signal
 import sys
 import webbrowser
@@ -54,17 +52,15 @@ from PySide6.QtWidgets import QApplication, QMenu, QMessageBox, QSystemTrayIcon
 # pylint: disable=unused-import
 # noinspection PyUnresolvedReferences
 from swiftguard.resources import resources_rc  # noqa: F401
-from swiftguard.utils.helpers import (config_load, config_write, startup,
-                                      usb_devices, )
+from swiftguard.utils import autostart
+from swiftguard.utils.helpers import (
+    config_load,
+    config_write,
+    startup,
+    usb_devices,
+    )
 from swiftguard.utils.log import LogCount, add_handler, create_logger
 from swiftguard.utils.workers import WorkerUsb
-
-# Constants.
-CURRENT_PLATFORM = platform.uname()[0].upper()
-USER_HOME = os.path.expanduser("~")
-APP_PATH = os.path.dirname(os.path.realpath(__file__))
-CONFIG_FILE = f"{USER_HOME}/Library/Preferences/swiftguard/swiftguard.ini"
-LOG_FILE = f"{USER_HOME}/Library/Logs/swiftguard/swiftguard.log"
 
 # Root logger and log counter.
 LOG_COUNT = LogCount()
@@ -385,6 +381,8 @@ class TrayApp:
 
         :return: None
         """
+
+        print("lol called aus app.py:", autostart.lol())
 
         # Initialize the Qt Application.
         self.app = QApplication(sys.argv)
