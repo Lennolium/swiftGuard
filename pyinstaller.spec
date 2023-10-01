@@ -1,21 +1,31 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+# swiftGuard .spec file for PyInstaller to build a macOS .app file.
+# Lennart Haack << lennart-haack@mail.de >> https://github.com/Lennolium
+
+######################## Configuration (start) #########################
+
 # Intel: 'x86_64', Apple Silicon: 'arm64'
 app_arch = 'x86_64'
 
-binary_name = 'swiftGuard.app'
+# Name
+app_name = 'swiftGuard'
+binary_name = app_name + '.app'
 
 # Major.Minor.Patch
-app_version = '0.0.1'
+app_version = '0.0.2'
 
 # Year.BuildNumber
-build_version = '2023.1'
+build_version = '2023.2'
 
+# List all extra files and directories here.
 added_files = [
     ('src/swiftguard/resources', 'resources'),
+    ('src/swiftguard/utils', 'utils'),
     ('src/swiftguard/helpers.py', '.'),
     ('src/swiftguard/worker.py', '.')]
 
+# List all imports here (built-in and external).
 hidden_imports = [
     '__builtin__',
     'configparser',
@@ -39,8 +49,10 @@ hidden_imports = [
     'PySide6.QtWidgets',
 ]
 
+######################### Configuration (end) ##########################
+
 a = Analysis(
-    ['src/swiftguard/swiftguard.py', 'src/swiftguard/helpers.py', 'src/swiftguard/worker.py'],
+    ['src/swiftguard/swiftguard.py',],
     pathex=[],
     binaries=[],
     datas=added_files,
@@ -58,7 +70,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='swiftGuard',
+    name=app_name,
     debug=True,
     bootloader_ignore_signals=False,
     strip=False,
@@ -77,7 +89,7 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='swiftGuard',
+    name=app_name,
 )
 app = BUNDLE(
     coll,
