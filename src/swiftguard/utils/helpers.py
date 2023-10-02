@@ -25,7 +25,19 @@ import plistlib
 import shutil
 import subprocess  # nosec
 
-from swiftguard.const import APP_PATH, CONFIG_FILE, CURRENT_PLATFORM, DEVICE_RE
+import requests
+
+from swiftguard.const import (
+    APP_PATH,
+    CONFIG_FILE,
+    CURRENT_MODE,
+    CURRENT_PLATFORM,
+    DEVICE_RE,
+    )
+from swiftguard.utils.autostart import (
+    add_autostart,
+    del_autostart,
+    )
 
 # Child logger.
 LOGGER = logging.getLogger(__name__)
@@ -155,6 +167,8 @@ def config_load(config):
         restore_needed = True
     elif not config.has_option("Application", "log_level"):
         restore_needed = True
+    elif not config.has_option("User", "autostart"):
+        restore_needed = True
     elif not config.has_option("User", "action"):
         restore_needed = True
     elif not config.has_option("User", "delay"):
@@ -196,6 +210,11 @@ def config_load(config):
     # Check if log_level is in valid bounds (1,2,...,5).
     if config["Application"]["log_level"] not in ["1", "2", "3", "4", "5"]:
         config["Application"]["log_level"] = "2"
+        default_needed = True
+
+    # Check if autostart is either 1 (True) or 0 (False).
+    if config["User"]["autostart"] not in ["0", "1"]:
+        config["User"]["autostart"] = "1"
         default_needed = True
 
     # Check if action is valid option.
@@ -264,7 +283,7 @@ def check_encryption():
         if fv_process.returncode != 0:
             LOGGER.error(
                 "Could not determine encryption status of host system! "
-                f"Error: {fv_process.stderr.strip()}.",
+                f"Error: {str(fv_process.stderr.strip())}.",
             )
             return
 
@@ -275,7 +294,7 @@ def check_encryption():
         else:
             # FileVault is disabled.
             LOGGER.warning(
-                "FileVault is disabled. Sensitive data SHOULD be encrypted.",
+                "FileVault is disabled (HIGHLY INSECURE!).",
             )
 
     # Linux: Check if LUKS is enabled (WiP).
@@ -307,8 +326,11 @@ def startup():
     """
 
     LOGGER.info("--------- Startup: ---------")
+    LOGGER.debug(f"APP_Path: {APP_PATH} \nCURRENT_MODE: {CURRENT_MODE}")
     LOGGER.info("Starting swiftGuard and running startup checks ...")
-    LOGGER.info(f"You are running swiftGuard version: {__version__}")
+    LOGGER.info(
+        f"You are running swiftGuard version: {__version__} " f"({__build__})."
+    )
 
     # First check if host system is supported (macOS so far).
     check_os()
@@ -337,7 +359,7 @@ def startup():
             "Privacy -> Privacy -> Automation and add swiftGuard "
             "manually! If done and Warning persists test if swiftGuard can "
             "shutdown your system by connecting a new USB device. If so, "
-            "you can ignore this warning."
+            "you can ignore this warning. (CLI mode: add the Terminal)"
         )
 
     else:
@@ -389,27 +411,31 @@ def startup():
     #         )
     # conf_file.read_encrypted(CONFIG_FILE_ENC)
 
-    # Application version check.
+    # Get autostart setting and apply it (Only supported in GUI mode).
+    if CURRENT_MODE == "app":
+        if config["User"]["autostart"] == "0":
+            del_autostart()
+
+        else:
+            add_autostart()
+
+    # Update the version in the config file with current code version.
     if config["Application"]["version"] != __version__:
-        LOGGER.info(
-            f"You are running an outdated version of swiftGuard"
-            f"({__version__}). Updating to latest version...",
-        )
-
-        # TODO: Application updating.
-        # ...
-
-        # When done, update the version number in the config file.
         config["Application"]["version"] = __version__
 
         # And write the config file on disk.
         config_write(config)
 
-    else:
-        LOGGER.info("You are running the latest version of swiftGuard.")
+    # Check if there is a newer version of swiftGuard available.
+    check_updates(log=True)
 
     # All startup checks finished without critical errors.
     LOGGER.info("Startup checks done and swiftGuard ready to run!")
+
+    # After startup checks, remove the logging handler for stdout.
+    # Now the config file is loaded and the settings inside define
+    # where to log to (see app.py and cli.py).
+    LOGGER.root.handlers.pop(2)
 
     return config
 
@@ -638,6 +664,77 @@ def apple_lookup(name, bcd):  # sourcery skip: move-assign
         name = watches[bcd]
 
     return name
+
+
+def check_updates(log=False):
+    """
+    The check_updates function checks if there is a new version of
+    swiftGuard available. If so, it will return a message to the user
+    that a new version is available and how to update.
+
+    :return: None or a string of the new version
+    """
+
+    try:
+        response = requests.get(
+            "https://api.github.com/repos/Lennolium/swiftGuard/releases/latest"
+        )
+
+    except requests.exceptions.ConnectionError as e:
+        if log:
+            LOGGER.warning(
+                f"Could not check for updates. No internet "
+                f"connection?\nError: {str(e)}"
+            )
+        return
+
+    release_raw = response.json()["name"]  # v0.0.2-alpha
+
+    if "-" in release_raw:
+        release_split = release_raw[1:].split("-")  # ['0.0.2', 'alpha']
+        release = release_split[0].split(".")  # ['0', '0', '2']
+        release_str = release_split[0]  # '0.0.2'
+
+    else:
+        release = release_raw[1:].split(".")  # ['0', '0', '2']
+        release_str = release_raw[1:]  # '0.0.2'
+
+    rel_major = int(release[0])  # 0
+    rel_minor = int(release[1])  # 0
+    rel_patch = int(release[2])  # 2
+
+    current = __version__.split(".")  # ['0', '0', '1']
+    cur_major = int(current[0])  # 0
+    cur_minor = int(current[1])  # 0
+    cur_patch = int(current[2])  # 1
+
+    # Check if major.minor.patch are each higher than the current
+    # version. If update is available, return the new version as string.
+    # If not, return None. I know it's ugly, but it works.
+    update_available = False
+    if rel_major > cur_major:
+        update_available = True
+
+    elif rel_major == cur_major:
+        if rel_minor > cur_minor:
+            update_available = True
+
+        elif rel_minor == cur_minor:
+            if rel_patch > cur_patch:
+                update_available = True
+
+    if update_available:
+        if log:
+            LOGGER.warning(
+                f"You are running an outdated version of swiftGuard: "
+                f"{__version__} ({__build__}). Newest version: "
+                f"{release_str}."
+            )
+        return release_str
+
+    if log:
+        LOGGER.info("You are running the latest version of swiftGuard.")
+    return False
 
 
 def usb_devices():

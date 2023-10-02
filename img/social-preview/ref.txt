@@ -29,7 +29,8 @@ Reddit:
 Links:
 https://www.reddit.com/r/Python/comments/16sui60/swiftguard_antiforensic_macos_app_to_safeguard/
 https://www.reddit.com/r/MacOSApps/comments/16su001/app_to_safeguard_your_usb_ports_while_working/
-https://www.reddit.com/r/macosprogramming/ (Waiting for approval)
+https://www.reddit.com/r/macosprogramming/comments/16xejcw/swiftguard_antiforensic_macos_app_to_safeguard/
+https://www.reddit.com/r/macOSsecurity/  (Waiting for approval)
 
 Ask Community for join:
 Hello,

@@ -252,7 +252,8 @@ manually. For further information, please refer to the [src/swiftguard/cli.py](h
 > **Notes:**
 >
 > - Settings/Whitelist: `~/Library/Preferences/swiftGuard/swiftguard.ini`
-> - Logs: `~/Library/Logs/swiftGuard/swiftguard.log` (Logs are rotated every 2 MB with a maximum of 5 files.)
+> - Logs: `~/Library/Logs/swiftGuard/swiftguard.log` Logs are rotated every 2 MB with a maximum of 5 files.
+>   You can set the log level (Debug=1, ..., Critical=5) and the log output (file, syslog, stdout; required: file) in the `swiftguard.ini` file.
    
 &nbsp;
 
@@ -338,7 +339,7 @@ Thank you so much for giving feedback, implementing features and improving the c
 ## Credits
 
 This application is heavily inspired and based on project 
-[usbkill](https://github.com/hephaest0s/usbkill) by Hephaestos.
+[usbkill](https://github.com/hephaest0s/usbkill) by Hephaestos and [BusKill](https://github.com/BusKill/buskill-app) by [buskill.in](https://www.buskill.in).
 I want to thank him and all the other great contributors of usbkill for
 their great work, inspiration and help. I firmly believe in the
 principles of the open source community, which call for the sharing and

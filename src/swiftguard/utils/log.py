@@ -57,13 +57,13 @@ def create_logger(counter):
     # Create root logger.
     logger = logging.getLogger()
 
-    # Stdout: Print log messages to stdout.
-    # stdout_handler = logging.StreamHandler(stream=sys.stdout)
-
     # Log file: Rotate log file every 2 MB and keep 5 old log files.
     file_handler = RotatingFileHandler(
         LOG_FILE, backupCount=5, maxBytes=2000000
     )
+
+    # Stdout: Print log messages to stdout (only for startup).
+    stdout_handler = logging.StreamHandler(stream=sys.stdout)
 
     # Define format (level, timestamp, filename, line number, message).
     fmt = logging.Formatter(
@@ -73,22 +73,13 @@ def create_logger(counter):
     )
 
     # Set the format for the handlers.
-    # stdout_handler.setFormatter(fmt)
     file_handler.setFormatter(fmt)
+    stdout_handler.setFormatter(fmt)
 
-    # Add the handlers to the logger (stdout, file and error counter).
-    # logger.addHandler(stdout_handler)
-    logger.addHandler(file_handler)
+    # Add the handlers to the logger (error counter, file and stdout).
     logger.addHandler(counter)
-
-    # # Syslog/Console: Log to syslog on macOS and to console on Linux.
-    # if CURRENT_PLATFORM == "DARWIN":
-    #     syslog_handler = pyoslog.Handler()
-    #     syslog_handler.setSubsystem("dev.lennolium.swiftguard", "client")
-    #     logger.addHandler(syslog_handler)
-    # elif CURRENT_PLATFORM == "LINUX":
-    #     syslog_handler = logging.StreamHandler(stream=sys.stderr)
-    #     logger.addHandler(syslog_handler)
+    logger.addHandler(file_handler)
+    logger.addHandler(stdout_handler)
 
     # Set the log level to default (INFO).
     logger.setLevel(logging.INFO)
@@ -99,10 +90,10 @@ def create_logger(counter):
 def add_handler(logger_obj, dest):
     if dest == "syslog":
         # Syslog/Console: Log to syslog on macOS and to console on Linux.
-        if CURRENT_PLATFORM == "DARWIN":
+        if CURRENT_PLATFORM.startswith("DARWIN"):
             syslog_handler = pyoslog.Handler()
             syslog_handler.setSubsystem("dev.lennolium.swiftguard", "client")
-        elif CURRENT_PLATFORM == "LINUX":
+        else:
             syslog_handler = logging.StreamHandler(stream=sys.stderr)
 
         logger_obj.addHandler(syslog_handler)
@@ -119,5 +110,26 @@ def add_handler(logger_obj, dest):
         stdout_handler.setFormatter(fmt)
 
         logger_obj.addHandler(stdout_handler)
+
+    return logger_obj
+
+
+def set_level_dest(logger_obj, config):
+    # Get the log destination from the config file ('to what to log').
+    log_dest = config["Application"]["log"].split(", ")
+    for dest in log_dest:
+        # Logging to file is default (can not be disabled).
+        if dest == "file":
+            continue
+        elif dest == "syslog":
+            add_handler(logger_obj, "syslog")
+
+        elif dest == "stdout":
+            add_handler(logger_obj, "stdout")
+
+    # Get log level from config file and apply it to the root logger.
+    # 1 = DEBUG, 2 = INFO, 3 = WARNING, 4 = ERROR, 5 = CRITICAL.
+    log_level = int(config["Application"]["log_level"]) * 10
+    logger_obj.setLevel(log_level)
 
     return logger_obj

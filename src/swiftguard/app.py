@@ -52,13 +52,15 @@ from PySide6.QtWidgets import QApplication, QMenu, QMessageBox, QSystemTrayIcon
 # pylint: disable=unused-import
 # noinspection PyUnresolvedReferences
 from swiftguard.resources import resources_rc  # noqa: F401
+from swiftguard.utils.autostart import add_autostart, del_autostart
 from swiftguard.utils.helpers import (
+    check_updates,
     config_load,
     config_write,
     startup,
     usb_devices,
     )
-from swiftguard.utils.log import LogCount, add_handler, create_logger
+from swiftguard.utils.log import LogCount, create_logger, set_level_dest
 from swiftguard.utils.workers import WorkerUsb
 
 # Root logger and log counter.
@@ -406,21 +408,12 @@ class TrayApp:
         # Initialize the config and run startup checks.
         self.config = startup()
 
-        log_dest = self.config["Application"]["log"].split(", ")
-        for dest in log_dest:
-            # Logging to file is default (can not be disabled).
-            if dest == "file":
-                continue
-            elif dest == "syslog":
-                add_handler(LOGGER, "syslog")
+        # Set log level (1,2,3,4,5) and destination (file, syslog, stdout).
+        set_level_dest(LOGGER, self.config)
 
-            elif dest == "stdout":
-                add_handler(LOGGER, "stdout")
-
-        # Get log level from config file and apply it to the root logger.
-        # 1 = DEBUG, 2 = INFO, 3 = WARNING, 4 = ERROR, 5 = CRITICAL.
-        log_level = int(self.config["Application"]["log_level"]) * 10
-        LOGGER.setLevel(log_level)
+        # Print worker start message, but only if not logging to stdout.
+        if "stdout" not in self.config["Application"]["log"]:
+            print("Start guarding the USB ports ...", file=sys.stdout)
 
         # OS theme listener: checks for theme changes every 2 seconds in
         # a separate thread.
@@ -433,11 +426,12 @@ class TrayApp:
         self.worker_thread = None
         self.worker_handle("Guarding")
 
+        self.menu_settings = None
         self.submenu = None
         self.menu_enabled = None
         self.menu_tamper = None
 
-        # Create and display the system tray icon.
+        # Create and display the system tray icon with its menu.
         self.app_icon = self.create_tray_icon()
         self.app_icon.show()
 
@@ -451,6 +445,11 @@ class TrayApp:
         self.current_devices_count = Counter(usb_devices())
         self.usb_worker_handle(state=True)
         self.menu_devices_update(start_up=True)
+
+        # After full initialization, check for updates and show
+        # messageBox if update is available.
+        if new_vers := check_updates():
+            self.update_box(new_vers)
 
     def usb_worker_handle(self, state):
         """
@@ -663,7 +662,6 @@ class TrayApp:
             self.worker = WorkerUsb(self.config)
 
             self.worker.tampered.connect(self.manipulation)
-            # self.worker.executed.connect(self.action_executed)
 
             self.worker.moveToThread(self.worker_thread)
             self.worker_thread.started.connect(self.worker.loop)
@@ -724,6 +722,9 @@ class TrayApp:
 
         LOGGER.info("The worker was STOPPED after defusing!")
 
+        self.menu_settings.setDisabled(False)
+        self.submenu.setDisabled(False)
+
     def manipulation(self):
         """
         Handle manipulation detection and display the alarm.
@@ -739,7 +740,12 @@ class TrayApp:
         self.menu_enabled.entry.setVisible(False)
         self.menu_tamper.setVisible(True)
 
-    def config_update(self, button):
+        # Prevent changing the settings or adding devices to whitelist,
+        # while the alarm is active (Manipulation detected).
+        self.menu_settings.setDisabled(True)
+        self.submenu.setDisabled(True)
+
+    def config_update(self, button, state=None):
         """
         Update the application configuration file based on user input.
 
@@ -750,6 +756,9 @@ class TrayApp:
 
         :param button: The setting or option selected by the user.
         :type button: str
+        :param state: The state of the button before it was clicked.
+            Only available for toggle buttons with full_name.
+        :type state: bool, optional
 
         :return: None
         """
@@ -771,6 +780,23 @@ class TrayApp:
             self.config["User"]["delay"] = "30"
         elif button == "60 s":
             self.config["User"]["delay"] = "60"
+
+        # User -> Autostart.
+        elif button == "Autostart":
+            # ON -> OFF.
+            if state:
+                del_autostart()
+
+                # Update the config.
+                self.config["User"]["autostart"] = "0"
+
+            # OFF -> ON.
+            else:
+                result = add_autostart()
+
+                if result:
+                    # Update the config.
+                    self.config["User"]["autostart"] = "1"
 
         else:
             LOGGER.info(f"Unknown menu settings button was pressed: {button}.")
@@ -840,6 +866,57 @@ class TrayApp:
             # Log.
             LOGGER.info(f"Application theme changed: {self.theme}.")
 
+    def update_box(self, new_vers):
+        """
+        TODO: Update.
+        Display an about message with information about the
+        application and its author.
+
+        This function displays an about message with information about
+        the application, its purpose, and its author.
+
+        :return: None
+        """
+
+        msg_box = QMessageBox()
+        msg_box.setWindowTitle("swiftGuard")
+
+        # Bold text.
+        msg_box.setText(
+            f"Update available!\n\n"
+            f"Installed version: {__version__}\nLatest version: "
+            f"{new_vers}\n"
+        )
+
+        # Smaller, informative text.
+        msg_box.setInformativeText(
+            f"Keeping swiftGuard up to date is advisable due to "
+            f"its rapid development cycle, ensuring security enhancements, "
+            f"bug fixes, and continuous improvements.\n"
+        )
+
+        # Add app logo.
+        pixmap = QPixmap(self.resources["app-logo"])
+        msg_box.setIconPixmap(pixmap)
+
+        # Add update button.
+        msg_button = msg_box.addButton("Download", QMessageBox.YesRole)
+
+        # Add close button.
+        msg_box.addButton("Close", QMessageBox.NoRole)
+
+        # Make text selectable and copyable.
+        msg_box.setTextInteractionFlags(Qt.TextSelectableByMouse)
+
+        # Show message box.
+        msg_box.exec()
+
+        # Open website in browser in new tab.
+        if msg_box.clickedButton() == msg_button:
+            webbrowser.open_new_tab(
+                "https://github.com/Lennolium/swiftGuard/releases/latest"
+            )
+
     def create_tray_icon(self):
         """
         Create and configure the system tray icon and its menu.
@@ -899,8 +976,8 @@ class TrayApp:
         menu_tray.addSeparator()
 
         # Create a "Settings" menu.
-        menu_settings = QMenu("      Settings", menu_tray)
-        menu_tray.addMenu(menu_settings)
+        self.menu_settings = QMenu("      Settings", menu_tray)
+        menu_tray.addMenu(self.menu_settings)
 
         # Create an "Action" submenu within "Settings."
         entry01 = ToggleEntry(
@@ -917,9 +994,9 @@ class TrayApp:
             self.config["User"]["action"] == "hibernate",
         )
 
-        submenu2 = SubMenu("Action", True, entry01, entry02)
+        submenu2 = SubMenu("      Action", True, entry01, entry02)
 
-        menu_settings.addMenu(submenu2.submenu)
+        self.menu_settings.addMenu(submenu2.submenu)
 
         # Create a "Delay" submenu within "Settings."
         entry04 = ToggleEntry(
@@ -958,10 +1035,21 @@ class TrayApp:
         )
 
         submenu3 = SubMenu(
-            "Delay", True, entry04, entry05, entry06, entry07, entry08
+            "      Delay", True, entry04, entry05, entry06, entry07, entry08
         )
 
-        menu_settings.addMenu(submenu3.submenu)
+        self.menu_settings.addMenu(submenu3.submenu)
+
+        # Add an "Autostart" menu item in "Settings" submenu.
+        entry09 = ToggleEntry(
+            self.config_update,
+            ["Autostart", "      Autostart"],
+            QIcon(self.resources["checkmark"]),
+            self.config["User"]["autostart"] == "1",
+            full_name="Autostart",
+        )
+
+        self.menu_settings.addAction(entry09.entry)
 
         # Create "Help" menu item.
         menu_help = QAction("      Help", menu_tray)
@@ -985,6 +1073,45 @@ class TrayApp:
         tray_icon.setContextMenu(menu_tray)
 
         return tray_icon
+
+    def acknowledgements(self):
+        msg_box = QMessageBox()
+        msg_box.setWindowTitle("swiftGuard")
+
+        # Bold text.
+        msg_box.setText("swiftGuard\n\nBrief Instructions")
+
+        # Add app logo.
+        pixmap = QPixmap(self.resources["app-logo"])
+        msg_box.setIconPixmap(pixmap)
+
+        # Add documentation button.
+        doc_button = msg_box.addButton("Documentation", QMessageBox.YesRole)
+
+        # Add project and close button.
+        email_button = msg_box.addButton("E-Mail", QMessageBox.HelpRole)
+        msg_box.addButton("Close", QMessageBox.NoRole)
+
+        # msg_box.setDetailedText("LOOOOL")
+
+        msg_box.setSizeGripEnabled(True)
+        # Show message box.
+        msg_box.exec()
+
+        # Open website in browser in new tab.
+        if msg_box.clickedButton() == doc_button:
+            msg_box.setInformativeText("lol")
+            msg_box.setSizeGripEnabled(True)
+            msg_box.exec()
+
+        elif msg_box.clickedButton() == email_button:
+            webbrowser.open_new_tab(
+                "mailto:lennart-haack@mail.de?subject=swiftGuard%3A%20I"
+                "%20need%20assistance&body=Dear%20Lennart%2C%0A%0AI'm"
+                "%20using%20your%20application%20'swiftGuard'%2C%20but"
+                "%20I%20did%20run%20into%20some%20problems%20and%20I"
+                "%20need%20assistance%20with%20the%20following%3A"
+            )
 
     def help(self):
         """
@@ -1022,8 +1149,8 @@ class TrayApp:
             "that were connected before or while the application was started, "
             "except you add them to the whitelist. Connecting new devices "
             "will always trigger an alert, if these devices are not "
-            "whitelisted. For running the script in standalone mode, check the "
-            "project repository on GitHub for instructions.\n"
+            "whitelisted. For running the script in standalone mode, check "
+            "the project repository on GitHub for instructions.\n"
         )
 
         # Add app logo.
@@ -1036,6 +1163,9 @@ class TrayApp:
         # Add project and close button.
         email_button = msg_box.addButton("E-Mail", QMessageBox.HelpRole)
         msg_box.addButton("Close", QMessageBox.NoRole)
+
+        # Make text selectable and copyable.
+        msg_box.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
         # Show message box.
         msg_box.exec()
@@ -1082,8 +1212,13 @@ class TrayApp:
             "GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007\n"
             "https://github.com/Lennolium/swiftGuard/blob/main/LICENSE\n"
             "\n"
-            "Additional Credits: \nHephaestos and all contributors of the "
-            "project 'usbkill'."
+            "Additional Credits: \nHephaestos and his project 'usbkill'.\n"
+            "Michael Altfield and his project 'buskill'.\n"
+            "Alberto Sottile and his project 'darkdetect'.\n"
+            "The Qt Company Ltd. and their project 'PySide6'.\n"
+            "Simon Robinson and his project 'pyoslog'.\n"
+            "Kenneth Reitz and his project 'requests'."
+            "PyInstaller Development Team and their project 'PyInstaller'.\n"
         )
 
         # Add app logo.
@@ -1091,22 +1226,25 @@ class TrayApp:
         msg_box.setIconPixmap(pixmap)
 
         # Add documentation button.
-        doc_button = msg_box.addButton("Documentation", QMessageBox.YesRole)
+        project_button = msg_box.addButton("Project", QMessageBox.YesRole)
 
         # Add project and close button.
-        project_button = msg_box.addButton("Project", QMessageBox.HelpRole)
+        acknow_button = msg_box.addButton(
+            "Acknowledgments", QMessageBox.HelpRole
+        )
         msg_box.addButton("Close", QMessageBox.NoRole)
+
+        # Make text selectable and copyable.
+        msg_box.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
         # Show message box.
         msg_box.exec()
 
         # Open website in browser in new tab.
-        if msg_box.clickedButton() == doc_button:
-            webbrowser.open_new_tab(
-                "https://github.com/Lennolium/swiftGuard/wiki"
-            )
-        elif msg_box.clickedButton() == project_button:
+        if msg_box.clickedButton() == project_button:
             webbrowser.open_new_tab("https://github.com/Lennolium/swiftGuard")
+        elif msg_box.clickedButton() == acknow_button:
+            self.acknowledgements()
 
     def exit_handler(self, signum=None, frame=None):
         """

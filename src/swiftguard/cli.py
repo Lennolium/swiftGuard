@@ -20,7 +20,7 @@ import signal
 import sys
 
 from swiftguard.utils.helpers import startup
-from swiftguard.utils.log import LogCount, add_handler, create_logger
+from swiftguard.utils.log import LogCount, create_logger, set_level_dest
 from swiftguard.utils.workers import WorkerUsb
 
 # Root logger and log counter.
@@ -80,24 +80,14 @@ def main():
     # Startup.
     config = startup()
 
-    log_dest = config["Application"]["log"].split(", ")
-    for dest in log_dest:
-        # Logging to file is default (can not be disabled).
-        if dest == "file":
-            continue
-        elif dest == "syslog":
-            add_handler(LOGGER, "syslog")
+    # Set log level (1,2,3,4,5) and destination (file, syslog, stdout).
+    set_level_dest(LOGGER, config)
 
-        elif dest == "stdout":
-            add_handler(LOGGER, "stdout")
-
-    # Get log level from config file and apply it to the root logger.
-    # 1 = DEBUG, 2 = INFO, 3 = WARNING, 4 = ERROR, 5 = CRITICAL.
-    log_level = int(config["Application"]["log_level"]) * 10
-    LOGGER.setLevel(log_level)
+    # Print worker start message, but only if not logging to stdout.
+    if "stdout" not in config["Application"]["log"]:
+        print("Start guarding the USB ports ...", file=sys.stdout)
 
     # Create worker and start main worker loop.
-    print("Start guarding the USB ports ...", file=sys.stdout)
     worker = WorkerUsb(config)
     worker.loop()
 

@@ -8,7 +8,7 @@
 # Intel: 'x86_64', Apple Silicon: 'arm64'
 app_arch = 'x86_64'
 
-# Name
+# Name.
 app_name = 'swiftGuard'
 binary_name = app_name + '.app'
 
@@ -18,14 +18,22 @@ app_version = '0.0.2'
 # Year.BuildNumber
 build_version = '2023.2'
 
+# App entry point.
+app_entry_point = 'src/swiftguard/app.py'
+
 # List all extra files and directories here.
 added_files = [
+    ('src/swiftguard/install', 'install'),
     ('src/swiftguard/resources', 'resources'),
     ('src/swiftguard/utils', 'utils'),
-    ('src/swiftguard/helpers.py', '.'),
-    ('src/swiftguard/worker.py', '.')]
+    ('src/swiftguard/__main__.py', '.'),
+    ('src/swiftguard/cli.py', '.'),
+    ('src/swiftguard/const.py', '.'),
+    ('README.md', '.'),
+    ('LICENSE', '.'),
+    ]
 
-# List all imports here (built-in and external). ('__builtin__',).
+# List all imports here (built-in and external). opt: ('__builtin__',).
 hidden_imports = [
     'argparse',
     'ast',
@@ -42,6 +50,7 @@ hidden_imports = [
     'platform',
     'pyoslog',
     're',
+    'requests',
     'shutil',
     'signal',
     'subprocess',
@@ -56,7 +65,7 @@ hidden_imports = [
 ######################### Configuration (end) ##########################
 
 a = Analysis(
-    ['src/swiftguard/swiftguard.py',],
+    [app_entry_point,],
     pathex=[],
     binaries=[],
     datas=added_files,

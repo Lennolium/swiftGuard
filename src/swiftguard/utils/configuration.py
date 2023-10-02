@@ -17,4 +17,4 @@ __status__ = "Prototype"
 
 # Imports.
 
-# TODO: hier die ganzen config funktionen einfügen...
+# TODO: Move config functions from helpers.py to here.

@@ -81,12 +81,10 @@ pip install --upgrade PyInstaller pyinstaller-hooks-contrib
 _info "Building the .app file. This can take a while ..."
 if pyinstaller "pyinstaller.spec"
 then
-    _ok "Pyinstaller successfully created build."
+    _ok "PyInstaller successfully created build."
+    _ok "Find swiftGuard.app in /dist folder."
+    _ok "SCRIPT FINISHED!"
 else
-    _error "Build failed!"
-    exit 1
+    _error "BUILD FAILED!"
 fi
 
-# Finished: Open finder with the app folder.
-_ok "swiftGuard.app was successfully created!"
-_ok "SCRIPT FINISHED!"

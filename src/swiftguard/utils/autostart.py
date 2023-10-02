@@ -39,24 +39,30 @@ def add_autostart():
                 os.mkdir(os.path.dirname(launch_agent_dest))
 
                 LOGGER.info(
-                    f"Created directory "
-                    f"{os.path.dirname(launch_agent_dest)}."
+                    f"Created directory {os.path.dirname(launch_agent_dest)} "
+                    " for autostart."
                 )
 
             # Copy the plist to the LaunchAgents directory.
-            shutil.copy(
-                os.path.join(
-                    APP_PATH, "install", "dev.lennolium.swiftguard.plist"
-                ),
-                launch_agent_dest,
-            )
+            if not os.path.isfile(launch_agent_dest):
+                shutil.copy(
+                    os.path.join(
+                        APP_PATH, "install", "dev.lennolium.swiftguard.plist"
+                    ),
+                    launch_agent_dest,
+                )
+            LOGGER.info("Autostart is enabled (recommended).")
+
+            return True
 
         except Exception as e:
             LOGGER.error(
                 f"Autostart could not be configured. Could not copy "
-                f"launch agent plist to {launch_agent_dest}. \n"
-                f"Error: {e}"
+                f"launch agent plist from {APP_PATH} to {launch_agent_dest}.\n"
+                f"Error: {str(e)}"
             )
+
+            return False
 
     # Linux: Create systemd service (WiP).
     else:
@@ -90,3 +96,23 @@ def add_autostart():
         # os.system("systemctl daemon-reload")
         # os.system("systemctl enable swiftguard.service")
         # os.system("systemctl start swiftguard.service")
+
+
+def del_autostart():
+    # macOS: Delete launch agent.
+    if CURRENT_PLATFORM.startswith("DARWIN"):
+        launch_agent_dest = (
+            f"{USER_HOME}/Library/LaunchAgents/dev.lennolium.swiftguard.plist"
+        )
+
+        # If the launch agent exists, delete it.
+        if os.path.isfile(launch_agent_dest):
+            os.remove(launch_agent_dest)
+
+        LOGGER.info(f"Autostart is disabled (not recommended).")
+
+        return True
+
+    # Linux: Delete systemd service (WiP).
+    else:
+        raise NotImplementedError("Linux-support is still work in progress.")
