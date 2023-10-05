@@ -109,7 +109,7 @@ def del_autostart():
         if os.path.isfile(launch_agent_dest):
             os.remove(launch_agent_dest)
 
-        LOGGER.info(f"Autostart is disabled (not recommended).")
+        LOGGER.info("Autostart is disabled (not recommended).")
 
         return True
 

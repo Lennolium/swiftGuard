@@ -47,7 +47,19 @@ from functools import partial
 import darkdetect
 from PySide6.QtCore import QThread, QTimer, Qt
 from PySide6.QtGui import QAction, QIcon, QKeySequence, QPixmap
-from PySide6.QtWidgets import QApplication, QMenu, QMessageBox, QSystemTrayIcon
+from PySide6.QtWidgets import (
+    QApplication,
+    QCheckBox,
+    QDialog,
+    QDialogButtonBox,
+    QLabel,
+    QMenu,
+    QMessageBox,
+    QScrollArea,
+    QSystemTrayIcon,
+    QVBoxLayout,
+    QWidget,
+    )
 
 # pylint: disable=unused-import
 # noinspection PyUnresolvedReferences
@@ -61,7 +73,7 @@ from swiftguard.utils.helpers import (
     usb_devices,
     )
 from swiftguard.utils.log import LogCount, create_logger, set_level_dest
-from swiftguard.utils.workers import WorkerUsb
+from swiftguard.utils.workers import Worker, Workers
 
 # Root logger and log counter.
 LOG_COUNT = LogCount()
@@ -100,6 +112,47 @@ def handle_exception(exc_type, exc_value, exc_traceback):
         "Uncaught Exception:",
         exc_info=(exc_type, exc_value, exc_traceback),
     )
+
+
+class CustomDialog(QDialog):
+    def __init__(self, file_path, title, header):
+        super().__init__()
+
+        # Close button.
+        btn_box = QDialogButtonBox(QDialogButtonBox.Close)
+        btn_box.rejected.connect(self.reject)
+
+        layout = QVBoxLayout()
+        message = QLabel(f"{header}\n\n")
+
+        scroll = QScrollArea()
+        widget = QWidget()
+        vbox = QVBoxLayout()
+        vbox.setContentsMargins(10, 0, 10, 0)
+
+        with open(file_path, "r") as file_handle:
+            for line in file_handle:
+                msg = QLabel(line.strip())
+                msg.setWordWrap(True)
+                msg.setContentsMargins(0, 0, 0, 0)
+                vbox.addWidget(msg)
+
+        widget.setLayout(vbox)
+
+        # Scroll Area Properties
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+        scroll.setWidgetResizable(False)
+        scroll.setWidget(widget)
+
+        layout.addWidget(message)
+        layout.addWidget(scroll)
+        layout.addWidget(btn_box)
+        self.setLayout(layout)
+
+        self.setGeometry(300, 200, 700, 500)
+        self.setWindowTitle(title)
 
 
 class ToggleEntry:
@@ -440,7 +493,7 @@ class TrayApp:
         self.usb_worker_thread = None
         self.start_devices_count = Counter(usb_devices())
         self.allowed_devices_count = Counter(
-            literal_eval("[" + self.config["Whitelist"]["devices"] + "]")
+            literal_eval("[" + self.config["Whitelist"]["usb"] + "]")
         )
         self.current_devices_count = Counter(usb_devices())
         self.usb_worker_handle(state=True)
@@ -505,7 +558,7 @@ class TrayApp:
         curr_count = Counter(curr)
 
         # Get the allowed devices and their exact count.
-        allow = literal_eval("[" + self.config["Whitelist"]["devices"] + "]")
+        allow = literal_eval("[" + self.config["Whitelist"]["usb"] + "]")
         allow_count = Counter(allow)
 
         # If the count of currently connected devices is the same as
@@ -583,15 +636,13 @@ class TrayApp:
 
         # Remove device from whitelist.
         if checked:
-            allowed = literal_eval(
-                "[" + self.config["Whitelist"]["devices"] + "]"
-            )
+            allowed = literal_eval("[" + self.config["Whitelist"]["usb"] + "]")
             for allow in allowed:
                 if allow == device_menu:
                     allowed.remove(device_menu)
 
                     # Remove device from whitelist.
-                    self.config["Whitelist"]["devices"] = str(allowed)[1:-1]
+                    self.config["Whitelist"]["usb"] = str(allowed)[1:-1]
 
                     LOGGER.info(
                         f"Remove device from whitelist: " f"{device_menu}."
@@ -618,11 +669,11 @@ class TrayApp:
         for device in curr:
             if device == device_menu:
                 # Add device to whitelist.
-                if self.config["Whitelist"]["devices"] == "":
-                    self.config["Whitelist"]["devices"] = str(device)
+                if self.config["Whitelist"]["usb"] == "":
+                    self.config["Whitelist"]["usb"] = str(device)
 
                 else:
-                    self.config["Whitelist"]["devices"] += f", {device}"
+                    self.config["Whitelist"]["usb"] += f", {device}"
 
                 # Log the added device.
                 LOGGER.info(f"Add device to whitelist: {device_menu}.")
@@ -657,13 +708,22 @@ class TrayApp:
         """
 
         if state == "Guarding":
-            # Start the worker thread.
+            # Initialize the worker object with config.
+            Workers.config = self.config
+            Workers.defused = False
+            Workers.tampered_var = False
+            self.worker = Worker("USB")
+
+            # Connect the worker signals to the corresponding slots.
+            # If the worker detects tampering, it emits the tampered
+            # signal, which is connected to the manipulation function
+            # that displays the alarm.
+            self.worker.tampered_sig.connect(self.manipulation)
+
+            # Move the worker object to a separate thread.
             self.worker_thread = QThread()
-            self.worker = WorkerUsb(self.config)
-
-            self.worker.tampered.connect(self.manipulation)
-
             self.worker.moveToThread(self.worker_thread)
+
             self.worker_thread.started.connect(self.worker.loop)
             self.worker_thread.finished.connect(self.worker.stop)
             self.worker_thread.start()
@@ -679,9 +739,10 @@ class TrayApp:
                 self.worker_thread.deleteLater()
 
             except RuntimeError:
+                # Ignore RuntimeError: wrapped C/C++ object of type
+                # Worker has been deleted.
                 pass
 
-            # Log.
             LOGGER.info(
                 "STOPPED guarding the USB ports ...",
             )
@@ -890,9 +951,9 @@ class TrayApp:
 
         # Smaller, informative text.
         msg_box.setInformativeText(
-            f"Keeping swiftGuard up to date is advisable due to "
-            f"its rapid development cycle, ensuring security enhancements, "
-            f"bug fixes, and continuous improvements.\n"
+            "Keeping swiftGuard up to date is advisable due to "
+            "its rapid development cycle, ensuring security enhancements, "
+            "bug fixes, and continuous improvements.\n"
         )
 
         # Add app logo.
@@ -908,6 +969,10 @@ class TrayApp:
         # Make text selectable and copyable.
         msg_box.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
+        # Add checkbox to disable update message.
+        cb = QCheckBox("Don't show this message again")
+        msg_box.setCheckBox(cb)
+
         # Show message box.
         msg_box.exec()
 
@@ -916,6 +981,11 @@ class TrayApp:
             webbrowser.open_new_tab(
                 "https://github.com/Lennolium/swiftGuard/releases/latest"
             )
+
+        # Disable update message.
+        if cb.isChecked():
+            self.config["Application"]["update"] = "0"
+            config_write(self.config)
 
     def create_tray_icon(self):
         """
@@ -1075,33 +1145,42 @@ class TrayApp:
         return tray_icon
 
     def acknowledgements(self):
+        msg_box = CustomDialog(
+            "./resources/ACKNOWLEDGMENTS",
+            "Acknowledgements",
+            "swiftGuard uses the following third-party libraries:",
+        )
+
+        msg_box.exec()
+
+    def acknowledgements2(self):
         msg_box = QMessageBox()
         msg_box.setWindowTitle("swiftGuard")
 
         # Bold text.
         msg_box.setText("swiftGuard\n\nBrief Instructions")
+        msg_box.setInformativeText("testetsttdadgahgdahdadasddadadadada" * 60)
 
         # Add app logo.
         pixmap = QPixmap(self.resources["app-logo"])
         msg_box.setIconPixmap(pixmap)
 
         # Add documentation button.
-        doc_button = msg_box.addButton("Documentation", QMessageBox.YesRole)
+        doc_button = msg_box.addButton("Documentation", QMessageBox.HelpRole)
 
         # Add project and close button.
         email_button = msg_box.addButton("E-Mail", QMessageBox.HelpRole)
         msg_box.addButton("Close", QMessageBox.NoRole)
 
-        # msg_box.setDetailedText("LOOOOL")
+        cb = QCheckBox("Don't show this message again")
+        msg_box.setCheckBox(cb)
 
-        msg_box.setSizeGripEnabled(True)
         # Show message box.
         msg_box.exec()
 
         # Open website in browser in new tab.
         if msg_box.clickedButton() == doc_button:
             msg_box.setInformativeText("lol")
-            msg_box.setSizeGripEnabled(True)
             msg_box.exec()
 
         elif msg_box.clickedButton() == email_button:
@@ -1112,6 +1191,9 @@ class TrayApp:
                 "%20I%20did%20run%20into%20some%20problems%20and%20I"
                 "%20need%20assistance%20with%20the%20following%3A"
             )
+
+        if cb.isChecked():
+            print("checked")
 
     def help(self):
         """
@@ -1158,7 +1240,7 @@ class TrayApp:
         msg_box.setIconPixmap(pixmap)
 
         # Add documentation button.
-        doc_button = msg_box.addButton("Documentation", QMessageBox.YesRole)
+        doc_button = msg_box.addButton("Documentation", QMessageBox.HelpRole)
 
         # Add project and close button.
         email_button = msg_box.addButton("E-Mail", QMessageBox.HelpRole)
@@ -1212,13 +1294,10 @@ class TrayApp:
             "GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007\n"
             "https://github.com/Lennolium/swiftGuard/blob/main/LICENSE\n"
             "\n"
-            "Additional Credits: \nHephaestos and his project 'usbkill'.\n"
+            "Additional Credits: For additional credits and licenses, please "
+            "refer to the 'ACKNOWLEDGMENTS' file or click the button below.\n"
+            "\nHephaestos and his project 'usbkill'.\n"
             "Michael Altfield and his project 'buskill'.\n"
-            "Alberto Sottile and his project 'darkdetect'.\n"
-            "The Qt Company Ltd. and their project 'PySide6'.\n"
-            "Simon Robinson and his project 'pyoslog'.\n"
-            "Kenneth Reitz and his project 'requests'."
-            "PyInstaller Development Team and their project 'PyInstaller'.\n"
         )
 
         # Add app logo.

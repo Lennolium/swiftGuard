@@ -50,35 +50,36 @@ from PySide6.QtCore import QObject, Signal
 
 from swiftguard.const import CONFIG_FILE
 from swiftguard.utils.helpers import (
+    bt_devices,
+    devices_state,
     hibernate,
     shutdown,
     usb_devices,
-    usb_state,
     )
 
 # Child logger.
 LOGGER = logging.getLogger(__name__)
 
 
-class WorkerUsb(QObject):
-    # Signal to emit when a manipulation/new usb device is detected.
-    tampered = Signal()
+class Workers(QObject):
+    # Class variables (shared between all instances of the class, e.g.
+    # to pass an updated config to running workers or to defuse all
+    # running workers instances).
+    tampered_sig = Signal()
+    tampered = False
+    config = None
+    defused = False
 
-    def __init__(self, config):
-        """
-        The __init__ function is called when the class is instantiated.
-        It sets up the initial state of the object.
 
-        :param self: Represent the instance of the class
-        :param config: Pass in the config file
-        :return: The self object
-        """
-
+class Worker(Workers):
+    def __init__(self, interface):
         super().__init__()
-        self.config = config
+
+        # The interface attribute defines if the worker is checking for
+        # USB, Bluetooth or any other device interface.
+        self.interface = interface
         self.running = False
         self.tampered_var = False
-        self.defused = False
         self._isRunning = True
 
     def stop(self):
@@ -87,31 +88,16 @@ class WorkerUsb(QObject):
         will cause the worker stop running.
 
         :param self: Represent the instance of the class
-        :return: The value of the _isRunning variable
-        """
-        self._isRunning = False
-
-    def loop(self):
-        """
-        The loop function is the main function of the worker. It checks
-        the USB ports for changes.
-
-        :param self: Refer to the instance of the class
         :return: None
         """
+        self._isRunning = False
+        self.running = False
 
-        # Get check interval from config file (how long to wait)
-        check_interval = float(self.config["User"]["check_interval"])
-
-        # Get delay time till action execution.
-        delay = int(self.config["User"]["delay"])
-
-        action = self.config["User"]["action"]
-
+    def whitelist(self):
         # Parse allowed devices from config file.
         try:
             allowed_devices = literal_eval(
-                f"[{self.config['Whitelist']['devices']}]"
+                f"[{self.config['Whitelist'][self.interface.lower()]}]"
             )
 
         except Exception as e:
@@ -121,8 +107,27 @@ class WorkerUsb(QObject):
                 f"for right formatting.\nExiting ... \nError: {str(e)}"
             )
 
-        # Get all connected usb devices at startup.
-        start_devices = usb_devices()
+        return allowed_devices
+
+    def loop(self):
+        """
+        The loop function is the main function of the worker. It checks
+        the interface for changes (new devices, removed devices).
+
+        :param self: Refer to the instance of the class
+        :return: None
+        """
+
+        # Get the allowed devices from config file.
+        allowed_devices = self.whitelist()
+
+        # Get all connected devices at startup.
+        if self.interface == "USB":
+            start_devices = usb_devices()
+        elif self.interface == "Bluetooth":
+            start_devices = bt_devices()
+        else:
+            raise RuntimeError(f"Unknown interface: {self.interface}.")
 
         # Remove allowed devices from start devices. They are
         # allowed to disconnect and connect freely.
@@ -135,19 +140,29 @@ class WorkerUsb(QObject):
         # Count of each device at startup (minus allowed devices).
         start_devices_count = Counter(start_devices)
 
+        # Start the main working loop.
+        LOGGER.info(
+            f"Start guarding the {self.interface} interface ..."
+            f"{devices_state(self.interface)}"
+        )
         self.running = True
-        self.defused = False
-
-        # Write to logs that loop is starting.
-        LOGGER.info(f"Start guarding the USB ports ...{usb_state()}")
+        # self.defused = False
 
         # Main loop.
         while self.running:
             # Sleep for the user defined interval.
-            sleep(check_interval)
+            sleep(float(self.config["User"]["check_interval"]))
 
-            # List the current usb devices.
-            current_devices = usb_devices()
+            # List of the allowed devices.
+            allowed_devices = self.whitelist()
+
+            # List of currently connected devices.
+            if self.interface == "USB":
+                current_devices = usb_devices()
+            elif self.interface == "Bluetooth":
+                current_devices = bt_devices()
+            else:
+                raise RuntimeError(f"Unknown interface: {self.interface}.")
 
             # Remove allowed devices from current devices. They are
             # allowed to disconnect and connect freely. We do not need
@@ -162,34 +177,43 @@ class WorkerUsb(QObject):
             current_devices_count = Counter(current_devices)
 
             # Check if current devices and their occurrences are equal
-            # to start devices. No change -> start next loop iteration.
+            # to start devices. No change -> start next loop iteration
+            # and skip the rest of the loop.
             if start_devices_count == current_devices_count:
                 continue
 
-            if current_devices_count > start_devices_count:
-                usb = current_devices_count - start_devices_count
+            # Not whitelisted device was added.
+            elif current_devices_count > start_devices_count:
+                dev = current_devices_count - start_devices_count
                 LOGGER.warning(
-                    f"Non-whitelisted USB-device added: {str(usb)[9:-5]}."
+                    f"Non-whitelisted {self.interface}-device added:"
+                    f" {str(dev)[9:-5]}."
                 )
 
+            # Not whitelisted device was removed.
             else:
-                usb = start_devices_count - current_devices_count
+                dev = start_devices_count - current_devices_count
                 LOGGER.warning(
-                    "Non-whitelisted USB-device removed: " f"{str(usb)[9:-5]}."
+                    f"Non-whitelisted {self.interface}-device removed:"
+                    f" {str(dev)[9:-5]}."
                 )
 
             # Log current state.
-            LOGGER.warning(f"Manipulation detected!{usb_state()}")
+            LOGGER.warning(
+                f"Manipulation detected!{devices_state(self.interface)}"
+            )
 
-            # Emit tampered signal the main app: worker detected a
+            # Emit tampered_sig signal to main app: Worker detected a
             # manipulation.
-            self.tampered.emit()
-            self.tampered_var = True
+            self.tampered_sig.emit()
+            self.tampered = True
 
             # Stop the next run of the worker main loop.
             self.running = False
 
-            # Wait for delay time.
+            # If delay time specified, wait for defuse by user.
+            action = self.config["User"]["action"]
+            delay = int(self.config["User"]["delay"])
             if delay != 0:
                 # Log that countdown started.
                 LOGGER.warning(
@@ -201,7 +225,8 @@ class WorkerUsb(QObject):
 
                     # Check if worker was defused by main app.
                     if self.defused:
-                        # Log current state.
+                        # Reset defused variable.
+                        self.defused = False
                         LOGGER.warning(
                             "The Countdown was defused by user! Remaining "
                             f"time: {delay - i} s.",
@@ -212,10 +237,12 @@ class WorkerUsb(QObject):
                 # Log that countdown ended.
                 LOGGER.warning("The Countdown ended. No defuse in time!")
 
-            # Log that action is executed.
-            LOGGER.warning(f"Now executing action: {action}.{usb_state()}")
-
             # Execute action.
+            LOGGER.warning(
+                f"Now executing action: {action}."
+                f"{devices_state(self.interface)}"
+            )
+
             if action == "hibernate":
                 hibernate()
             else:

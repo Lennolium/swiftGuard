@@ -339,7 +339,7 @@ Thank you so much for giving feedback, implementing features and improving the c
 ## Credits
 
 This application is heavily inspired and based on project 
-[usbkill](https://github.com/hephaest0s/usbkill) by Hephaestos and [BusKill](https://github.com/BusKill/buskill-app) by [buskill.in](https://www.buskill.in).
+[usbkill](https://github.com/hephaest0s/usbkill) by Hephaestos and [BusKill](https://github.com/BusKill/buskill-app) by Michael Altfield.
 I want to thank him and all the other great contributors of usbkill for
 their great work, inspiration and help. I firmly believe in the
 principles of the open source community, which call for the sharing and

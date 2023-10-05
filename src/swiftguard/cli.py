@@ -21,7 +21,7 @@ import sys
 
 from swiftguard.utils.helpers import startup
 from swiftguard.utils.log import LogCount, create_logger, set_level_dest
-from swiftguard.utils.workers import WorkerUsb
+from swiftguard.utils.workers import Worker, Workers
 
 # Root logger and log counter.
 LOG_COUNT = LogCount()
@@ -88,7 +88,8 @@ def main():
         print("Start guarding the USB ports ...", file=sys.stdout)
 
     # Create worker and start main worker loop.
-    worker = WorkerUsb(config)
+    Workers.config = config
+    worker = Worker("USB")
     worker.loop()
 
     # Exit program.

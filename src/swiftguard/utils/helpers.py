@@ -86,12 +86,19 @@ def hibernate():
     return
 
 
-def usb_state():
+def devices_state(interface):
     # TODO: docstring. Get a brief overview of the current USB devices.
     system_profiler_path = "/usr/sbin/system_profiler"
 
+    if interface == "USB":
+        data_type = "SPUSBDataType"
+    elif interface == "Bluetooth":
+        data_type = "SPBluetoothDataType"
+    else:
+        raise RuntimeError(f"Unknown interface type passed: {interface}")
+
     verbose_process = subprocess.run(  # nosec B603
-        [system_profiler_path, "SPUSBDataType"],
+        [system_profiler_path, data_type],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
@@ -118,85 +125,59 @@ def config_create(force_restore=False):
     # TODO: docstring.
 
     # If no config file exists, copy the default config file.
-    if not os.path.isfile(CONFIG_FILE) or force_restore:
-        try:
-            # If no config directory exists, create it.
-            if not os.path.isdir(os.path.dirname(CONFIG_FILE)):
-                os.mkdir(os.path.dirname(CONFIG_FILE))
-
-            # Copy config file to config dir or overwrite existing one.
-            shutil.copy(
-                os.path.join(APP_PATH, "install", "swiftguard.ini"),
-                CONFIG_FILE,
-            )
-
-        except Exception as e:
-            raise e from RuntimeError(
-                f"Could not create config file at {CONFIG_FILE}!\n"
-                f"Error: {str(e)}"
-            )
-
-        LOGGER.info(f"Created config file at {CONFIG_FILE}.")
-
-
-def config_load(config):
-    """
-    The config_load function loads the config file and checks if its
-    content is valid and complete. If not, it will exit the program with
-    an error message.
-
-    :param config: Pass the config object to this function
-    :return: A configparser object
-    """
-
+    if os.path.isfile(CONFIG_FILE) and not force_restore:
+        return
     try:
-        config.read(CONFIG_FILE, encoding="utf-8")
+        # If no config directory exists, create it.
+        if not os.path.isdir(os.path.dirname(CONFIG_FILE)):
+            os.mkdir(os.path.dirname(CONFIG_FILE))
 
-    except (
-        configparser.MissingSectionHeaderError,
-        configparser.ParsingError,
-    ) as e:
-        LOGGER.error(f"Error while parsing config file: {str(e)}.")
-        LOGGER.warning("Config file will be overwritten with default values.")
-        restore_needed = True
+        # Copy config file to config dir or overwrite existing one.
+        shutil.copy(
+            os.path.join(APP_PATH, "install", "swiftguard.ini"),
+            CONFIG_FILE,
+        )
 
-    # Check if config file has all needed sections and options.
-    if not config.has_option("Application", "version"):
-        restore_needed = True
-    elif not config.has_option("Application", "log"):
-        restore_needed = True
-    elif not config.has_option("Application", "log_level"):
-        restore_needed = True
-    elif not config.has_option("User", "autostart"):
-        restore_needed = True
-    elif not config.has_option("User", "action"):
-        restore_needed = True
-    elif not config.has_option("User", "delay"):
-        restore_needed = True
-    elif not config.has_option("User", "check_interval"):
-        restore_needed = True
-    elif not config.has_option("Whitelist", "devices"):
-        restore_needed = True
-    else:
-        restore_needed = False
+    except Exception as e:
+        raise e from RuntimeError(
+            f"Could not create config file at {CONFIG_FILE}!\n"
+            f"Error: {str(e)}"
+        )
 
-    # Overwrite config file with default one and read it again.
-    if restore_needed:
-        config_create(force_restore=True)
-        config.read(CONFIG_FILE, encoding="utf-8")
+    if force_restore:
+        LOGGER.warning(
+            f"Config file at {CONFIG_FILE} was overwritten with "
+            f"default values."
+        )
+        return
 
-        # Further checks are not needed, because of overwrite.
-        return config
+    LOGGER.info(f"Created config file at {CONFIG_FILE}.")
+
+
+def config_validate(config):
+    conf_default = {
+        "Application": ["version", "log", "log_level", "check_updates"],
+        "User": ["autostart", "action", "delay", "check_interval"],
+        "Whitelist": ["usb", "bluetooth"],
+    }
+
+    for key, value in conf_default.items():
+        for item in value:
+            if not config.has_option(key, item):
+                config_create(force_restore=True)
+                config.read(CONFIG_FILE, encoding="utf-8")
+
+                # Further checks are not needed, because of overwrite.
+                return config
 
     # Defaulting some values if incorrect or not set.
     default_needed = False
 
     log_dest = config["Application"]["log"]
-
     # Check length of string (4: 'file' to 20: 'file, syslog, stdout').
-    if not 3 < len(log_dest) < 21:
+    if not 4 <= len(log_dest) <= 20:
         config["Application"]["log"] = "file"
-        log_dest = config["Application"]["log"]
+        log_dest = "file"
         default_needed = True
 
     log_dest = log_dest.split(", ")
@@ -210,6 +191,11 @@ def config_load(config):
     # Check if log_level is in valid bounds (1,2,...,5).
     if config["Application"]["log_level"] not in ["1", "2", "3", "4", "5"]:
         config["Application"]["log_level"] = "2"
+        default_needed = True
+
+    # Check if update checking is either 1 (True) or 0 (False).
+    if config["Application"]["check_updates"] not in ["0", "1"]:
+        config["User"]["check_updates"] = "1"
         default_needed = True
 
     # Check if autostart is either 1 (True) or 0 (False).
@@ -246,10 +232,42 @@ def config_load(config):
     # If default values were needed, write config file on disk.
     if default_needed:
         LOGGER.warning(
-            f"One or more values in {CONFIG_FILE} were incorrect or not set. "
-            f"Corrected them to default values and wrote config file on disk.",
+            f"One or more values in {CONFIG_FILE} were incorrect or not "
+            f"set. Corrected them to default values and wrote config file "
+            f"on disk.",
         )
         config_write(config)
+
+    return config
+
+
+def config_load(config):
+    """
+    The config_load function loads the config file and checks if its
+    content is valid and complete. If not, it will exit the program with
+    an error message.
+
+    :param config: Pass the config object to this function
+    :return: A configparser object
+    """
+
+    # Parse config file.
+    try:
+        config.read(CONFIG_FILE, encoding="utf-8")
+
+    except (
+        configparser.MissingSectionHeaderError,
+        configparser.ParsingError,
+    ) as e:
+        LOGGER.error(f"Error while parsing config file: {str(e)}.")
+        config_create(force_restore=True)
+        config.read(CONFIG_FILE, encoding="utf-8")
+
+        # Further checks are not needed, because of overwrite.
+        return config
+
+    # Validate and sanitize loaded config.
+    config = config_validate(config)
 
     return config
 
@@ -679,6 +697,7 @@ def check_updates(log=False):
         response = requests.get(
             "https://api.github.com/repos/Lennolium/swiftGuard/releases/latest"
         )
+        release_raw = response.json()["name"]  # v0.0.2-alpha
 
     except requests.exceptions.ConnectionError as e:
         if log:
@@ -688,7 +707,13 @@ def check_updates(log=False):
             )
         return
 
-    release_raw = response.json()["name"]  # v0.0.2-alpha
+    except KeyError as e:
+        if log:
+            LOGGER.warning(
+                f"Could not check for updates. Probably GitHub is "
+                f"limiting API access. Just to many requests.\nError: {str(e)}"
+            )
+        return
 
     if "-" in release_raw:
         release_split = release_raw[1:].split("-")  # ['0.0.2', 'alpha']
