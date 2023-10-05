@@ -348,6 +348,8 @@ revive an abandoned project and to support others in learning and
 comprehending the fundamentals of Python, Qt and macOS, and to develop
 their own projects.
 
+Please refer to [ACKNOWLEDGMENTS](https://github.com/Lennolium/swiftGuard/blob/main/ACKNOWLEDGMENTS).
+
 &nbsp;
 
 <!--- License -->
@@ -357,3 +359,5 @@ their own projects.
 Provided under the terms of the [GNU GPL3 License](https://www.gnu.org/licenses/gpl-3.0.en.html) © Lennart Haack 2023.
 
 See [LICENSE](https://github.com/Lennolium/swiftGuard/blob/main/LICENSE) file for details.
+For the licenses of used third party libraries and software, please refer to the [ACKNOWLEDGMENTS](https://github.com/Lennolium/swiftGuard/blob/main/ACKNOWLEDGMENTS) file.
+
