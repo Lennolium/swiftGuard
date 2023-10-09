@@ -348,7 +348,7 @@ revive an abandoned project and to support others in learning and
 comprehending the fundamentals of Python, Qt and macOS, and to develop
 their own projects.
 
-Please refer to [ACKNOWLEDGMENTS](https://github.com/Lennolium/swiftGuard/blob/main/ACKNOWLEDGMENTS).
+Many more credits are in the [acknowledgments](https://github.com/Lennolium/swiftGuard/blob/main/ACKNOWLEDGMENTS) file.
 
 &nbsp;
 

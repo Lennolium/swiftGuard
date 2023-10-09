@@ -50,6 +50,22 @@ if [ ! -d "src/swiftGuard" ]; then
   exit 1
 fi
 
+# Check if PySide6 is installed and install it if not.
+_info "Updating Qt resource file ..."
+if test ! "$(which pyside6-rcc)"; then
+    _info "PySide6 is not installed! Installing with Homebrew ..."
+    brew install pyside
+fi
+
+# Updating the Qt resource file (.qrc -> .py).
+if pyside6-rcc src/swiftguard/resources/resources.qrc -o src/swiftguard/resources/resources_rc.py
+then
+    _ok "Resource file successfully compiled."
+else
+    _error "Could not update resource file!"
+    _error "Using old pre-compiled resource file."
+fi
+
 # Creating dist folder.
 mkdir -p dist/
 

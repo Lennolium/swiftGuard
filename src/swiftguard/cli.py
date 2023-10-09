@@ -12,7 +12,7 @@ __email__ = "lennart-haack@mail.de"
 __license__ = "GNU GPLv3"
 __version__ = "0.0.2"
 __build__ = "2023.2"
-__date__ = "2023-09-28"
+__date__ = "2023-10-09"
 __status__ = "Prototype"
 
 # Imports.
@@ -40,8 +40,10 @@ def handle_exception(exc_type, exc_value, exc_traceback):
         exc_info=(exc_type, exc_value, exc_traceback),
     )
 
+    exit_handler(error=True)
 
-def exit_handler(signum, frame):
+
+def exit_handler(signum=None, frame=None, error=False):
     """
     The exit_handler function is a signal handler that catches the
     SIGINT and SIGTERM signals. It then prints out a message to the
@@ -50,8 +52,17 @@ def exit_handler(signum, frame):
     :param signum: Identify the signal that caused the exit_handler
         to be called
     :param frame: Reference the frame object that called function
+    :param error: If True, an error occurred which caused the exit
     :return: The exit_handler function
     """
+
+    # If error is True, an error occurred which caused the exit.
+    if error:
+        LOGGER.critical(
+            "A critical error occurred that caused the application "
+            "to exit unexpectedly."
+        )
+        sys.exit(1)
 
     LOGGER.info("Exiting the application properly ...")
     sys.exit(0)

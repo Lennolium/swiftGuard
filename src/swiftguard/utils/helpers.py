@@ -14,7 +14,7 @@ __email__ = "lennart-haack@mail.de"
 __license__ = "GNU GPLv3"
 __version__ = "0.0.2"
 __build__ = "2023.2"
-__date__ = "2023-09-28"
+__date__ = "2023-10-09"
 __status__ = "Prototype"
 
 # Imports.
@@ -429,7 +429,7 @@ def startup():
     #         )
     # conf_file.read_encrypted(CONFIG_FILE_ENC)
 
-    # Get autostart setting and apply it (Only supported in GUI mode).
+    # Get autostart setting and apply it (only supported in GUI mode).
     if CURRENT_MODE == "app":
         if config["User"]["autostart"] == "0":
             del_autostart()
@@ -445,7 +445,8 @@ def startup():
         config_write(config)
 
     # Check if there is a newer version of swiftGuard available.
-    check_updates(log=True)
+    if config["Application"]["check_updates"] == "1":
+        check_updates(log=True)
 
     # All startup checks finished without critical errors.
     LOGGER.info("Startup checks done and swiftGuard ready to run!")

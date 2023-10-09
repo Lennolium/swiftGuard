@@ -24,6 +24,20 @@ app_entry_point = 'src/swiftguard/app.py'
 # List all extra files and directories here.
 added_files = [
     ('src/swiftguard/install', 'install'),
+    ('src/swiftguard/resources/ACKNOWLEDGMENTS', 'resources/'),
+    ('src/swiftguard/resources/logo-macos@2x.icns', 'resources/'),
+    ('src/swiftguard/resources/resources_rc.py', 'resources/'),
+    ('src/swiftguard/utils', 'utils'),
+    ('src/swiftguard/__main__.py', '.'),
+    ('src/swiftguard/cli.py', '.'),
+    ('src/swiftguard/const.py', '.'),
+    ('README.md', '.'),
+    ('LICENSE', '.'),
+    ('ACKNOWLEDGMENTS', '.'),
+    ]
+
+added_files_old = [
+    ('src/swiftguard/install', 'install'),
     ('src/swiftguard/resources', 'resources'),
     ('src/swiftguard/utils', 'utils'),
     ('src/swiftguard/__main__.py', '.'),
@@ -31,6 +45,7 @@ added_files = [
     ('src/swiftguard/const.py', '.'),
     ('README.md', '.'),
     ('LICENSE', '.'),
+    ('ACKNOWLEDGMENTS', '.'),
     ]
 
 # List all imports here (built-in and external). opt: ('__builtin__',).

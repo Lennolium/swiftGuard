@@ -22,6 +22,7 @@ ________________________________________________________________________
 Copyright (c) 2005-2023, PyInstaller Development Team
 Copyright (c) 2005-2009, Giovanni Bajo
 Based on previous work under copyright (c) 2002 McMillan Enterprises, Inc.
+pyinstaller@googlegroups.com
 
 PyInstaller is licensed under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
 
@@ -150,6 +151,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 pyoslog:
 ________________________________________________________________________
 Copyright (c) 2022, Simon Robinson
+simon@robinson.ac
 
  Apache License Version 2.0, January 2004 http://www.apache.org/licenses/
 

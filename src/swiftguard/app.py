@@ -30,7 +30,7 @@ __email__ = "lennart-haack@mail.de"
 __license__ = "GNU GPLv3"
 __version__ = "0.0.2"
 __build__ = "2023.2"
-__date__ = "2023-09-28"
+__date__ = "2023-10-09"
 __status__ = "Prototype"
 
 # Imports.
@@ -61,13 +61,13 @@ from PySide6.QtWidgets import (
     QWidget,
     )
 
+from swiftguard.const import APP_PATH
 # pylint: disable=unused-import
 # noinspection PyUnresolvedReferences
 from swiftguard.resources import resources_rc  # noqa: F401
 from swiftguard.utils.autostart import add_autostart, del_autostart
 from swiftguard.utils.helpers import (
     check_updates,
-    config_load,
     config_write,
     startup,
     usb_devices,
@@ -87,7 +87,7 @@ LIGHT = {
     "shield-slash": ":/resources/light/shield-slash.svg",
     "shield-tamper": ":/resources/light/shield-tamper.svg",
     "app-icon": ":/resources/light/statusbar-macos@2x.png",
-    "app-logo": ":/resources/light/logo-macos@2x.png",
+    "app-logo": ":/resources/logo-macos@2x.png",
 }
 
 DARK = {
@@ -97,26 +97,40 @@ DARK = {
     "shield-slash": ":/resources/dark/shield-slash.svg",
     "shield-tamper": ":/resources/dark/shield-tamper.svg",
     "app-icon": ":/resources/dark/statusbar-macos@2x.png",
-    "app-logo": ":/resources/dark/logo-macos@2x.png",
+    "app-logo": ":/resources/logo-macos@2x.png",
 }
 
 
-# Handle uncaught exceptions and log them to CRITICAL.
-def handle_exception(exc_type, exc_value, exc_traceback):
-    # Do not log KeyboardInterrupt (Ctrl+C).
-    if issubclass(exc_type, KeyboardInterrupt):
-        sys.__excepthook__(exc_type, exc_value, exc_traceback)
-        return
-
-    LOGGER.critical(
-        "Uncaught Exception:",
-        exc_info=(exc_type, exc_value, exc_traceback),
-    )
-
-
 class CustomDialog(QDialog):
-    def __init__(self, file_path, title, header):
+    """
+    A custom QDialog class for displaying text content from a file.
+
+    This class provides a dialog window with scrollable text content
+    loaded from a specified text file. It is useful for displaying
+    informational messages, help texts, or license agreements.
+
+    :param file_path: The file path of the text file to be read.
+    :param title: The title of the window.
+    :param header: The text to be displayed at the top of the window.
+    """
+
+    def __init__(self, file_path, title, header=None):
+        """
+        The __init__ function is run as soon as an object of a class is
+        instantiated.
+
+        :param self: Represent the instance of the class
+        :param file_path: Set the file path of the text file to be read
+        :param title: Set the title of the window
+        :param header: Set the text of the QLabel at the window top
+        :return: None
+        """
+
+        # Call the __init__ function of the parent class QDialog.
         super().__init__()
+
+        if header is None:
+            header = ""
 
         # Close button.
         btn_box = QDialogButtonBox(QDialogButtonBox.Close)
@@ -125,11 +139,13 @@ class CustomDialog(QDialog):
         layout = QVBoxLayout()
         message = QLabel(f"{header}\n\n")
 
+        # Scroll area properties (set the scroll area to be always on).
         scroll = QScrollArea()
         widget = QWidget()
         vbox = QVBoxLayout()
         vbox.setContentsMargins(10, 0, 10, 0)
 
+        # Read the text file and add each line to the scroll area.
         with open(file_path, "r") as file_handle:
             for line in file_handle:
                 msg = QLabel(line.strip())
@@ -452,7 +468,7 @@ class TrayApp:
             signal.signal(sig, self.exit_handler)
 
         # Set the exception hook.
-        sys.excepthook = handle_exception
+        sys.excepthook = self.handle_exception
 
         # Set the current OS theme and corresponding resources.
         self.theme = darkdetect.theme()
@@ -466,7 +482,7 @@ class TrayApp:
 
         # Print worker start message, but only if not logging to stdout.
         if "stdout" not in self.config["Application"]["log"]:
-            print("Start guarding the USB ports ...", file=sys.stdout)
+            print("Start guarding the USB interface ...", file=sys.stdout)
 
         # OS theme listener: checks for theme changes every 2 seconds in
         # a separate thread.
@@ -531,7 +547,7 @@ class TrayApp:
             self.usb_worker_thread.start()
 
         else:
-            # Stop the theme thread.
+            # Stop the usb worker thread.
             self.usb_worker_thread.quit()
             self.usb_worker_thread.wait()
             self.usb_worker_thread.deleteLater()
@@ -622,13 +638,12 @@ class TrayApp:
 
         This function allows users to add or remove USB devices from the
         whitelist by clicking on corresponding menu entries. It updates
-        the application configuration and restarts the worker thread
-        if necessary.
+        the application configuration.
 
         :param device_menu: The USB device entry that was clicked.
         :type device_menu: str
         :param checked: A boolean indicating whether the device should
-            be added (True) or removed (False) from the whitelist.
+            be added (False) or removed (True) from the whitelist.
         :type checked: bool
 
         :return: None
@@ -645,7 +660,7 @@ class TrayApp:
                     self.config["Whitelist"]["usb"] = str(allowed)[1:-1]
 
                     LOGGER.info(
-                        f"Remove device from whitelist: " f"{device_menu}."
+                        f"Remove device from whitelist: {device_menu}."
                     )
 
                     break
@@ -653,42 +668,28 @@ class TrayApp:
             # Write the updated config to disk.
             config_write(self.config)
 
-            # Reload the updated config.
-            config_parser = configparser.ConfigParser()
-            self.config = config_load(config_parser)
-
-            # Restart the worker.
-            if self.worker._isRunning:
-                self.worker_handle("Inactive")
-                self.worker_handle("Guarding")
+            # Signal the worker, that the whitelist was updated.
+            self.worker.updated_whitelist()
 
             return
 
+        # Add device to whitelist.
         curr = usb_devices()
-
         for device in curr:
             if device == device_menu:
-                # Add device to whitelist.
                 if self.config["Whitelist"]["usb"] == "":
                     self.config["Whitelist"]["usb"] = str(device)
 
                 else:
                     self.config["Whitelist"]["usb"] += f", {device}"
 
-                # Log the added device.
                 LOGGER.info(f"Add device to whitelist: {device_menu}.")
 
                 # Write the updated config to disk.
                 config_write(self.config)
 
-                # Reload the updated config.
-                config_parser = configparser.ConfigParser()
-                self.config = config_load(config_parser)
-
-                # Restart the worker, if it is running.
-                if self.worker._isRunning:
-                    self.worker_handle("Inactive")
-                    self.worker_handle("Guarding")
+                # Signal the worker, that the whitelist was updated.
+                self.worker.updated_whitelist()
 
                 return
 
@@ -744,7 +745,7 @@ class TrayApp:
                 pass
 
             LOGGER.info(
-                "STOPPED guarding the USB ports ...",
+                "STOPPED guarding the USB interface ...",
             )
 
     def defuse(self):
@@ -929,14 +930,18 @@ class TrayApp:
 
     def update_box(self, new_vers):
         """
-        TODO: Update.
-        Display an about message with information about the
-        application and its author.
+        The update_box function is used to display a message box
+        informing the user that an update is available. The function
+        takes one argument, new_vers, which is the latest version of
+        swiftGuard as determined by check_update(). The message box
+        contains a download button that opens the GitHub release page
+        in the default browser and a close button that closes the
+        message box. A checkbox is also included to disable future
+        update messages.
 
-        This function displays an about message with information about
-        the application, its purpose, and its author.
-
-        :return: None
+        :param self: Refer to the current instance of a class
+        :param new_vers: Display the latest version of swiftguard
+        :return: A message box
         """
 
         msg_box = QMessageBox()
@@ -982,9 +987,9 @@ class TrayApp:
                 "https://github.com/Lennolium/swiftGuard/releases/latest"
             )
 
-        # Disable update message.
+        # Disable future update messages.
         if cb.isChecked():
-            self.config["Application"]["update"] = "0"
+            self.config["Application"]["check_updates"] = "0"
             config_write(self.config)
 
     def create_tray_icon(self):
@@ -1145,55 +1150,24 @@ class TrayApp:
         return tray_icon
 
     def acknowledgements(self):
+        """
+        The acknowledgements function is called when the user clicks on
+        the acknowledgements button in the help menu. It creates a
+        custom dialog box with a text and a scrollbar explaining what
+        third-party libraries swiftGuard uses.
+
+        :param self: Represent the instance of the class
+        :return: A message box with a list of third party libraries
+            used in the project
+        """
+
         msg_box = CustomDialog(
-            "./resources/ACKNOWLEDGMENTS",
+            f"{APP_PATH}/resources/ACKNOWLEDGMENTS",
             "Acknowledgements",
             "swiftGuard uses the following third-party libraries:",
         )
 
         msg_box.exec()
-
-    def acknowledgements2(self):
-        msg_box = QMessageBox()
-        msg_box.setWindowTitle("swiftGuard")
-
-        # Bold text.
-        msg_box.setText("swiftGuard\n\nBrief Instructions")
-        msg_box.setInformativeText("testetsttdadgahgdahdadasddadadadada" * 60)
-
-        # Add app logo.
-        pixmap = QPixmap(self.resources["app-logo"])
-        msg_box.setIconPixmap(pixmap)
-
-        # Add documentation button.
-        doc_button = msg_box.addButton("Documentation", QMessageBox.HelpRole)
-
-        # Add project and close button.
-        email_button = msg_box.addButton("E-Mail", QMessageBox.HelpRole)
-        msg_box.addButton("Close", QMessageBox.NoRole)
-
-        cb = QCheckBox("Don't show this message again")
-        msg_box.setCheckBox(cb)
-
-        # Show message box.
-        msg_box.exec()
-
-        # Open website in browser in new tab.
-        if msg_box.clickedButton() == doc_button:
-            msg_box.setInformativeText("lol")
-            msg_box.exec()
-
-        elif msg_box.clickedButton() == email_button:
-            webbrowser.open_new_tab(
-                "mailto:lennart-haack@mail.de?subject=swiftGuard%3A%20I"
-                "%20need%20assistance&body=Dear%20Lennart%2C%0A%0AI'm"
-                "%20using%20your%20application%20'swiftGuard'%2C%20but"
-                "%20I%20did%20run%20into%20some%20problems%20and%20I"
-                "%20need%20assistance%20with%20the%20following%3A"
-            )
-
-        if cb.isChecked():
-            print("checked")
 
     def help(self):
         """
@@ -1291,13 +1265,18 @@ class TrayApp:
             "\n👋🏻 Lennart Haack \n"
             "📨 lennart-haack@mail.de \n"
             "🔑 F452 A252 1A91 043C A02D 4C06 5BE3 C31E F9DF CEA7\n\n"
-            "GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007\n"
-            "https://github.com/Lennolium/swiftGuard/blob/main/LICENSE\n"
-            "\n"
-            "Additional Credits: For additional credits and licenses, please "
-            "refer to the 'ACKNOWLEDGMENTS' file or click the button below.\n"
-            "\nHephaestos and his project 'usbkill'.\n"
-            "Michael Altfield and his project 'buskill'.\n"
+            "swiftGuard is free software: you can redistribute it and/or "
+            "modify it under the terms of the GNU General Public License as "
+            "published by the Free Software Foundation, either version 3 of "
+            "the License, or (at your option) any later version."
+            "This program is distributed in the hope that it will be useful, "
+            "but WITHOUT ANY WARRANTY; without even the implied warranty of "
+            "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the "
+            "GNU General Public License for more details. "
+            "You should have received a copy of the GNU General Public "
+            "License along with this program. If not, see \n\n"
+            "< https://www.gnu.org/licenses/ >.\n"
+            "< https://github.com/Lennolium/swiftGuard/blob/main/LICENSE >\n"
         )
 
         # Add app logo.
@@ -1325,21 +1304,47 @@ class TrayApp:
         elif msg_box.clickedButton() == acknow_button:
             self.acknowledgements()
 
-    def exit_handler(self, signum=None, frame=None):
+    def handle_exception(self, exc_type, exc_value, exc_traceback):
+        """
+        The handle_exception function is a custom exception handler that
+        logs uncaught exceptions to CRITICAL.
+
+        :param exc_type: Store the type of exception that occurred
+        :param exc_value: Get the exception value
+        :param exc_traceback: Get the traceback object
+        :return: None
+        """
+
+        # Do not log KeyboardInterrupt (Ctrl+C).
+        if issubclass(exc_type, KeyboardInterrupt):
+            sys.__excepthook__(exc_type, exc_value, exc_traceback)
+            return
+
+        LOGGER.critical(
+            "Uncaught Exception:",
+            exc_info=(exc_type, exc_value, exc_traceback),
+        )
+
+        self.exit_handler(error=True)
+
+    def exit_handler(self, signum=None, frame=None, error=False):
         """
         Handle application exit and cleanup.
 
         This function performs cleanup tasks and ensures that the
         application exits gracefully when the user chooses to close it.
 
+        :param signum: Identify the signal that caused the exit_handler
+            to be called
+        :param frame: Reference the frame object that called function
+        :param error: If True, an error occurred which caused the exit
         :return: None
         """
 
-        # If the manipulation was detected, do not exit the application,
-        # if user presses the "Exit" menu item. Defusing before exiting
-        # is required.
-
         try:
+            # If the manipulation was detected, do not exit the application,
+            # if user presses the "Exit" menu item. Defusing before exiting
+            # is required.
             if self.menu_tamper.isVisible():
                 return
 
@@ -1355,7 +1360,15 @@ class TrayApp:
         except Exception:  # nosec B110
             pass
 
-        # Log.
+        # If error is True, an error occurred which caused the exit.
+        if error:
+            LOGGER.critical(
+                "A critical error occurred that caused the application "
+                "to exit unexpectedly."
+            )
+            self.app.quit()
+            sys.exit(1)
+
         LOGGER.info("Exiting the application properly ...")
         self.app.quit()
         sys.exit(0)

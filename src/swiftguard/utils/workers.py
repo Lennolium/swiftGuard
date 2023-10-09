@@ -37,7 +37,7 @@ __email__ = "lennart-haack@mail.de"
 __license__ = "GNU GPLv3"
 __version__ = "0.0.2"
 __build__ = "2023.2"
-__date__ = "2023-09-28"
+__date__ = "2023-10-09"
 __status__ = "Prototype"
 
 # Imports.
@@ -81,6 +81,11 @@ class Worker(Workers):
         self.running = False
         self.tampered_var = False
         self._isRunning = True
+        self.start_devices_count = None
+        self.allowed_devices = None
+
+        # Updated/load the whitelist.
+        self.updated_whitelist()
 
     def stop(self):
         """
@@ -99,6 +104,7 @@ class Worker(Workers):
             allowed_devices = literal_eval(
                 f"[{self.config['Whitelist'][self.interface.lower()]}]"
             )
+            return allowed_devices
 
         except Exception as e:
             raise e from RuntimeError(
@@ -107,19 +113,9 @@ class Worker(Workers):
                 f"for right formatting.\nExiting ... \nError: {str(e)}"
             )
 
-        return allowed_devices
-
-    def loop(self):
-        """
-        The loop function is the main function of the worker. It checks
-        the interface for changes (new devices, removed devices).
-
-        :param self: Refer to the instance of the class
-        :return: None
-        """
-
+    def updated_whitelist(self):
         # Get the allowed devices from config file.
-        allowed_devices = self.whitelist()
+        self.allowed_devices = self.whitelist()
 
         # Get all connected devices at startup.
         if self.interface == "USB":
@@ -131,14 +127,42 @@ class Worker(Workers):
 
         # Remove allowed devices from start devices. They are
         # allowed to disconnect and connect freely.
-        if allowed_devices:
+        if self.allowed_devices:
             # Remove allowed devices from start devices.
-            for device in allowed_devices:
+            for device in self.allowed_devices:
                 if device in start_devices:
                     start_devices.remove(device)
 
         # Count of each device at startup (minus allowed devices).
-        start_devices_count = Counter(start_devices)
+        self.start_devices_count = Counter(start_devices)
+
+    def loop(self):
+        """
+        The loop function is the main function of the worker. It checks
+        the interface for changes (new devices, removed devices).
+
+        :param self: Refer to the instance of the class
+        :return: None
+        """
+
+        # Get all connected devices at startup.
+        if self.interface == "USB":
+            start_devices = usb_devices()
+        elif self.interface == "Bluetooth":
+            start_devices = bt_devices()
+        else:
+            raise RuntimeError(f"Unknown interface: {self.interface}.")
+
+        # Remove allowed devices from start devices. They are
+        # allowed to disconnect and connect freely.
+        if self.allowed_devices:
+            # Remove allowed devices from start devices.
+            for device in self.allowed_devices:
+                if device in start_devices:
+                    start_devices.remove(device)
+
+        # Count of each device at startup (minus allowed devices).
+        self.start_devices_count = Counter(start_devices)
 
         # Start the main working loop.
         LOGGER.info(
@@ -146,15 +170,11 @@ class Worker(Workers):
             f"{devices_state(self.interface)}"
         )
         self.running = True
-        # self.defused = False
 
         # Main loop.
         while self.running:
             # Sleep for the user defined interval.
             sleep(float(self.config["User"]["check_interval"]))
-
-            # List of the allowed devices.
-            allowed_devices = self.whitelist()
 
             # List of currently connected devices.
             if self.interface == "USB":
@@ -167,9 +187,9 @@ class Worker(Workers):
             # Remove allowed devices from current devices. They are
             # allowed to disconnect and connect freely. We do not need
             # to check them.
-            if allowed_devices:
+            if self.allowed_devices:
                 # Remove allowed devices from current devices.
-                for device in allowed_devices:
+                for device in self.allowed_devices:
                     if device in current_devices:
                         current_devices.remove(device)
 
@@ -179,12 +199,12 @@ class Worker(Workers):
             # Check if current devices and their occurrences are equal
             # to start devices. No change -> start next loop iteration
             # and skip the rest of the loop.
-            if start_devices_count == current_devices_count:
+            if self.start_devices_count == current_devices_count:
                 continue
 
             # Not whitelisted device was added.
-            elif current_devices_count > start_devices_count:
-                dev = current_devices_count - start_devices_count
+            elif current_devices_count > self.start_devices_count:
+                dev = current_devices_count - self.start_devices_count
                 LOGGER.warning(
                     f"Non-whitelisted {self.interface}-device added:"
                     f" {str(dev)[9:-5]}."
@@ -192,7 +212,7 @@ class Worker(Workers):
 
             # Not whitelisted device was removed.
             else:
-                dev = start_devices_count - current_devices_count
+                dev = self.start_devices_count - current_devices_count
                 LOGGER.warning(
                     f"Non-whitelisted {self.interface}-device removed:"
                     f" {str(dev)[9:-5]}."

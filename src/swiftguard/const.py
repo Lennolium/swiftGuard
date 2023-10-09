@@ -12,7 +12,7 @@ __email__ = "lennart-haack@mail.de"
 __license__ = "GNU GPLv3"
 __version__ = "0.0.2"
 __build__ = "2023.2"
-__date__ = "2023-09-28"
+__date__ = "2023-10-09"
 __status__ = "Prototype"
 
 # Imports.
@@ -22,7 +22,7 @@ import re
 import sys
 
 # Constants.
-CURRENT_PLATFORM = platform.uname()[0].upper()
+CURRENT_PLATFORM = platform.uname()[0].upper()  # 'DARWIN' / 'LINUX' ...
 CURRENT_MODE = sys.modules["__main__"].__file__[-6:-3]  # 'app' / 'cli'
 USER_HOME = os.path.expanduser("~")
 CONFIG_FILE = f"{USER_HOME}/Library/Preferences/swiftguard/swiftguard.ini"
