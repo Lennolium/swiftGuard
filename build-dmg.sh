@@ -20,15 +20,8 @@ _logo " ------------------------------------------------------------------------
 echo ""
 echo ""
 
-# Ask if the script should start with building the dmg.
-_info "This script will build a dmg file for swiftGuard. Make sure you have built a swiftGuard.app and it is in the /dist folder.\nContinue? (y/n)"
-read -r response
-if  [ "$response" = "y" ]; then
-		_ok "Let us begin!"
-else
-    _error "Script aborted."
-    exit;
-fi
+# Start.
+_info "This script will build a dmg file for swiftGuard."
 
 # Check if homebrew is installed and install it if not.
 _info "Checking if homebrew is installed ..."
@@ -91,7 +84,9 @@ if create-dmg \
 then
   _ok "create-dmg successfully created .dmg file without errors."
 else
-  _error "create-dmg exited with errors. No .dmg created."
+  _error "DMG BUILD FAILED!"
+  rm -R dist/dmg-temp/*
+  rm -r dist/dmg-temp
   exit 1
 fi
 
@@ -108,8 +103,6 @@ _info "Validate sha256 checksum ..."
 sha256sum -c SHA256SUM
 
 # Finished: Open finder with the dmg folder.
-_ok "swiftGuard.dmg and checksum.sha256 created in /dmg folder"
-_ok "SCRIPT FINISHED! \nPress any key to open /dmg folder and exit..."
-read -r exit
-open .
-exit
+_ok "create-dmg successfully build dmg file."
+_ok "Find swiftGuard.dmg in /dmg folder."
+_ok "SCRIPT FINISHED!"
