@@ -42,3 +42,24 @@ DEVICE_RE = [
     re.compile(".+ID\s(?P<id>\w+:\w+)"),  # noqa: W605
     re.compile("0x([0-9a-z]{4})"),
 ]
+
+# Resource paths.
+LIGHT = {
+    "checkmark": ":/resources/light/checkmark.svg",
+    "usb-connection": ":/resources/light/usb-connection.svg",
+    "shield-check": ":/resources/light/shield-check.svg",
+    "shield-slash": ":/resources/light/shield-slash.svg",
+    "shield-tamper": ":/resources/light/shield-tamper.svg",
+    "app-icon": ":/resources/light/statusbar-macos@2x.png",
+    "app-logo": ":/resources/logo-macos@2x.png",
+}
+
+DARK = {
+    "checkmark": ":/resources/dark/checkmark.svg",
+    "usb-connection": ":/resources/dark/usb-connection.svg",
+    "shield-check": ":/resources/dark/shield-check.svg",
+    "shield-slash": ":/resources/dark/shield-slash.svg",
+    "shield-tamper": ":/resources/dark/shield-tamper.svg",
+    "app-icon": ":/resources/dark/statusbar-macos@2x.png",
+    "app-logo": ":/resources/logo-macos@2x.png",
+}

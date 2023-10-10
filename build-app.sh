@@ -99,6 +99,9 @@ if pyinstaller "pyinstaller.spec"
 then
     _ok "PyInstaller successfully created build."
     _ok "Find swiftGuard.app in /dist folder."
+    app_size_raw=$(du -sh dist/swiftGuard)
+    app_size=${app_size_raw:1:4}
+    _ok "File size: $app_size"
     _ok "SCRIPT FINISHED!"
 else
     _error "BUILD FAILED!"

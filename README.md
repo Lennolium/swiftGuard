@@ -23,7 +23,7 @@
 alt="commit activity" >
      <a></a>
   <a href="https://github.com/Lennolium/swiftGuard#download" > 
-    <img src="https://img.shields.io/badge/Version-0.0.1-brightgreen" 
+    <img src="https://img.shields.io/badge/Version-0.0.2-brightgreen" 
 alt="stable version" >
      <br>
   <a href="https://github.com/Lennolium/swiftGuard/issues" > 
@@ -93,11 +93,10 @@ shutdown process.
 - __Discrete:__ Operates in the macOS system tray, minimizing 
   interruptions.
 - __Customizable:__ Allows users to configure various settings, including 
-  action (shutdown/hibernate), countdown timer and whitelist.
+  action (shutdown/hibernate), countdown timer and auto start.
 - __Lightweight:__ Designed to consume minimal system resources for optimal 
    performance.
-- __Privacy:__ Does not require an internet connection, ensuring the privacy 
-   of your data.
+- __Privacy:__ Only connects to the internet to check for updates at startup.
 - __Open Source:__ Provides transparency and 
   allows community contributions for continuous development.
 
@@ -146,13 +145,11 @@ regulations. swiftGuard helps maintain compliance by preventing unauthorized dat
 1. Obtain the most recent version by downloading it from [Releases](https://github.com/Lennolium/swiftGuard/releases).
 2. Open the downloaded `swiftGuard.dmg` file.
 3. Drag the swiftGuard application into the Applications folder.
-4. Grant necessary permissions by opening `System Preferences > Security & Privacy > Privacy > Automation` and adding swiftGuard to 
-   the list of applications.
-5. For startup at login, open `System Preferences > General > Login Items` and add swiftGuard to the list of applications.
-6. Open the swiftGuard application from the Applications folder.
-7. swiftGuard should now appear in the macOS system tray.
-8. Test at least once if the shutdown or hibernation is executed correctly. On first run you will be asked to grant the necessary
+4. Open the swiftGuard application from the Applications folder (by right-clicking and selecting `Open`, see Note below)
+5. swiftGuard should now appear in the macOS system tray.
+6. Test at least once if the shutdown or hibernation is executed correctly. On first run you will be asked to grant the necessary
 permissions by macOS.
+7. Automatic startup at login can be enabled in the app's settings menu.
 
 &nbsp;
 > **Important**: Make sure you use FileVault, macOS's built-in disk encryption feature, encrypt your entire disk, 
@@ -161,7 +158,7 @@ permissions by macOS.
 
 >__Note:__ If you get a warning that the application is from an _unidentified developer_, you have to open
 >`System Preferences > Security & Privacy > Security` and click `Open Anyway`
->to allow the application to run. Alternatively, you can right-click on the application icon and select `Open`.
+>to allow the application to run. 
 
 &nbsp;
 

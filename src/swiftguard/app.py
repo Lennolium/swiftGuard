@@ -34,7 +34,6 @@ __date__ = "2023-10-09"
 __status__ = "Prototype"
 
 # Imports.
-import configparser
 import datetime
 import signal
 import sys
@@ -61,7 +60,7 @@ from PySide6.QtWidgets import (
     QWidget,
     )
 
-from swiftguard.const import APP_PATH
+from swiftguard.const import APP_PATH, DARK, LIGHT
 # pylint: disable=unused-import
 # noinspection PyUnresolvedReferences
 from swiftguard.resources import resources_rc  # noqa: F401
@@ -78,27 +77,6 @@ from swiftguard.utils.workers import Worker, Workers
 # Root logger and log counter.
 LOG_COUNT = LogCount()
 LOGGER = create_logger(LOG_COUNT)
-
-# Resource paths.
-LIGHT = {
-    "checkmark": ":/resources/light/checkmark.svg",
-    "usb-connection": ":/resources/light/usb-connection.svg",
-    "shield-check": ":/resources/light/shield-check.svg",
-    "shield-slash": ":/resources/light/shield-slash.svg",
-    "shield-tamper": ":/resources/light/shield-tamper.svg",
-    "app-icon": ":/resources/light/statusbar-macos@2x.png",
-    "app-logo": ":/resources/logo-macos@2x.png",
-}
-
-DARK = {
-    "checkmark": ":/resources/dark/checkmark.svg",
-    "usb-connection": ":/resources/dark/usb-connection.svg",
-    "shield-check": ":/resources/dark/shield-check.svg",
-    "shield-slash": ":/resources/dark/shield-slash.svg",
-    "shield-tamper": ":/resources/dark/shield-tamper.svg",
-    "app-icon": ":/resources/dark/statusbar-macos@2x.png",
-    "app-logo": ":/resources/logo-macos@2x.png",
-}
 
 
 class CustomDialog(QDialog):
@@ -399,9 +377,6 @@ class TrayApp:
     :ivar resources: The resource paths for icons and images based on
         the current theme.
     :type resources: dict
-    :ivar config: The application configuration loaded from the
-        configuration file.
-    :type config: configparser.ConfigParser
     :ivar start_devices_count: A Counter object to keep track of
         initially connected USB devices.
     :type start_devices_count: collections.Counter
@@ -669,7 +644,7 @@ class TrayApp:
             config_write(self.config)
 
             # Signal the worker, that the whitelist was updated.
-            self.worker.updated_whitelist()
+            self.worker.update()
 
             return
 
@@ -689,7 +664,7 @@ class TrayApp:
                 config_write(self.config)
 
                 # Signal the worker, that the whitelist was updated.
-                self.worker.updated_whitelist()
+                self.worker.update()
 
                 return
 

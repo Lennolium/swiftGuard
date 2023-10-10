@@ -85,7 +85,7 @@ class Worker(Workers):
         self.allowed_devices = None
 
         # Updated/load the whitelist.
-        self.updated_whitelist()
+        self.update()
 
     def stop(self):
         """
@@ -113,7 +113,7 @@ class Worker(Workers):
                 f"for right formatting.\nExiting ... \nError: {str(e)}"
             )
 
-    def updated_whitelist(self):
+    def update(self):
         # Get the allowed devices from config file.
         self.allowed_devices = self.whitelist()
 
@@ -145,24 +145,8 @@ class Worker(Workers):
         :return: None
         """
 
-        # Get all connected devices at startup.
-        if self.interface == "USB":
-            start_devices = usb_devices()
-        elif self.interface == "Bluetooth":
-            start_devices = bt_devices()
-        else:
-            raise RuntimeError(f"Unknown interface: {self.interface}.")
-
-        # Remove allowed devices from start devices. They are
-        # allowed to disconnect and connect freely.
-        if self.allowed_devices:
-            # Remove allowed devices from start devices.
-            for device in self.allowed_devices:
-                if device in start_devices:
-                    start_devices.remove(device)
-
-        # Count of each device at startup (minus allowed devices).
-        self.start_devices_count = Counter(start_devices)
+        # Get the whitelist and start devices.
+        self.update()
 
         # Start the main working loop.
         LOGGER.info(
