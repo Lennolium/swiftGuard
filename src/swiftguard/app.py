@@ -28,10 +28,10 @@ https://github.com/Lennolium/swiftGuard/blob/main/LICENSE
 __author__ = "Lennart Haack"
 __email__ = "lennart-haack@mail.de"
 __license__ = "GNU GPLv3"
-__version__ = "0.0.2"
-__build__ = "2023.2"
+__version__ = "0.1.0"
+__build__ = "2023.3"
 __date__ = "2023-10-09"
-__status__ = "Prototype"
+__status__ = "Development"
 
 # Imports.
 import datetime
@@ -44,7 +44,7 @@ from copy import deepcopy
 from functools import partial
 
 import darkdetect
-from PySide6.QtCore import QThread, QTimer, Qt
+from PySide6.QtCore import QThread, Qt
 from PySide6.QtGui import QAction, QIcon, QKeySequence, QPixmap
 from PySide6.QtWidgets import (
     QApplication,
@@ -64,10 +64,10 @@ from swiftguard.const import APP_PATH, DARK, LIGHT
 # pylint: disable=unused-import
 # noinspection PyUnresolvedReferences
 from swiftguard.resources import resources_rc  # noqa: F401
+from swiftguard.utils import conf, routines
 from swiftguard.utils.autostart import add_autostart, del_autostart
 from swiftguard.utils.helpers import (
     check_updates,
-    config_write,
     startup,
     usb_devices,
     )
@@ -461,14 +461,23 @@ class TrayApp:
 
         # OS theme listener: checks for theme changes every 2 seconds in
         # a separate thread.
-        self.theme_thread = None
-        self.theme_timer = None
-        self.theme_worker_handle(True)
+        # self.theme_thread = None
+        # self.theme_timer = None
+        # self.theme_worker_handle(True)
+        # NEW:
+        self.listen_theme = routines.Listener(
+            "Theme", self.theme_listener, 2500
+        )
+        self.listen_theme.start()
 
         # Start the main worker thread (for manipulation detection).
         self.worker = None
         self.worker_thread = None
         self.worker_handle("Guarding")
+
+        # Initialize the USB listener thread (just for menu updates of
+        # connected devices, not for manipulation detection).
+        self.listen_usb = routines.Listener("USB", self.menu_devices_update)
 
         self.menu_settings = None
         self.submenu = None
@@ -480,14 +489,15 @@ class TrayApp:
         self.app_icon.show()
 
         # Start the USB worker thread (checks for connected devices).
-        self.usb_worker_timer = None
-        self.usb_worker_thread = None
+        # self.usb_worker_timer = None
+        # self.usb_worker_thread = None
         self.start_devices_count = Counter(usb_devices())
         self.allowed_devices_count = Counter(
             literal_eval("[" + self.config["Whitelist"]["usb"] + "]")
         )
         self.current_devices_count = Counter(usb_devices())
-        self.usb_worker_handle(state=True)
+
+        # Update the device menu at startup.
         self.menu_devices_update(start_up=True)
 
         # After full initialization, check for updates and show
@@ -495,37 +505,39 @@ class TrayApp:
         if new_vers := check_updates():
             self.update_box(new_vers)
 
-    def usb_worker_handle(self, state):
-        """
-        Start or stop the USB worker thread for monitoring connected
-        devices.
-
-        This function manages the USB worker thread responsible for
-        monitoring USB device connections. It can be started or stopped
-        based on the provided state.
-
-        :param state: A boolean value indicating whether to start (True)
-            or stop (False) the USB worker thread.
-        :type state: bool
-
-        :return: None
-        """
-
-        if state:
-            # Start the usb worker thread.
-            self.usb_worker_thread = QThread()
-            self.usb_worker_timer = QTimer(interval=1000)
-            self.usb_worker_timer.timeout.connect(self.menu_devices_update)
-            self.usb_worker_timer.moveToThread(self.usb_worker_thread)
-            self.usb_worker_thread.started.connect(self.usb_worker_timer.start)
-            self.usb_worker_thread.finished.connect(self.usb_worker_timer.stop)
-            self.usb_worker_thread.start()
-
-        else:
-            # Stop the usb worker thread.
-            self.usb_worker_thread.quit()
-            self.usb_worker_thread.wait()
-            self.usb_worker_thread.deleteLater()
+    # def usb_worker_handle(self, state=True):
+    #     """
+    #     Start or stop the USB worker thread for monitoring connected
+    #     devices.
+    #
+    #     This function manages the USB worker thread responsible for
+    #     monitoring USB device connections. It can be started or stopped
+    #     based on the provided state.
+    #
+    #     :param state: A boolean value indicating whether to start (True)
+    #         or stop (False) the USB worker thread.
+    #     :type state: bool
+    #
+    #     :return: None
+    #     """
+    #
+    #     if state:
+    #         # Start the usb worker thread.
+    #         self.usb_worker_thread = QThread()
+    #         self.usb_worker_timer = QTimer(interval=1000)
+    #         self.usb_worker_timer.timeout.connect(self.menu_devices_update)
+    #         self.usb_worker_timer.moveToThread(self.usb_worker_thread)
+    #         self.usb_worker_thread.started.connect(self.usb_worker_timer.start)
+    #         self.usb_worker_thread.finished.connect(self.usb_worker_timer.stop)
+    #         self.usb_worker_thread.start()
+    #         print("DEBUG: usb_worker_handle: state=True")
+    #
+    #     else:
+    #         # Stop the usb worker thread.
+    #         self.usb_worker_thread.quit()
+    #         self.usb_worker_thread.wait()
+    #         self.usb_worker_thread.deleteLater()
+    #         print("DEBUG: usb_worker_handle: state=False")
 
     def menu_devices_update(self, start_up=False):
         """
@@ -641,7 +653,7 @@ class TrayApp:
                     break
 
             # Write the updated config to disk.
-            config_write(self.config)
+            conf.write(self.config)
 
             # Signal the worker, that the whitelist was updated.
             self.worker.update()
@@ -661,7 +673,7 @@ class TrayApp:
                 LOGGER.info(f"Add device to whitelist: {device_menu}.")
 
                 # Write the updated config to disk.
-                config_write(self.config)
+                conf.write(self.config)
 
                 # Signal the worker, that the whitelist was updated.
                 self.worker.update()
@@ -839,38 +851,38 @@ class TrayApp:
             LOGGER.info(f"Unknown menu settings button was pressed: {button}.")
 
         # Write the updated config to disk.
-        config_write(self.config)
+        conf.write(self.config)
 
-    def theme_worker_handle(self, state):
-        """
-        Start or stop the theme listener thread.
-
-        This function manages the theme listener thread, which detects
-        changes in the system theme. It can be started or stopped based
-        on the provided state.
-
-        :param state: A boolean value indicating whether to start (True)
-            or stop (False) the theme listener thread.
-        :type state: bool
-
-        :return: None
-        """
-
-        if state:
-            # Start the theme thread.
-            self.theme_thread = QThread()
-            self.theme_timer = QTimer(interval=2000)
-            self.theme_timer.timeout.connect(self.theme_listener)
-            self.theme_timer.moveToThread(self.theme_thread)
-            self.theme_thread.started.connect(self.theme_timer.start)
-            self.theme_thread.finished.connect(self.theme_timer.stop)
-            self.theme_thread.start()
-
-        else:
-            # Stop the theme thread.
-            self.theme_thread.quit()
-            self.theme_thread.wait()
-            self.theme_thread.deleteLater()
+    # def theme_worker_handle(self, state):
+    #     """
+    #     Start or stop the theme listener thread.
+    #
+    #     This function manages the theme listener thread, which detects
+    #     changes in the system theme. It can be started or stopped based
+    #     on the provided state.
+    #
+    #     :param state: A boolean value indicating whether to start (True)
+    #         or stop (False) the theme listener thread.
+    #     :type state: bool
+    #
+    #     :return: None
+    #     """
+    #
+    #     if state:
+    #         # Start the theme thread.
+    #         self.theme_thread = QThread()
+    #         self.theme_timer = QTimer(interval=2000)
+    #         self.theme_timer.timeout.connect(self.theme_listener)
+    #         self.theme_timer.moveToThread(self.theme_thread)
+    #         self.theme_thread.started.connect(self.theme_timer.start)
+    #         self.theme_thread.finished.connect(self.theme_timer.stop)
+    #         self.theme_thread.start()
+    #
+    #     else:
+    #         # Stop the theme thread.
+    #         self.theme_thread.quit()
+    #         self.theme_thread.wait()
+    #         self.theme_thread.deleteLater()
 
     def theme_listener(self):
         """
@@ -883,6 +895,8 @@ class TrayApp:
 
         :return: None
         """
+        # while True:
+        #    print("lol")
 
         theme_os = darkdetect.theme()
 
@@ -965,7 +979,7 @@ class TrayApp:
         # Disable future update messages.
         if cb.isChecked():
             self.config["Application"]["check_updates"] = "0"
-            config_write(self.config)
+            conf.write(self.config)
 
     def create_tray_icon(self):
         """
@@ -993,6 +1007,9 @@ class TrayApp:
         submenu_dummy = QAction("Searching ...", self.submenu)
         submenu_dummy.setEnabled(False)
         self.submenu.addAction(submenu_dummy)
+
+        self.submenu.aboutToShow.connect(self.listen_usb.start)
+        self.submenu.aboutToHide.connect(self.listen_usb.stop)
 
         # Add an "Enabled" menu item and connect it to submenu creation.
         self.menu_enabled = ToggleEntry(
@@ -1282,9 +1299,11 @@ class TrayApp:
     def handle_exception(self, exc_type, exc_value, exc_traceback):
         """
         The handle_exception function is a custom exception handler that
-        logs uncaught exceptions to CRITICAL.
+        logs uncaught exceptions to the log file with the level
+        CRITICAL. Finally, it calls the exit_handler function to exit
+        the program.
 
-        :param exc_type: Store the type of exception that occurred
+        :param exc_type: Store the exception type
         :param exc_value: Get the exception value
         :param exc_traceback: Get the traceback object
         :return: None
@@ -1324,14 +1343,21 @@ class TrayApp:
                 return
 
             # Stop and delete the theme thread to prevent memory leaks.
-            self.theme_worker_handle(False)
+            # self.theme_worker_handle(False)
+            self.listen_theme.stop()
+        except Exception:  # nosec B110
+            pass
 
+        try:
             # Stop and delete the connected devices thread.
-            self.usb_worker_handle(False)
+            # self.usb_worker_handle(False) TODO: remove this.
+            self.listen_usb.stop()
+        except Exception:  # nosec B110
+            pass
 
+        try:
             # Stop and delete the worker thread.
             self.worker_handle("Inactive")
-
         except Exception:  # nosec B110
             pass
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-conf.py: TODO: Headline...
+upgrade.py: TODO: Headline...
 
 TODO: Description...
 """
@@ -10,11 +10,9 @@ TODO: Description...
 __author__ = "Lennart Haack"
 __email__ = "lennart-haack@mail.de"
 __license__ = "GNU GPLv3"
-__version__ = "0.0.2"
-__build__ = "2023.2"
+__version__ = "0.1.0"
+__build__ = "2023.3"
 __date__ = "2023-10-09"
-__status__ = "Prototype"
+__status__ = "Development"
 
 # Imports.
-
-# TODO: Move config functions from helpers.py to here.

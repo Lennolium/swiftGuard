@@ -1,9 +1,24 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-# swiftGuard .spec file for PyInstaller to build a macOS .app file.
-# Lennart Haack << lennart-haack@mail.de >> https://github.com/Lennolium
+########################################################################
+#                PyInstaller spec File for swiftGuard                  #
+#                        << Lennart Haack >>                           #
+#                    << lennart-haack@mail.de >>                       #
+#                 << https://github.com/Lennolium >>                   #
+########################################################################
 
-######################## Configuration (start) #########################
+########################## Auto Configuration ##########################
+
+# Get app version from const.py (Major.Minor.Patch).
+import re
+with open("src/swiftguard/const.py", "r") as file:
+    content = file.read()
+app_version = re.search(r'__version__\s*=\s*["\']([^"\']+)["\']', content).group(1)
+
+# Get the build version from const.py (Year.BuildNumber).
+build_version = re.search(r'__build__\s*=\s*["\']([^"\']+)["\']', content).group(1)
+
+########################## User Configuration ##########################
 
 # Intel: 'x86_64', Apple Silicon: 'arm64'
 app_arch = 'x86_64'
@@ -11,12 +26,6 @@ app_arch = 'x86_64'
 # Name.
 app_name = 'swiftGuard'
 binary_name = app_name + '.app'
-
-# Major.Minor.Patch
-app_version = '0.0.2'
-
-# Year.BuildNumber
-build_version = '2023.2'
 
 # App entry point.
 app_entry_point = 'src/swiftguard/app.py'
@@ -77,7 +86,7 @@ hidden_imports = [
     'PySide6.QtWidgets',
 ]
 
-######################### Configuration (end) ##########################
+############################# PyInstaller ##############################
 
 a = Analysis(
     [app_entry_point,],

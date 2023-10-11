@@ -22,7 +22,7 @@
     <img src="https://img.shields.io/github/commit-activity/m/Lennolium/swiftGuard?label=Commit%20Activity" 
 alt="commit activity" >
      <a></a>
-  <a href="https://github.com/Lennolium/swiftGuard#download" > 
+  <a href="https://github.com/Lennolium/swiftGuard/releases" > 
     <img src="https://img.shields.io/badge/Version-0.0.2-brightgreen" 
 alt="stable version" >
      <br>

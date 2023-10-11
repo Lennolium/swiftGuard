@@ -2,46 +2,25 @@
 
 """
 workers.py: This module implements the main worker object/loop, which is
-a subclass of QObject. It guards the usb ports and detects manipulation.
+a subclass of QObject. It guards the interface and detects manipulation.
 It also executes the user defined action, if a manipulation is detected.
 The worker is started by the main application, runs in a separate thread
-and is stopped if the user defuses the countdown.
-
-NOTE: You can use this module standalone without the GUI. Just run this
-script in terminal. For changing settings and allowing devices, have a
-look in ~/Library/Preferences/swiftguard/swiftguard.ini.
-
-WHITELIST: Insert your USB device, open a terminal and run the command:
-'system_profiler SPUSBDataType -xml -detailLevel mini'.
-
-Search your device and copy 'vendor_id', 'product_id' (both without 0x),
-serial_num and _name. Insert them in the whitelist section of the config
-file using the following format:
-('vendor_id', 'product_id', 'serial_num', '_name')
-
-Separate multiple devices with a comma and a space. Example:
-devices = ('apple_vendor_id', '12a8', '000012345ABCD123456789',
-'iPhone 13 Pro'), ('0123', '6110', '00001234ABCDE123', 'UsbStick')
-
-For Apple devices, use the full name. Example: iPhone -> iPhone 13 Pro.
-A list of all full names can be found in the helpers.py file.
-
-ALTERNATIVE: Insert USB device, start the application (GUI) and add the
-device to the whitelist in the settings menu. Close the application and
-start this script. The device should be allowed now.
+and is stopped if the user defuses the countdown. There are many other
+workers possible, one for each interface (USB, Bluetooth, ...).
 """
 
 # Header.
 __author__ = "Lennart Haack"
 __email__ = "lennart-haack@mail.de"
 __license__ = "GNU GPLv3"
-__version__ = "0.0.2"
-__build__ = "2023.2"
+__version__ = "0.1.0"
+__build__ = "2023.3"
 __date__ = "2023-10-09"
-__status__ = "Prototype"
+__status__ = "Development"
 
 # Imports.
 import logging
+import subprocess
 from ast import literal_eval
 from collections import Counter
 from time import sleep
@@ -52,13 +31,54 @@ from swiftguard.const import CONFIG_FILE
 from swiftguard.utils.helpers import (
     bt_devices,
     devices_state,
-    hibernate,
-    shutdown,
     usb_devices,
     )
 
 # Child logger.
 LOGGER = logging.getLogger(__name__)
+
+
+def shutdown():
+    """
+    This function will shut down the computer using AppleScript.
+
+    :return: None
+    """
+
+    # AppleScript: slower, but only way to shut down without sudo.
+    osascript_path = "/usr/bin/osascript"
+    sd_process = subprocess.run(  # nosec B603
+        [osascript_path, "-e", 'tell app "System Events" to shut down'],
+    )
+
+    # Check exit code of osascript for success.
+    if sd_process.returncode != 0:
+        # Fallback to hibernate.
+        hibernate()
+
+    # Return to prevent multiple execution.
+    return
+
+
+def hibernate():
+    """
+    This function will put the computer to sleep by trying two methods.
+
+    :return: None
+    """
+
+    # First method/try (pmset, faster).
+    pmset_path = "/usr/bin/pmset"
+    subprocess.run([pmset_path, "sleepnow"])  # nosec B603
+
+    # Second method/try (AppleScript, slower).
+    osascript_path = "/usr/bin/osascript"
+    subprocess.run(  # nosec B603
+        [osascript_path, "-e", 'tell app "System Events" to sleep'],
+    )
+
+    # Return to prevent multiple execution.
+    return
 
 
 class Workers(QObject):
@@ -158,7 +178,7 @@ class Worker(Workers):
         # Main loop.
         while self.running:
             # Sleep for the user defined interval.
-            sleep(float(self.config["User"]["check_interval"]))
+            # sleep(float(self.config["User"]["check_interval"]))
 
             # List of currently connected devices.
             if self.interface == "USB":

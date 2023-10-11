@@ -1,19 +1,40 @@
 #!/usr/bin/env python3
 
 """
-cli.py: TODO: Headline...
+cli.py: Starting point of the command-line interface application.
 
-TODO: Move docstring from workers.py to here.
+You can use this module standalone without the GUI. Just run this
+script in terminal. For changing settings and allowing devices, have a
+look in ~/Library/Preferences/swiftguard/swiftguard.ini.
+
+WHITELIST: Insert your USB device, open a terminal and run the command:
+'system_profiler SPUSBDataType -xml -detailLevel mini'.
+
+Search your device and copy 'vendor_id', 'product_id' (both without 0x),
+serial_num and _name. Insert them in the whitelist section of the config
+file using the following format:
+('vendor_id', 'product_id', 'serial_num', '_name')
+
+Separate multiple devices with a comma and a space. Example:
+devices = ('apple_vendor_id', '12a8', '000012345ABCD123456789',
+'iPhone 13 Pro'), ('0123', '6110', '00001234ABCDE123', 'UsbStick')
+
+For Apple devices, use the full name. Example: iPhone -> iPhone 13 Pro.
+A list of all full names can be found in the utils/helpers.py file.
+
+ALTERNATIVE: Insert USB device, start the application (GUI) and add the
+device to the whitelist in the settings menu. Close the application and
+start this script. The device should be allowed now.
 """
 
 # Header.
 __author__ = "Lennart Haack"
 __email__ = "lennart-haack@mail.de"
 __license__ = "GNU GPLv3"
-__version__ = "0.0.2"
-__build__ = "2023.2"
+__version__ = "0.1.0"
+__build__ = "2023.3"
 __date__ = "2023-10-09"
-__status__ = "Prototype"
+__status__ = "Development"
 
 # Imports.
 import signal
@@ -28,8 +49,18 @@ LOG_COUNT = LogCount()
 LOGGER = create_logger(LOG_COUNT)
 
 
-# Handle uncaught exceptions and log them to CRITICAL.
 def handle_exception(exc_type, exc_value, exc_traceback):
+    """
+    The handle_exception function is a custom exception handler that
+    logs uncaught exceptions to the log file with the level CRITICAL.
+    Finally, it calls the exit_handler function to exit the program.
+
+    :param exc_type: Store the exception type
+    :param exc_value: Get the exception value
+    :param exc_traceback: Get the traceback object
+    :return: None
+    """
+
     # Do not log KeyboardInterrupt (Ctrl+C).
     if issubclass(exc_type, KeyboardInterrupt):
         sys.__excepthook__(exc_type, exc_value, exc_traceback)

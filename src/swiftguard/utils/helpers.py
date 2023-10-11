@@ -12,28 +12,26 @@ to perform fast usb device detection (macOS native).
 __author__ = "Lennart Haack"
 __email__ = "lennart-haack@mail.de"
 __license__ = "GNU GPLv3"
-__version__ = "0.0.2"
-__build__ = "2023.2"
+__version__ = "0.1.0"
+__build__ = "2023.3"
 __date__ = "2023-10-09"
-__status__ = "Prototype"
+__status__ = "Development"
 
 # Imports.
 import configparser
 import logging
-import os
 import plistlib
-import shutil
 import subprocess  # nosec
 
 import requests
 
 from swiftguard.const import (
     APP_PATH,
-    CONFIG_FILE,
     CURRENT_MODE,
     CURRENT_PLATFORM,
     DEVICE_RE,
     )
+from swiftguard.utils import conf
 from swiftguard.utils.autostart import (
     add_autostart,
     del_autostart,
@@ -41,49 +39,6 @@ from swiftguard.utils.autostart import (
 
 # Child logger.
 LOGGER = logging.getLogger(__name__)
-
-
-def shutdown():
-    """
-    This function will shut down the computer using AppleScript.
-
-    :return: None
-    """
-
-    # AppleScript: slower, but only way to shut down without sudo.
-    osascript_path = "/usr/bin/osascript"
-    sd_process = subprocess.run(  # nosec B603
-        [osascript_path, "-e", 'tell app "System Events" to shut down'],
-    )
-
-    # Check exit code of osascript for success.
-    if sd_process.returncode != 0:
-        # Fallback to hibernate.
-        hibernate()
-
-    # Return to prevent multiple execution.
-    return
-
-
-def hibernate():
-    """
-    This function will put the computer to sleep by trying two methods.
-
-    :return: None
-    """
-
-    # First method/try (pmset, faster).
-    pmset_path = "/usr/bin/pmset"
-    subprocess.run([pmset_path, "sleepnow"])  # nosec B603
-
-    # Second method/try (AppleScript, slower).
-    osascript_path = "/usr/bin/osascript"
-    subprocess.run(  # nosec B603
-        [osascript_path, "-e", 'tell app "System Events" to sleep'],
-    )
-
-    # Return to prevent multiple execution.
-    return
 
 
 def devices_state(interface):
@@ -119,169 +74,6 @@ def devices_state(interface):
         )
 
     return msg
-
-
-def config_create(force_restore=False):
-    # TODO: docstring.
-
-    # If no config file exists, copy the default config file.
-    if os.path.isfile(CONFIG_FILE) and not force_restore:
-        return
-    try:
-        # If no config directory exists, create it.
-        if not os.path.isdir(os.path.dirname(CONFIG_FILE)):
-            os.mkdir(os.path.dirname(CONFIG_FILE))
-
-        # Copy config file to config dir or overwrite existing one.
-        shutil.copy(
-            os.path.join(APP_PATH, "install", "swiftguard.ini"),
-            CONFIG_FILE,
-        )
-
-    except Exception as e:
-        raise e from RuntimeError(
-            f"Could not create config file at {CONFIG_FILE}!\n"
-            f"Error: {str(e)}"
-        )
-
-    if force_restore:
-        LOGGER.warning(
-            f"Config file at {CONFIG_FILE} was overwritten with "
-            f"default values."
-        )
-        return
-
-    LOGGER.info(f"Created config file at {CONFIG_FILE}.")
-
-
-def config_validate(config):
-    conf_default = {
-        "Application": ["version", "log", "log_level", "check_updates"],
-        "User": ["autostart", "action", "delay", "check_interval"],
-        "Whitelist": ["usb", "bluetooth"],
-    }
-
-    for key, value in conf_default.items():
-        for item in value:
-            if not config.has_option(key, item):
-                config_create(force_restore=True)
-                config.read(CONFIG_FILE, encoding="utf-8")
-
-                # Further checks are not needed, because of overwrite.
-                return config
-
-    # Defaulting some values if incorrect or not set.
-    default_needed = False
-
-    log_dest = config["Application"]["log"]
-    # Check length of string (4: 'file' to 20: 'file, syslog, stdout').
-    if not 4 <= len(log_dest) <= 20:
-        config["Application"]["log"] = "file"
-        log_dest = "file"
-        default_needed = True
-
-    log_dest = log_dest.split(", ")
-
-    # Check if 'log to' options are valid (file, syslog, stdout).
-    for dest in log_dest:
-        if dest not in ["file", "syslog", "stdout"]:
-            config["Application"]["log"] = "file"
-            default_needed = True
-
-    # Check if log_level is in valid bounds (1,2,...,5).
-    if config["Application"]["log_level"] not in ["1", "2", "3", "4", "5"]:
-        config["Application"]["log_level"] = "2"
-        default_needed = True
-
-    # Check if update checking is either 1 (True) or 0 (False).
-    if config["Application"]["check_updates"] not in ["0", "1"]:
-        config["User"]["check_updates"] = "1"
-        default_needed = True
-
-    # Check if autostart is either 1 (True) or 0 (False).
-    if config["User"]["autostart"] not in ["0", "1"]:
-        config["User"]["autostart"] = "1"
-        default_needed = True
-
-    # Check if action is valid option.
-    if config["User"]["action"] not in ["shutdown", "hibernate"]:
-        config["User"]["action"] = "shutdown"
-        default_needed = True
-
-    # Check if delay is convertable to an integer and not negative.
-    if not config["User"]["delay"].isdecimal():
-        config["User"]["delay"] = "0"
-        default_needed = True
-
-    elif int(config["User"]["delay"]) < 0:
-        config["User"]["delay"] = "0"
-        default_needed = True
-
-    # Check if check_interval is convertable to a float.
-    try:
-        float(config["User"]["check_interval"])
-    except ValueError:
-        config["User"]["check_interval"] = "1.0"
-        default_needed = True
-
-    # Check if check_interval is negative.
-    if float(config["User"]["check_interval"]) <= 0:
-        config["User"]["check_interval"] = "0.5"
-        default_needed = True
-
-    # If default values were needed, write config file on disk.
-    if default_needed:
-        LOGGER.warning(
-            f"One or more values in {CONFIG_FILE} were incorrect or not "
-            f"set. Corrected them to default values and wrote config file "
-            f"on disk.",
-        )
-        config_write(config)
-
-    return config
-
-
-def config_load(config):
-    """
-    The config_load function loads the config file and checks if its
-    content is valid and complete. If not, it will exit the program with
-    an error message.
-
-    :param config: Pass the config object to this function
-    :return: A configparser object
-    """
-
-    # Parse config file.
-    try:
-        config.read(CONFIG_FILE, encoding="utf-8")
-
-    except (
-        configparser.MissingSectionHeaderError,
-        configparser.ParsingError,
-    ) as e:
-        LOGGER.error(f"Error while parsing config file: {str(e)}.")
-        config_create(force_restore=True)
-        config.read(CONFIG_FILE, encoding="utf-8")
-
-        # Further checks are not needed, because of overwrite.
-        return config
-
-    # Validate and sanitize loaded config.
-    config = config_validate(config)
-
-    return config
-
-
-def config_write(config):
-    """
-    The config_write function writes the config file to disk.
-
-    :param config: Write the config file
-    :return: None
-    """
-
-    with open(CONFIG_FILE, "w", encoding="utf-8") as config_file:
-        config.write(config_file)
 
 
 def check_encryption():
@@ -387,11 +179,11 @@ def startup():
     check_encryption()
 
     # Copy default config file to CONFIG_FILE location.
-    config_create()
+    conf.create()
 
     # Load settings from config file.
     config_parser = configparser.ConfigParser()
-    config = config_load(config_parser)
+    config = conf.load(config_parser)
 
     # TODO: Config encryption by user password.
     # import binascii
@@ -442,7 +234,7 @@ def startup():
         config["Application"]["version"] = __version__
 
         # And write the config file on disk.
-        config_write(config)
+        conf.write(config)
 
     # Check if there is a newer version of swiftGuard available.
     if config["Application"]["check_updates"] == "1":
