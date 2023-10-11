@@ -1,7 +1,6 @@
 PySide6==6.5.3
 PySide6-Addons==6.5.3
 PySide6-Essentials==6.5.3
-darkdetect==0.8.0
 requests==2.31.0
 pyoslog==1.1.0
 black==23.9.1

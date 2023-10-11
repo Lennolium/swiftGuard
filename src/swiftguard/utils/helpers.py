@@ -239,6 +239,8 @@ def startup():
     # Check if there is a newer version of swiftGuard available.
     if config["Application"]["check_updates"] == "1":
         check_updates(log=True)
+    else:
+        LOGGER.info("Auto update checking is disabled (not recommended).")
 
     # All startup checks finished without critical errors.
     LOGGER.info("Startup checks done and swiftGuard ready to run!")
@@ -485,6 +487,10 @@ def check_updates(log=False):
 
     :return: None or a string of the new version
     """
+
+    # TODO: QDate for last check. Only check once a day for example.
+    #  store it in a class variable, not in .ini, because it's not
+    #  needed to be stored persistently (if app started -> auto check).
 
     try:
         response = requests.get(

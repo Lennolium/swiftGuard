@@ -23,9 +23,8 @@ import logging
 import subprocess
 from ast import literal_eval
 from collections import Counter
-from time import sleep
 
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import QObject, QThread, Signal
 
 from swiftguard.const import CONFIG_FILE
 from swiftguard.utils.helpers import (
@@ -179,6 +178,7 @@ class Worker(Workers):
         while self.running:
             # Sleep for the user defined interval.
             # sleep(float(self.config["User"]["check_interval"]))
+            QThread.sleep(1)
 
             # List of currently connected devices.
             if self.interface == "USB":
@@ -245,7 +245,7 @@ class Worker(Workers):
                 )
 
                 for i in range(delay):
-                    sleep(1)
+                    QThread.sleep(1)
 
                     # Check if worker was defused by main app.
                     if self.defused:

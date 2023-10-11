@@ -23,7 +23,6 @@ PySide6 = "^6.5.2"
 PySide6-Addons = "^6.5.2"
 PySide6-Essentials = "^6.5.2"
 pyoslog = "^1.1.0"
-darkdetect = "^0.8.0"
 requests = "^2.31.0"
 
 

@@ -39,11 +39,9 @@ import signal
 import sys
 import webbrowser
 from ast import literal_eval
-from collections import Counter
 from copy import deepcopy
 from functools import partial
 
-import darkdetect
 from PySide6.QtCore import QThread, Qt
 from PySide6.QtGui import QAction, QIcon, QKeySequence, QPixmap
 from PySide6.QtWidgets import (
@@ -60,11 +58,11 @@ from PySide6.QtWidgets import (
     QWidget,
     )
 
-from swiftguard.const import APP_PATH, DARK, LIGHT
+from swiftguard import const
 # pylint: disable=unused-import
 # noinspection PyUnresolvedReferences
 from swiftguard.resources import resources_rc  # noqa: F401
-from swiftguard.utils import conf, routines
+from swiftguard.utils import conf, helpers, listeners
 from swiftguard.utils.autostart import add_autostart, del_autostart
 from swiftguard.utils.helpers import (
     check_updates,
@@ -376,7 +374,7 @@ class TrayApp:
     :type theme: str
     :ivar resources: The resource paths for icons and images based on
         the current theme.
-    :type resources: dict
+    :type resources: dict | None
     :ivar start_devices_count: A Counter object to keep track of
         initially connected USB devices.
     :type start_devices_count: collections.Counter
@@ -445,9 +443,14 @@ class TrayApp:
         # Set the exception hook.
         sys.excepthook = self.handle_exception
 
-        # Set the current OS theme and corresponding resources.
-        self.theme = darkdetect.theme()
-        self.resources = LIGHT if self.theme == "Light" else DARK
+        # Initialize the style hints and connect the signal to the theme
+        # update function (for registering real-time theme changes).
+        self.style_hints = self.app.styleHints()
+        self.style_hints.colorSchemeChanged.connect(self.theme_update)
+
+        # Call the theme update function to set the initial theme.
+        self.resources = None
+        self.theme_update()
 
         # Initialize the config and run startup checks.
         self.config = startup()
@@ -459,25 +462,10 @@ class TrayApp:
         if "stdout" not in self.config["Application"]["log"]:
             print("Start guarding the USB interface ...", file=sys.stdout)
 
-        # OS theme listener: checks for theme changes every 2 seconds in
-        # a separate thread.
-        # self.theme_thread = None
-        # self.theme_timer = None
-        # self.theme_worker_handle(True)
-        # NEW:
-        self.listen_theme = routines.Listener(
-            "Theme", self.theme_listener, 2500
-        )
-        self.listen_theme.start()
-
         # Start the main worker thread (for manipulation detection).
         self.worker = None
         self.worker_thread = None
         self.worker_handle("Guarding")
-
-        # Initialize the USB listener thread (just for menu updates of
-        # connected devices, not for manipulation detection).
-        self.listen_usb = routines.Listener("USB", self.menu_devices_update)
 
         self.menu_settings = None
         self.submenu = None
@@ -488,58 +476,35 @@ class TrayApp:
         self.app_icon = self.create_tray_icon()
         self.app_icon.show()
 
-        # Start the USB worker thread (checks for connected devices).
-        # self.usb_worker_timer = None
-        # self.usb_worker_thread = None
-        self.start_devices_count = Counter(usb_devices())
-        self.allowed_devices_count = Counter(
-            literal_eval("[" + self.config["Whitelist"]["usb"] + "]")
-        )
-        self.current_devices_count = Counter(usb_devices())
+        # Create the listener for USB devices (for dynamic menu update).
+        listeners.Listeners.config = self.config
+        listeners.Listeners.intervall = 10
+        self.listen_usb = listeners.ListenerUSB()
 
-        # Update the device menu at startup.
-        self.menu_devices_update(start_up=True)
+        # If a new device is connected, update the device menu.
+        self.listen_usb.triggered.connect(self.menu_devices_update)
+
+        # Move the worker object to a separate thread.
+        self.listen_usb_thread = QThread()
+        self.listen_usb.moveToThread(self.listen_usb_thread)
+
+        self.listen_usb_thread.started.connect(self.listen_usb.start)
+        self.listen_usb_thread.finished.connect(self.listen_usb.stop)
+
+        self.menu_tray.aboutToShow.connect(self.listen_usb_thread.start)
+        self.menu_tray.aboutToHide.connect(self.listen_usb_thread.quit)
+
+        # For a fast device menu update, call the update function
+        # directly at when the menu is about to be shown.
+        self.menu_tray.aboutToShow.connect(self.menu_devices_update)
 
         # After full initialization, check for updates and show
         # messageBox if update is available.
-        if new_vers := check_updates():
-            self.update_box(new_vers)
+        if self.config["Application"]["check_updates"] == "1":
+            if new_vers := check_updates():
+                self.update_box(new_vers)
 
-    # def usb_worker_handle(self, state=True):
-    #     """
-    #     Start or stop the USB worker thread for monitoring connected
-    #     devices.
-    #
-    #     This function manages the USB worker thread responsible for
-    #     monitoring USB device connections. It can be started or stopped
-    #     based on the provided state.
-    #
-    #     :param state: A boolean value indicating whether to start (True)
-    #         or stop (False) the USB worker thread.
-    #     :type state: bool
-    #
-    #     :return: None
-    #     """
-    #
-    #     if state:
-    #         # Start the usb worker thread.
-    #         self.usb_worker_thread = QThread()
-    #         self.usb_worker_timer = QTimer(interval=1000)
-    #         self.usb_worker_timer.timeout.connect(self.menu_devices_update)
-    #         self.usb_worker_timer.moveToThread(self.usb_worker_thread)
-    #         self.usb_worker_thread.started.connect(self.usb_worker_timer.start)
-    #         self.usb_worker_thread.finished.connect(self.usb_worker_timer.stop)
-    #         self.usb_worker_thread.start()
-    #         print("DEBUG: usb_worker_handle: state=True")
-    #
-    #     else:
-    #         # Stop the usb worker thread.
-    #         self.usb_worker_thread.quit()
-    #         self.usb_worker_thread.wait()
-    #         self.usb_worker_thread.deleteLater()
-    #         print("DEBUG: usb_worker_handle: state=False")
-
-    def menu_devices_update(self, start_up=False):
+    def menu_devices_update(self):
         """
         Update the device menu based on connected and allowed devices.
 
@@ -548,41 +513,32 @@ class TrayApp:
         in the whitelist. It can be called at startup and when devices
         change.
 
-        :param start_up: A boolean indicating whether the update is
+        :param startup: A boolean indicating whether the update is
             occurring at application startup.
-        :type start_up: bool
+        :type startup: bool
 
         :return: None
         """
 
-        # Get the current devices and their exact count.
-        curr = usb_devices()
-        curr_copy = deepcopy(curr)
-        curr_count = Counter(curr)
+        # Get the current devices.
+        current_connect = helpers.usb_devices()
+        current_connect_copy = deepcopy(current_connect)
 
-        # Get the allowed devices and their exact count.
-        allow = literal_eval("[" + self.config["Whitelist"]["usb"] + "]")
-        allow_count = Counter(allow)
-
-        # If the count of currently connected devices is the same as
-        # before, and the count of allowed devices is the same as
-        # before, there is no need to update the device menu.
-        if not start_up and (
-            self.start_devices_count == curr_count
-            and self.allowed_devices_count == allow_count
-        ):
-            return
+        # Get the allowed devices.
+        current_allow = literal_eval(
+            "[" + self.config["Whitelist"]["usb"] + "]"
+        )
 
         # Remove allowed devices from start devices.
-        for device in allow:
-            if device in curr_copy:
-                curr_copy.remove(device)
+        for device in current_allow:
+            if device in current_connect_copy:
+                current_connect_copy.remove(device)
 
         # Clear the submenu of all entries.
         self.submenu.clear()
 
         # Add all whitelisted devices to the submenu.
-        for device in allow:
+        for device in current_allow:
             device_name = str(device[3])
             device_action = ToggleEntry(
                 self.whitelist_update,
@@ -595,7 +551,7 @@ class TrayApp:
             self.submenu.addAction(device_action.entry)
 
         # Add the remaining currently connected devices to the submenu.
-        for device in curr_copy:
+        for device in current_connect_copy:
             device_name = str(device[3])
             device_action = ToggleEntry(
                 self.whitelist_update,
@@ -609,15 +565,10 @@ class TrayApp:
 
         # If whitelist is empty and no devices are connected, add a
         # dummy entry ("Searching").
-        if not allow and not curr:
+        if not current_allow and not current_connect:
             submenu_dummy = QAction("Searching ...", self.submenu)
             submenu_dummy.setEnabled(False)
             self.submenu.addAction(submenu_dummy)
-
-        # Update the start and allowed devices count, for next
-        # function call/iteration.
-        self.start_devices_count = curr_count
-        self.allowed_devices_count = allow_count
 
     def whitelist_update(self, device_menu, checked):
         """
@@ -767,7 +718,7 @@ class TrayApp:
         self.app_icon.show()
 
         # Update the device menu.
-        self.menu_devices_update(start_up=True)
+        self.menu_devices_update()
 
         LOGGER.info("The worker was STOPPED after defusing!")
 
@@ -853,69 +804,27 @@ class TrayApp:
         # Write the updated config to disk.
         conf.write(self.config)
 
-    # def theme_worker_handle(self, state):
-    #     """
-    #     Start or stop the theme listener thread.
-    #
-    #     This function manages the theme listener thread, which detects
-    #     changes in the system theme. It can be started or stopped based
-    #     on the provided state.
-    #
-    #     :param state: A boolean value indicating whether to start (True)
-    #         or stop (False) the theme listener thread.
-    #     :type state: bool
-    #
-    #     :return: None
-    #     """
-    #
-    #     if state:
-    #         # Start the theme thread.
-    #         self.theme_thread = QThread()
-    #         self.theme_timer = QTimer(interval=2000)
-    #         self.theme_timer.timeout.connect(self.theme_listener)
-    #         self.theme_timer.moveToThread(self.theme_thread)
-    #         self.theme_thread.started.connect(self.theme_timer.start)
-    #         self.theme_thread.finished.connect(self.theme_timer.stop)
-    #         self.theme_thread.start()
-    #
-    #     else:
-    #         # Stop the theme thread.
-    #         self.theme_thread.quit()
-    #         self.theme_thread.wait()
-    #         self.theme_thread.deleteLater()
+    def theme_update(self):
+        # Get the current system theme.
+        theme_os = self.style_hints.colorScheme().name.upper()
 
-    def theme_listener(self):
-        """
-        Listen for changes in the system theme and update application
-        resources accordingly.
+        LOGGER.debug(f"Application theme: {theme_os}.")
 
-        This function listens for changes in the system theme (e.g.,
-        Light to Dark) and updates application resources such as icons
-        and images accordingly.
+        # Set the application resources based on the current theme.
+        self.resources = const.LIGHT if theme_os == "LIGHT" else const.DARK
 
-        :return: None
-        """
-        # while True:
-        #    print("lol")
+        # If the app is starting, no need to update the icons before
+        # the tray icon is even created -> return here.
+        if not hasattr(self, "app_icon"):
+            return
 
-        theme_os = darkdetect.theme()
+        # Update all icons by deleting and recreating the tray menu.
+        self.app_icon.deleteLater()
+        self.app_icon = self.create_tray_icon()
+        self.app_icon.show()
 
-        if self.theme != theme_os:
-            # Update application resources to their dark/light variants.
-            self.resources = LIGHT if theme_os == "Light" else DARK
-            # Set the current theme variable.
-            self.theme = theme_os
-
-            # Update all icons by deleting and recreating the tray menu.
-            self.app_icon.deleteLater()
-            self.app_icon = self.create_tray_icon()
-            self.app_icon.show()
-
-            # Update the device menu.
-            self.menu_devices_update(start_up=True)
-
-            # Log.
-            LOGGER.info(f"Application theme changed: {self.theme}.")
+        # Update the device menu
+        self.menu_devices_update()
 
     def update_box(self, new_vers):
         """
@@ -981,6 +890,8 @@ class TrayApp:
             self.config["Application"]["check_updates"] = "0"
             conf.write(self.config)
 
+        # TODO: implement focus on dialog / move dialog to front.
+
     def create_tray_icon(self):
         """
         Create and configure the system tray icon and its menu.
@@ -1000,6 +911,7 @@ class TrayApp:
         tray_icon.setIcon(QIcon(self.resources["app-icon"]))
 
         menu_tray = QMenu()
+        self.menu_tray = menu_tray
 
         # Create a submenu for "Devices" initially disabled.
         self.submenu = menu_tray.addMenu("Devices")
@@ -1007,9 +919,6 @@ class TrayApp:
         submenu_dummy = QAction("Searching ...", self.submenu)
         submenu_dummy.setEnabled(False)
         self.submenu.addAction(submenu_dummy)
-
-        self.submenu.aboutToShow.connect(self.listen_usb.start)
-        self.submenu.aboutToHide.connect(self.listen_usb.stop)
 
         # Add an "Enabled" menu item and connect it to submenu creation.
         self.menu_enabled = ToggleEntry(
@@ -1154,7 +1063,7 @@ class TrayApp:
         """
 
         msg_box = CustomDialog(
-            f"{APP_PATH}/resources/ACKNOWLEDGMENTS",
+            f"{const.APP_PATH}/resources/ACKNOWLEDGMENTS",
             "Acknowledgements",
             "swiftGuard uses the following third-party libraries:",
         )
@@ -1335,23 +1244,21 @@ class TrayApp:
         :return: None
         """
 
-        try:
-            # If the manipulation was detected, do not exit the application,
-            # if user presses the "Exit" menu item. Defusing before exiting
-            # is required.
-            if self.menu_tamper.isVisible():
-                return
+        # If the manipulation was detected, do not exit the application,
+        # if user presses the "Exit" menu item. Defusing before exiting
+        # is required.
+        if self.menu_tamper.isVisible():
+            return
 
-            # Stop and delete the theme thread to prevent memory leaks.
-            # self.theme_worker_handle(False)
-            self.listen_theme.stop()
-        except Exception:  # nosec B110
-            pass
+        # Start by hiding the app icon for a simulated, fast exit.
+        self.app_icon.hide()
 
         try:
             # Stop and delete the connected devices thread.
-            # self.usb_worker_handle(False) TODO: remove this.
-            self.listen_usb.stop()
+            self.listen_usb_thread.quit()
+            self.listen_usb_thread.wait()
+            self.listen_usb_thread.deleteLater()
+
         except Exception:  # nosec B110
             pass
 

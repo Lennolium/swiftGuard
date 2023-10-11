@@ -208,5 +208,10 @@ def write(config):
     :return: None
     """
 
+    # TODO: vor dem schreiben config[whitelist] in str umwandeln und
+    #  liste entfernen (erster und letzter char) und dann wieder in
+    #  config speichern -> so sparen wir uns das parsen mit literal_eval
+    #  überall in den anderen modulen. müsste man in load auch anpassen.
+
     with open(CONFIG_FILE, "w", encoding="utf-8") as config_file:
         config.write(config_file)

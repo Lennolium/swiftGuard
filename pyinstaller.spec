@@ -64,7 +64,6 @@ hidden_imports = [
     'collections',
     'configparser',
     'copy',
-    'darkdetect',
     'datetime',
     'functools',
     'logging',

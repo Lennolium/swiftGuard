@@ -18,7 +18,7 @@
    <a href="https://app.codacy.com/gh/Lennolium/swiftGuard/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade" > 
     <img src="https://app.codacy.com/project/badge/Grade/7e4271efc8894c9fab80e2f27f896a87" alt="code quality" >
     <a></a>
-   <a href="https://github.com/Lennolium/swiftGuard/commits/master" > 
+   <a href="https://github.com/Lennolium/swiftGuard/commits/main" > 
     <img src="https://img.shields.io/github/commit-activity/m/Lennolium/swiftGuard?label=Commit%20Activity" 
 alt="commit activity" >
      <a></a>
