@@ -24,7 +24,7 @@ import logging
 import os
 import shutil
 
-from swiftguard.const import APP_PATH, CONFIG_FILE
+from swiftguard import const
 
 # Child logger.
 LOGGER = logging.getLogger(__name__)
@@ -42,33 +42,33 @@ def create(force_restore=False):
     """
 
     # If no config file exists, copy the default config file.
-    if os.path.isfile(CONFIG_FILE) and not force_restore:
+    if os.path.isfile(const.CONFIG_FILE) and not force_restore:
         return
     try:
         # If no config directory exists, create it.
-        if not os.path.isdir(os.path.dirname(CONFIG_FILE)):
-            os.mkdir(os.path.dirname(CONFIG_FILE))
+        if not os.path.isdir(os.path.dirname(const.CONFIG_FILE)):
+            os.mkdir(os.path.dirname(const.CONFIG_FILE))
 
         # Copy config file to config dir or overwrite existing one.
         shutil.copy(
-            os.path.join(APP_PATH, "install", "swiftguard.ini"),
-            CONFIG_FILE,
+            os.path.join(const.APP_PATH, "install", "swiftguard.ini"),
+            const.CONFIG_FILE,
         )
 
     except Exception as e:
         raise e from RuntimeError(
-            f"Could not create config file at {CONFIG_FILE}!\n"
+            f"Could not create config file at {const.CONFIG_FILE}!\n"
             f"Error: {str(e)}"
         )
 
     if force_restore:
         LOGGER.warning(
-            f"Config file at {CONFIG_FILE} was overwritten with "
+            f"Config file at {const.CONFIG_FILE} was overwritten with "
             f"default values."
         )
         return
 
-    LOGGER.info(f"Created config file at {CONFIG_FILE}.")
+    LOGGER.info(f"Created config file at {const.CONFIG_FILE}.")
 
 
 def validate(config):
@@ -92,7 +92,7 @@ def validate(config):
         for item in value:
             if not config.has_option(key, item):
                 create(force_restore=True)
-                config.read(CONFIG_FILE, encoding="utf-8")
+                config.read(const.CONFIG_FILE, encoding="utf-8")
 
                 # Further checks are not needed, because of overwrite.
                 return config
@@ -159,7 +159,7 @@ def validate(config):
     # If default values were needed, write config file on disk.
     if default_needed:
         LOGGER.warning(
-            f"One or more values in {CONFIG_FILE} were incorrect or not "
+            f"One or more values in {const.CONFIG_FILE} were incorrect or not "
             f"set. Corrected them to default values and wrote config file "
             f"on disk.",
         )
@@ -181,7 +181,7 @@ def load(config):
 
     # Parse config file.
     try:
-        config.read(CONFIG_FILE, encoding="utf-8")
+        config.read(const.CONFIG_FILE, encoding="utf-8")
 
     except (
         configparser.MissingSectionHeaderError,
@@ -189,7 +189,7 @@ def load(config):
     ) as e:
         LOGGER.error(f"Error while parsing config file: {str(e)}.")
         create(force_restore=True)
-        config.read(CONFIG_FILE, encoding="utf-8")
+        config.read(const.CONFIG_FILE, encoding="utf-8")
 
         # Further checks are not needed, because of overwrite.
         return config
@@ -208,10 +208,5 @@ def write(config):
     :return: None
     """
 
-    # TODO: vor dem schreiben config[whitelist] in str umwandeln und
-    #  liste entfernen (erster und letzter char) und dann wieder in
-    #  config speichern -> so sparen wir uns das parsen mit literal_eval
-    #  überall in den anderen modulen. müsste man in load auch anpassen.
-
-    with open(CONFIG_FILE, "w", encoding="utf-8") as config_file:
+    with open(const.CONFIG_FILE, "w", encoding="utf-8") as config_file:
         config.write(config_file)

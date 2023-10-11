@@ -370,44 +370,47 @@ class TrayApp:
 
     :ivar app: The main Qt application instance.
     :type app: QApplication
-    :ivar theme: The current system theme (e.g., Light or Dark).
-    :type theme: str
-    :ivar resources: The resource paths for icons and images based on
-        the current theme.
+    :ivar style_hints: Style hints for real-time theme changes.
+    :type style_hints: QStyleHints
+    :ivar resources: Resource paths for icons and images based on the
+        current theme.
     :type resources: dict | None
-    :ivar start_devices_count: A Counter object to keep track of
-        initially connected USB devices.
-    :type start_devices_count: collections.Counter
-    :ivar allowed_devices_count: A Counter object to keep track of
-        allowed USB devices.
-    :type allowed_devices_count: collections.Counter
-    :ivar current_devices_count: A Counter object to keep track of
-        currently connected USB devices.
-    :type current_devices_count: collections.Counter
+    :ivar config: Application configuration.
+    :type config: configparser.ConfigParser
+    :ivar app_icon: The system tray icon.
+    :type app_icon: QSystemTrayIcon
+    :ivar listen_usb: USB device listener.
+    :type listen_usb: listeners.ListenerUSB
+    :ivar listen_usb_thread: Thread for USB device listener.
+    :type listen_usb_thread: QThread
 
     :methods:
-        - usb_worker_handle: Start or stop the USB worker thread for
-            monitoring connected devices.
+        - __init__: Initialize the TrayApp instance and set up the
+            system tray icon.
         - menu_devices_update: Update the device menu based on connected
             and allowed devices.
         - whitelist_update: Add or remove devices from the whitelist.
         - worker_handle: Start or stop the main worker thread for
             manipulation detection.
-        - defuse: Defuse the manipulation detection and reset the alarm.
-        - manipulation: Handle manipulation detection and display
-            the alarm.
+        - defuse: Reset the alarm and return to normal monitoring mode.
+        - manipulation: Handle manipulation detection and display the
+            alarm.
         - config_update: Update the application configuration based on
-            user settings.
-        - theme_worker_handle: Start or stop the theme listener thread.
-        - theme_listener: Listen for changes in the system theme and
-            update application resources accordingly.
+            user input.
+        - theme_update: Update the application theme based on system
+            settings.
+        - update_box: Display an update message if a new version is
+            available.
         - create_tray_icon: Create and configure the system tray icon
             and its menu.
-        - help: Display a help message with instructions for using
-            the application.
-        - about: Display an about message with information about the
-            application and its author.
-        - exit_handler: Handle application exit and cleanup.
+        - acknowledgments: Display acknowledgments for third-party
+            libraries used.
+        - help: Display instructions for using the program.
+        - about: Display information about the application and its
+            author.
+        - handle_exception: Custom exception handler for uncaught
+            exceptions.
+        - exit_handler: Handle application exit and cleanup tasks.
 
     :param None:
     :return: None
@@ -467,6 +470,7 @@ class TrayApp:
         self.worker_thread = None
         self.worker_handle("Guarding")
 
+        self.menu_tray = None
         self.menu_settings = None
         self.submenu = None
         self.menu_enabled = None
@@ -478,8 +482,7 @@ class TrayApp:
 
         # Create the listener for USB devices (for dynamic menu update).
         listeners.Listeners.config = self.config
-        listeners.Listeners.intervall = 10
-        self.listen_usb = listeners.ListenerUSB()
+        self.listen_usb = listeners.ListenerUSB(intervall=1000)
 
         # If a new device is connected, update the device menu.
         self.listen_usb.triggered.connect(self.menu_devices_update)
@@ -504,19 +507,18 @@ class TrayApp:
             if new_vers := check_updates():
                 self.update_box(new_vers)
 
+        # self.update_box("0.2.0")
+
     def menu_devices_update(self):
         """
         Update the device menu based on connected and allowed devices.
 
-        This function updates the device menu in the system tray based
-        on the currently connected USB devices and the devices allowed
-        in the whitelist. It can be called at startup and when devices
-        change.
+        The menu_devices_update function updates the device menu in the
+        system tray based on the currently connected USB devices and
+        the devices allowed in the whitelist. It can be called at
+        startup and when devices change.
 
-        :param startup: A boolean indicating whether the update is
-            occurring at application startup.
-        :type startup: bool
-
+        :param self: Refer to the instance of the class
         :return: None
         """
 
@@ -847,8 +849,8 @@ class TrayApp:
 
         # Bold text.
         msg_box.setText(
-            f"Update available!\n\n"
-            f"Installed version: {__version__}\nLatest version: "
+            f"Update Available!\n\n"
+            f"Currently Installed: {__version__}\nLatest Release: "
             f"{new_vers}\n"
         )
 
@@ -890,8 +892,6 @@ class TrayApp:
             self.config["Application"]["check_updates"] = "0"
             conf.write(self.config)
 
-        # TODO: implement focus on dialog / move dialog to front.
-
     def create_tray_icon(self):
         """
         Create and configure the system tray icon and its menu.
@@ -910,11 +910,10 @@ class TrayApp:
 
         tray_icon.setIcon(QIcon(self.resources["app-icon"]))
 
-        menu_tray = QMenu()
-        self.menu_tray = menu_tray
+        self.menu_tray = QMenu()
 
         # Create a submenu for "Devices" initially disabled.
-        self.submenu = menu_tray.addMenu("Devices")
+        self.submenu = self.menu_tray.addMenu("Devices")
         self.submenu.setIcon(QIcon(self.resources["usb-connection"]))
         submenu_dummy = QAction("Searching ...", self.submenu)
         submenu_dummy.setEnabled(False)
@@ -936,24 +935,24 @@ class TrayApp:
             self.menu_enabled.entry.setVisible(False)
         else:
             self.menu_enabled.entry.setVisible(True)
-        menu_tray.addAction(self.menu_enabled.entry)
+        self.menu_tray.addAction(self.menu_enabled.entry)
 
         # Create hidden "Manipulation" menu item.
-        self.menu_tamper = QAction("Manipulation", menu_tray)
+        self.menu_tamper = QAction("Manipulation", self.menu_tray)
         self.menu_tamper.setIcon(QIcon(self.resources["shield-tamper"]))
         if self.worker.tampered_var:
             self.menu_tamper.setVisible(True)
         else:
             self.menu_tamper.setVisible(False)
         self.menu_tamper.setShortcut(QKeySequence(Qt.CTRL | Qt.Key_E))
-        menu_tray.addAction(self.menu_tamper)
+        self.menu_tray.addAction(self.menu_tamper)
         self.menu_tamper.triggered.connect(self.defuse)
 
-        menu_tray.addSeparator()
+        self.menu_tray.addSeparator()
 
         # Create a "Settings" menu.
-        self.menu_settings = QMenu("      Settings", menu_tray)
-        menu_tray.addMenu(self.menu_settings)
+        self.menu_settings = QMenu("      Settings", self.menu_tray)
+        self.menu_tray.addMenu(self.menu_settings)
 
         # Create an "Action" submenu within "Settings."
         entry01 = ToggleEntry(
@@ -1028,25 +1027,25 @@ class TrayApp:
         self.menu_settings.addAction(entry09.entry)
 
         # Create "Help" menu item.
-        menu_help = QAction("      Help", menu_tray)
-        menu_tray.addAction(menu_help)
+        menu_help = QAction("      Help", self.menu_tray)
+        self.menu_tray.addAction(menu_help)
         menu_help.triggered.connect(self.help)
 
         # Create "About" menu item.
-        menu_about = QAction("      About", menu_tray)
-        menu_tray.addAction(menu_about)
+        menu_about = QAction("      About", self.menu_tray)
+        self.menu_tray.addAction(menu_about)
         menu_about.triggered.connect(self.about)
 
-        menu_tray.addSeparator()
+        self.menu_tray.addSeparator()
 
         # Create an "Exit" menu item and connect it to the exit handler.
-        menu_exit = QAction("      Exit", menu_tray)
+        menu_exit = QAction("      Exit", self.menu_tray)
         menu_exit.setShortcut(QKeySequence(Qt.CTRL | Qt.Key_Q))
         menu_exit.triggered.connect(self.exit_handler)
-        menu_tray.addAction(menu_exit)
+        self.menu_tray.addAction(menu_exit)
 
         # Set the system tray menu.
-        tray_icon.setContextMenu(menu_tray)
+        tray_icon.setContextMenu(self.menu_tray)
 
         return tray_icon
 

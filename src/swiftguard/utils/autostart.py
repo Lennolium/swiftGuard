@@ -20,7 +20,7 @@ import logging
 import os
 import shutil
 
-from swiftguard.const import APP_PATH, CURRENT_PLATFORM, USER_HOME
+from swiftguard import const
 
 # Child logger.
 LOGGER = logging.getLogger(__name__)
@@ -29,10 +29,8 @@ LOGGER = logging.getLogger(__name__)
 def add_autostart():
     # TODO: docstring.
     # macOS: Create launch agent.
-    if CURRENT_PLATFORM.startswith("DARWIN"):
-        launch_agent_dest = (
-            f"{USER_HOME}/Library/LaunchAgents/dev.lennolium.swiftguard.plist"
-        )
+    if const.CURRENT_PLATFORM.startswith("DARWIN"):
+        launch_agent_dest = f"{const.USER_HOME}/Library/LaunchAgents/dev.lennolium.swiftguard.plist"
         try:
             # Create LaunchAgents directory if it does not exist.
             if not os.path.isdir(os.path.dirname(launch_agent_dest)):
@@ -47,7 +45,9 @@ def add_autostart():
             if not os.path.isfile(launch_agent_dest):
                 shutil.copy(
                     os.path.join(
-                        APP_PATH, "install", "dev.lennolium.swiftguard.plist"
+                        const.APP_PATH,
+                        "install",
+                        "dev.lennolium.swiftguard.plist",
                     ),
                     launch_agent_dest,
                 )
@@ -58,8 +58,8 @@ def add_autostart():
         except Exception as e:
             LOGGER.error(
                 f"Autostart could not be configured. Could not copy "
-                f"launch agent plist from {APP_PATH} to {launch_agent_dest}.\n"
-                f"Error: {str(e)}"
+                f"launch agent plist from {const.APP_PATH} to "
+                f"{launch_agent_dest}.\nError: {str(e)}"
             )
 
             return False
@@ -100,10 +100,8 @@ def add_autostart():
 
 def del_autostart():
     # macOS: Delete launch agent.
-    if CURRENT_PLATFORM.startswith("DARWIN"):
-        launch_agent_dest = (
-            f"{USER_HOME}/Library/LaunchAgents/dev.lennolium.swiftguard.plist"
-        )
+    if const.CURRENT_PLATFORM.startswith("DARWIN"):
+        launch_agent_dest = f"{const.USER_HOME}/Library/LaunchAgents/dev.lennolium.swiftguard.plist"
 
         # If the launch agent exists, delete it.
         if os.path.isfile(launch_agent_dest):

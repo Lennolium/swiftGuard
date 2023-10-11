@@ -26,7 +26,7 @@ from collections import Counter
 
 from PySide6.QtCore import QObject, QThread, Signal
 
-from swiftguard.const import CONFIG_FILE
+from swiftguard import const
 from swiftguard.utils.helpers import (
     bt_devices,
     devices_state,
@@ -128,7 +128,7 @@ class Worker(Workers):
         except Exception as e:
             raise e from RuntimeError(
                 f"Could not parse allowed devices from config "
-                f"file. Please check your config file at {CONFIG_FILE} "
+                f"file. Please check your config file at {const.CONFIG_FILE} "
                 f"for right formatting.\nExiting ... \nError: {str(e)}"
             )
 

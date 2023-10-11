@@ -18,18 +18,12 @@ __status__ = "Development"
 # Imports.
 import logging
 import os
-import platform
 import sys
 from logging.handlers import RotatingFileHandler
 
 import pyoslog
 
-# Constants.
-CURRENT_PLATFORM = platform.uname()[0].upper()
-USER_HOME = os.path.expanduser("~")
-APP_PATH = os.path.dirname(os.path.realpath(__file__))
-CONFIG_FILE = f"{USER_HOME}/Library/Preferences/swiftguard/swiftguard.ini"
-LOG_FILE = f"{USER_HOME}/Library/Logs/swiftguard/swiftguard.log"
+from swiftguard import const
 
 
 # Custom logging handler to count warnings, errors and criticals.
@@ -51,15 +45,15 @@ class LogCount(logging.Handler):
 
 def create_logger(counter):
     # Prepare directory for log file.
-    if not os.path.isdir(os.path.dirname(LOG_FILE)):
-        os.mkdir(os.path.dirname(LOG_FILE))
+    if not os.path.isdir(os.path.dirname(const.LOG_FILE)):
+        os.mkdir(os.path.dirname(const.LOG_FILE))
 
     # Create root logger.
     logger = logging.getLogger()
 
     # Log file: Rotate log file every 2 MB and keep 5 old log files.
     file_handler = RotatingFileHandler(
-        LOG_FILE, backupCount=5, maxBytes=2000000
+        const.LOG_FILE, backupCount=5, maxBytes=2000000
     )
 
     # Stdout: Print log messages to stdout (only for startup).
@@ -90,7 +84,7 @@ def create_logger(counter):
 def add_handler(logger_obj, dest):
     if dest == "syslog":
         # Syslog/Console: Log to syslog on macOS and to console on Linux.
-        if CURRENT_PLATFORM.startswith("DARWIN"):
+        if const.CURRENT_PLATFORM.startswith("DARWIN"):
             syslog_handler = pyoslog.Handler()
             syslog_handler.setSubsystem("dev.lennolium.swiftguard", "client")
         else:

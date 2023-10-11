@@ -25,12 +25,7 @@ import subprocess  # nosec
 
 import requests
 
-from swiftguard.const import (
-    APP_PATH,
-    CURRENT_MODE,
-    CURRENT_PLATFORM,
-    DEVICE_RE,
-    )
+from swiftguard import const
 from swiftguard.utils import conf
 from swiftguard.utils.autostart import (
     add_autostart,
@@ -79,7 +74,7 @@ def devices_state(interface):
 def check_encryption():
     # TODO: docstring
     # macOS: Check if FileVault (fv) is enabled.
-    if CURRENT_PLATFORM.startswith("DARWIN"):
+    if const.CURRENT_PLATFORM.startswith("DARWIN"):
         fv_command = ["/usr/bin/fdesetup", "isactive"]
 
         fv_process = subprocess.run(  # nosec B603
@@ -113,16 +108,18 @@ def check_encryption():
 
 
 def check_os():
-    if CURRENT_PLATFORM.startswith("DARWIN"):
+    if const.CURRENT_PLATFORM.startswith("DARWIN"):
         LOGGER.info("Host system is supported (macOS).")
 
-    elif CURRENT_PLATFORM.startswith("LINUX"):
+    elif const.CURRENT_PLATFORM.startswith("LINUX"):
         # LOGGER.info("Host system is supported (Linux).")
         # return 0, "LINUX"
         raise NotImplementedError("Linux-support is still work in progress.")
 
     else:
-        raise RuntimeError(f"Host system not supported: {CURRENT_PLATFORM}")
+        raise RuntimeError(
+            f"Host system not supported: {const.CURRENT_PLATFORM}"
+        )
 
 
 def startup():
@@ -136,7 +133,9 @@ def startup():
     """
 
     LOGGER.info("--------- Startup: ---------")
-    LOGGER.debug(f"APP_Path: {APP_PATH} \nCURRENT_MODE: {CURRENT_MODE}")
+    LOGGER.debug(
+        f"APP_Path: {const.APP_PATH} \n" f"CURRENT_MODE: {const.CURRENT_MODE}"
+    )
     LOGGER.info("Starting swiftGuard and running startup checks ...")
     LOGGER.info(
         f"You are running swiftGuard version: {__version__} " f"({__build__})."
@@ -222,7 +221,7 @@ def startup():
     # conf_file.read_encrypted(CONFIG_FILE_ENC)
 
     # Get autostart setting and apply it (only supported in GUI mode).
-    if CURRENT_MODE == "app":
+    if const.CURRENT_MODE == "app":
         if config["User"]["autostart"] == "0":
             del_autostart()
 
@@ -623,7 +622,7 @@ def usb_devices():
 
                 # Vendor ID.
                 try:
-                    vendor_id = DEVICE_RE[1].findall(result["vendor_id"])[0]
+                    vendor_id = const.DEVICE_RE[1].findall(result["vendor_id"])[0]
                 except IndexError:
                     # Assume this is not a standard vendor_id (probably
                     # apple_vendor_id instead of 0x....).
@@ -631,7 +630,7 @@ def usb_devices():
 
                 # Product ID.
                 try:
-                    product_id = DEVICE_RE[1].findall(result["product_id"])[0]
+                    product_id = const.DEVICE_RE[1].findall(result["product_id"])[0]
                 except IndexError:
                     # Assume this is not a standard product_id (0x....).
                     product_id = result["product_id"]

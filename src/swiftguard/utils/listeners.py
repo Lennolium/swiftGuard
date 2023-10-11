@@ -61,8 +61,8 @@ class Listeners(QObject):
 
 
 class ListenerUSB(Listeners):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, intervall=1000):
+        super().__init__(intervall)
 
         self.start_connect_count = None
         self.start_allow_count = None
@@ -85,10 +85,7 @@ class ListenerUSB(Listeners):
             self.start_connect_count == current_connect_count
             and self.start_allow_count == current_allow_count
         ):
-            print("KEIN menu update nötig")
             return
-
-        print("menu update NÖTIG")
 
         # Update the start connected and allowed devices count, for next
         # function call/iteration.
@@ -98,7 +95,3 @@ class ListenerUSB(Listeners):
         # Emit signal to main thread to update the device menu with
         # passed device and whitelist data.
         self.triggered.emit()
-
-
-# TODO: auch für update checking implementieren? intervall von 24h oder
-#  anhand von datetime oder runtime der app? QDate.currentDate()?

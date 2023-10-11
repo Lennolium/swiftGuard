@@ -140,6 +140,6 @@ app = BUNDLE(
             'CFBundleVersion': build_version,
             'NSHumanReadableCopyright': 'Copyright © 2023, Lennart Haack.',
             'LSApplicationCategoryType': 'public.app-category.utilities',
-            'NSAppleEventsUsageDescription': 'swiftGuard is requesting access to System Events to provide the ability to shutdown and hibernate your Mac.\nThis permission will NEVER be used for any other purpose.',
+            'NSAppleEventsUsageDescription': 'swiftGuard is requesting access to System Events to provide the ability to shutdown and hibernate your Mac.\nThis permission will NEVER be used for any other purposes.',
             },
 )

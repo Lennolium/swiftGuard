@@ -16,3 +16,7 @@ __date__ = "2023-10-09"
 __status__ = "Development"
 
 # Imports.
+
+# TODO: auch für update checking implementieren? intervall von 24h oder
+#  anhand von datetime oder runtime der app? QDate.currentDate()?
+#  also mit listeners class.
