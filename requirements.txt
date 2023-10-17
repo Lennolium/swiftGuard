@@ -7,3 +7,4 @@ black==23.9.1
 bandit==1.7.5
 pyinstaller==6.0.0
 pyinstaller-hooks-contrib==2023.9
+pytest==7.4.2

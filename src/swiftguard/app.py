@@ -34,7 +34,6 @@ __date__ = "2023-10-09"
 __status__ = "Development"
 
 # Imports.
-import datetime
 import signal
 import sys
 import webbrowser
@@ -42,7 +41,7 @@ from ast import literal_eval
 from copy import deepcopy
 from functools import partial
 
-from PySide6.QtCore import QThread, Qt
+from PySide6.QtCore import QDateTime, QThread, Qt
 from PySide6.QtGui import QAction, QIcon, QKeySequence, QPixmap
 from PySide6.QtWidgets import (
     QApplication,
@@ -432,7 +431,8 @@ class TrayApp:
         self.app = QApplication(sys.argv)
 
         # Set the launch time of the application.
-        self.app.launch_time = datetime.datetime.now()
+        # self.app.launch_time = datetime.datetime.now()
+        self.app.launch_time = QDateTime.currentDateTime()
 
         # Register handlers for clean exit of program.
         for sig in [
@@ -507,7 +507,7 @@ class TrayApp:
             if new_vers := check_updates():
                 self.update_box(new_vers)
 
-        # self.update_box("0.2.0")
+        print(self.app.launch_time)
 
     def menu_devices_update(self):
         """
@@ -850,7 +850,7 @@ class TrayApp:
         # Bold text.
         msg_box.setText(
             f"Update Available!\n\n"
-            f"Currently Installed: {__version__}\nLatest Release: "
+            f"Installed: {__version__}\nLatest Release: "
             f"{new_vers}\n"
         )
 

@@ -4,8 +4,9 @@
 cli.py: Starting point of the command-line interface application.
 
 You can use this module standalone without the GUI. Just run this
-script in terminal. For changing settings and allowing devices, have a
-look in ~/Library/Preferences/swiftguard/swiftguard.ini.
+script in terminal or to use poetry check the README.md -> Usage -> CLI.
+For changing settings and allowing devices, have a look in
+~/Library/Preferences/swiftguard/swiftguard.ini.
 
 WHITELIST: Insert your USB device, open a terminal and run the command:
 'system_profiler SPUSBDataType -xml -detailLevel mini'.
@@ -89,14 +90,17 @@ def exit_handler(signum=None, frame=None, error=False):
 
     # If error is True, an error occurred which caused the exit.
     if error:
+        code = 1
         LOGGER.critical(
             "A critical error occurred that caused the application "
             "to exit unexpectedly."
         )
-        sys.exit(1)
 
-    LOGGER.info("Exiting the application properly ...")
-    sys.exit(0)
+    else:
+        code = 0
+        LOGGER.info("Exiting the application properly ...")
+        
+    sys.exit(code)
 
 
 def main():
