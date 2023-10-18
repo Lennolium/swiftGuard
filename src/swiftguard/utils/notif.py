@@ -34,7 +34,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class NotificationMail:
-    def __init__(self, config=None):
+    def __init__(self, config):
         self.config = config
 
         # Init E-Mail configuration.
@@ -42,6 +42,7 @@ class NotificationMail:
         self.receiver_email = None
         self.password = None
         self.host = None
+        self.port = None
         self.name = None
 
         # Init system information.
@@ -50,7 +51,7 @@ class NotificationMail:
         self.info_user = None
         self.info_system = None
 
-    def set_credentials(self, email, password, host, name):
+    def set_credentials(self, email, password, host, name, port):
         # If credentials already exist, delete the old object.
         try:
             if kr.get_credential("swiftGuard-mail", email):
@@ -72,6 +73,7 @@ class NotificationMail:
             self.config["Email"]["name"] = name
             self.config["Email"]["email"] = email
             self.config["Email"]["smtp"] = host
+            self.config["Email"]["port"] = port
 
             self.config = conf.validate(self.config)
             conf.write(self.config)
@@ -104,14 +106,15 @@ class NotificationMail:
             conf.write(self.config)
             return False
 
-        # We get the email and password from the keyring object.
-        self.sender_email = self.config["Email"]["email"]
-        self.receiver_email = self.config["Email"]["email"]
+        # We get the email account password from the keyring object.
         self.password = pw
 
-        # We get the name and the smtp host from the config file.
+        # And the other stuff from the config file.
+        self.sender_email = self.config["Email"]["email"]
+        self.receiver_email = self.config["Email"]["email"]
         self.name = self.config["Email"]["name"]
         self.host = self.config["Email"]["smtp"]
+        self.port = self.config["Email"]["port"]
 
         return True
 
@@ -373,16 +376,30 @@ class NotificationMail:
         # very short timeout, because we don't want to wait for an SMTP
         # server timeout if the user is offline.
         try:
-            context = ssl.create_default_context()
-            with smtplib.SMTP_SSL(
-                self.host, 465, context=context, timeout=1
-            ) as server:
-                server.login(self.sender_email, self.password)
-                server.sendmail(
-                    self.sender_email,
-                    self.receiver_email,
-                    message.as_string(),
-                )
+            # SSL connection.
+            if self.port == "465":
+                context = ssl.create_default_context()
+                with smtplib.SMTP_SSL(
+                    self.host, 465, context=context, timeout=1
+                ) as server:
+                    server.login(self.sender_email, self.password)
+                    server.sendmail(
+                        self.sender_email,
+                        self.receiver_email,
+                        message.as_string(),
+                    )
+
+            # TLS connection.
+            elif self.port == "587":
+                context = ssl.create_default_context()
+                with smtplib.SMTP_SSL(self.host, 587, timeout=1) as server:
+                    server.starttls(context=context)
+                    server.login(self.sender_email, self.password)
+                    server.sendmail(
+                        self.sender_email,
+                        self.receiver_email,
+                        message.as_string(),
+                    )
 
         # Do not raise exception, because it would stop the execution of
         # the main program.

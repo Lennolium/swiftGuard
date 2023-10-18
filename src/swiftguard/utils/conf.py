@@ -85,7 +85,7 @@ def validate(config):
     conf_default = {
         "Application": ["version", "log", "log_level", "check_updates"],
         "User": ["autostart", "action", "delay", "check_interval"],
-        "Email": ["enabled", "name", "email", "smtp"],
+        "Email": ["enabled", "name", "email", "smtp", "port"],
         "Whitelist": ["usb", "bluetooth"],
     }
 
@@ -162,6 +162,7 @@ def validate(config):
         config["Email"]["name"] = ""
         config["Email"]["email"] = ""
         config["Email"]["smtp"] = ""
+        config["Email"]["port"] = "465"
         default_needed = True
 
     if config["Email"]["name"] != "":
@@ -170,6 +171,7 @@ def validate(config):
             config["Email"]["name"] = ""
             config["Email"]["email"] = ""
             config["Email"]["smtp"] = ""
+            config["Email"]["port"] = "465"
             default_needed = True
 
     if config["Email"]["email"] != "":
@@ -178,6 +180,7 @@ def validate(config):
             config["Email"]["name"] = ""
             config["Email"]["email"] = ""
             config["Email"]["smtp"] = ""
+            config["Email"]["port"] = "465"
             default_needed = True
 
     if config["Email"]["smtp"] != "":
@@ -186,7 +189,16 @@ def validate(config):
             config["Email"]["name"] = ""
             config["Email"]["email"] = ""
             config["Email"]["smtp"] = ""
+            config["Email"]["port"] = "465"
             default_needed = True
+
+    if config["Email"]["port"] not in ["465", "587"]:
+        config["Email"]["enabled"] = "0"
+        config["Email"]["name"] = ""
+        config["Email"]["email"] = ""
+        config["Email"]["smtp"] = ""
+        config["Email"]["port"] = "465"
+        default_needed = True
 
     # If default values were needed, write config file on disk.
     if default_needed:
