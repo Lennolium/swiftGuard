@@ -17,6 +17,8 @@ labels: "Bug: Needs Confirmation 🧐"
 <div align="center">
   Provide the following Info properly, which will help me to resolve your issue quickly.
 </div>
+<br>
+<br>
 
 <!--- HERE BEGINS YOUR PART -->
 ## Issue description
