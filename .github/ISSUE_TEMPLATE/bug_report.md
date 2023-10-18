@@ -28,12 +28,16 @@ labels: "Bug: Needs Confirmation 🧐"
 
 ```
 
+&nbsp;
+
 ## Environment
 <!-- Add details about the device you are experiencing issues --> 
 - Operating System Version:
 - swiftGuard Version: <!-- Find it in the 'About' menu --> 
 - App Launched by: <!-- App or standalone Python script (if Python script: GUI or CLI) -->
 - Additional Information:
+
+&nbsp;
 
 ## Steps to reproduce the issue
 ```
@@ -42,6 +46,8 @@ labels: "Bug: Needs Confirmation 🧐"
 3. 
 ```
 
+&nbsp;
+
 ## Did you find a fix?
 <!-- Give me an explanation of what should be happening -->
 ```
@@ -49,12 +55,16 @@ labels: "Bug: Needs Confirmation 🧐"
 
 ```
 
+&nbsp;
+
 ## Additional details / screenshots
 <!-- Screenshots, console output, logs, etc. are extremely helpful -->
 ```
 
 
 ```
+
+&nbsp;
 
 ## Checklist
 <!-- Please verify that you have completed the following steps -->
