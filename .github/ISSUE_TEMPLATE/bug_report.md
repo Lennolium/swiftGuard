@@ -8,9 +8,9 @@ labels: "Bug: Needs Confirmation 🧐"
 <!--- Logo and Header: IGNORE THIS -->
 <div align="center">  
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".../img/banner/banner_dark.png" width="400vw">
-  <source media="(prefers-color-scheme: light)" srcset=".../img/banner/banner_light.png" width="400vw">
-  <img alt="Application Banner" src=".../img/banner/banner_light.png" width="400vw">
+  <source media="(prefers-color-scheme: dark)" srcset="../../img/banner/banner_dark.png" width="400vw">
+  <source media="(prefers-color-scheme: light)" srcset="../../img/banner/banner_light.png" width="400vw">
+  <img alt="Application Banner" src="../../img/banner/banner_light.png" width="400vw">
 </picture>
 </div>
 <h2 align="center">Issue Submit Form</h2>
