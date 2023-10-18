@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-mail.py: TODO: Headline...
+notif.py: TODO: Headline...
 
 TODO: Description...
 """
@@ -10,9 +10,10 @@ TODO: Description...
 __author__ = "Lennart Haack"
 __email__ = "lennart-haack@mail.de"
 __license__ = "GNU GPLv3"
-__version__ = "0.0.1"
-__date__ = "2023-10-17"
-__status__ = "Prototype/Development/Production"
+__version__ = "0.1.0"
+__build__ = "2023.3"
+__date__ = "2023-10-09"
+__status__ = "Development"
 
 # Imports.
 import logging
@@ -22,20 +23,26 @@ from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+import keyring as kr
+import keyring.errors
+
 from swiftguard import const
+from swiftguard.utils import conf
 
 # Child logger.
 LOGGER = logging.getLogger(__name__)
 
 
 class NotificationMail:
-    def __init__(self, sender_email, receiver_email, password, host, name):
+    def __init__(self, config=None):
+        self.config = config
+
         # Init E-Mail configuration.
-        self.sender_email = sender_email
-        self.receiver_email = receiver_email
-        self.password = password
-        self.host = host
-        self.name = name
+        self.sender_email = None
+        self.receiver_email = None
+        self.password = None
+        self.host = None
+        self.name = None
 
         # Init system information.
         self.info_date = None
@@ -43,11 +50,70 @@ class NotificationMail:
         self.info_user = None
         self.info_system = None
 
-        # Configure message.
-        self.message = MIMEMultipart("alternative")
-        self.message["Subject"] = "SWIFTGUARD: Manipulation Detected"
-        self.message["From"] = self.sender_email
-        self.message["To"] = self.receiver_email
+    def set_credentials(self, email, password, host, name):
+        # If credentials already exist, delete the old object.
+        try:
+            if kr.get_credential("swiftGuard-mail", email):
+                kr.delete_password("swiftGuard-mail", email)
+
+        except keyring.errors.KeyringError:
+            pass
+
+        try:
+            # Save password in system's keyring of the current user.
+            kr.set_password(
+                "swiftGuard-mail",
+                email,
+                password,
+            )
+
+            # Save credentials in config file.
+            self.config["Email"]["enabled"] = "1"
+            self.config["Email"]["name"] = name
+            self.config["Email"]["email"] = email
+            self.config["Email"]["smtp"] = host
+
+            self.config = conf.validate(self.config)
+            conf.write(self.config)
+
+            return True
+
+        except Exception as e:
+            LOGGER.error(f"Failed to save E-Mail credentials. Error: {str(e)}")
+            return False
+
+    def get_credentials(self):
+        # Get credentials from system's keyring of the current user.
+        try:
+            pw = kr.get_password(
+                "swiftGuard-mail", self.config["Email"]["email"]
+            )
+
+        except keyring.errors.KeyringError as e:
+            LOGGER.error(
+                "Failed to get E-Mail credentials from keyring. "
+                f"Error: {str(e)}"
+            )
+            self.config["Email"]["enabled"] = "0"
+            conf.write(self.config)
+            return False
+
+        if not pw:
+            LOGGER.error("No saved E-Mail credentials found.")
+            self.config["Email"]["enabled"] = "0"
+            conf.write(self.config)
+            return False
+
+        # We get the email and password from the keyring object.
+        self.sender_email = self.config["Email"]["email"]
+        self.receiver_email = self.config["Email"]["email"]
+        self.password = pw
+
+        # We get the name and the smtp host from the config file.
+        self.name = self.config["Email"]["name"]
+        self.host = self.config["Email"]["smtp"]
+
+        return True
 
     def update_sys_info(self):
         # Get detailed system Information.
@@ -61,13 +127,19 @@ class NotificationMail:
             f" - {const.SYSTEM_INFO[5]} RAM"
         )
 
-    def create_text(self, info_device, info_action, info_counter_measure):
+    def create_text(
+        self, info_device, info_action, info_counter_measure, interface
+    ):
         # Plain-text email.
         text = f"""\
-        Dear {self.name}
+        SECURITY ALERT
+        
+        Dear {self.name},
         I am writing to inform you that swiftGuard has detected a manipulation
-        of the USB interface on your system. An unauthorized device has been 
-        disconnected/newly connected. This could potentially indicate an attempt to 
+        of the {interface} interface on your system. An unauthorized device 
+        has 
+        been 
+        {info_action}. This could potentially indicate an attempt to 
         access or tamper with your system.
         
         Detailed Information:
@@ -81,8 +153,8 @@ class NotificationMail:
         System: {self.info_system}
         _______________________________________________
         
-        If you believe this modification was legitimate, or you are aware of the 
-        changes, please disregard this message. However, if you suspect any 
+        If you believe this modification was legitimate, or you are aware of 
+        the changes, please disregard this message. However, if you suspect any 
         unauthorized activity, I recommend taking immediate action to secure
         your system and investigate further. 
         
@@ -90,16 +162,20 @@ class NotificationMail:
         hesitate reach out to me further guidance and assistance: 
         lennart-haack@mail.de
         
-        Thank you for using swiftGuard to help secure your system.</p>
+        Thank you for using swiftGuard to help secure your system.
         
         Best Regards,
         Lennart Haack
         Developer
+        
+        https://github.com/Lennolium/swiftGuard
         """
 
         return text
 
-    def create_html(self, info_device, info_action, info_counter_measure):
+    def create_html(
+        self, info_device, info_action, info_counter_measure, interface
+    ):
         # HTML email.
         html = f"""\
         <!DOCTYPE html>
@@ -125,7 +201,7 @@ class NotificationMail:
                     background-color: #ffffff;
                     padding: 20px;
                     border-radius: 20px;
-                    max-width: 90%;
+                    max-width: 80%;
                     text-align: left;
                     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
                 }}
@@ -163,9 +239,14 @@ class NotificationMail:
                     margin-top: 50px;
                 }}
         
-                @media only screen and (max-width: 600px) {{
+                @media only screen and (max-width: 500px) {{
+                    body {{
+                        margin: 0;
+                    }}
+                
                     .email-container {{
                         border-radius: 0;
+                        max-width: 90%;
                     }}
                 }}
         
@@ -200,13 +281,14 @@ class NotificationMail:
                 </picture>
             </div>
             <div class="content">
-                <h2>ALERT: Manipulation Detected</h2>
+                <h2>Security Alert</h2>
                 <p>Dear {self.name},</p>
                 <p>I am writing to inform you that swiftGuard has
-                    detected a manipulation
-                    of the USB interface on your
+                    detected a manipulation of the {interface} 
+                    interface on your 
                     system.
-                    An unauthorized <strong>device has been disconnected/newly connected</strong>. This could
+                    <strong>An unauthorized device has been 
+                    {info_action}.</strong> This could
                     potentially indicate an attempt to access or tamper with your system.
                 </p>
             </div>
@@ -236,7 +318,7 @@ class NotificationMail:
             </div>
             <div class="github-link">
                 <a href="https://github.com/Lennolium/swiftGuard"
-                   style="text-decoration: none; color: #007bff;">Check out on GitHub</a>
+                   style="text-decoration: none; color: #007bff;">swiftGuard on GitHub</a>
             </div>
             <div class="disclaimer">
                 <a style="text-decoration: none; color: #cccccc; font-size: 13px">This email has been sent from your account as
@@ -263,20 +345,29 @@ class NotificationMail:
 
         return html
 
-    def send(self, device, action, counter_measure):
+    def send(self, device, action, counter_measure, interface):
         # Update system information.
         self.update_sys_info()
 
-        text = self.create_text(device, action, counter_measure)
-        html = self.create_html()
+        # Get the email credentials.
+        self.get_credentials()
+
+        # Configure message.
+        message = MIMEMultipart("alternative")
+        message["Subject"] = "swiftGuard: Manipulation Detected"
+        message["From"] = self.sender_email
+        message["To"] = self.receiver_email
+
+        text = self.create_text(device, action, counter_measure, interface)
+        html = self.create_html(device, action, counter_measure, interface)
 
         # Turn the messages into plain/html MIMEText objects.
         text_part = MIMEText(text, "plain")
         html_part = MIMEText(html, "html")
 
         # Add HTML/plain-text parts to MIMEMultipart message.
-        self.message.attach(text_part)
-        self.message.attach(html_part)
+        message.attach(text_part)
+        message.attach(html_part)
 
         # Create secure connection with server and send email. We set a
         # very short timeout, because we don't want to wait for an SMTP
@@ -290,11 +381,16 @@ class NotificationMail:
                 server.sendmail(
                     self.sender_email,
                     self.receiver_email,
-                    self.message.as_string(),
+                    message.as_string(),
                 )
 
         # Do not raise exception, because it would stop the execution of
         # the main program.
         except Exception as e:
             LOGGER.error(f"Failed to send E-Mail. Error: {str(e)}")
-            print("error", e)
+
+        else:
+            LOGGER.info(
+                "Successfully sent E-Mail notification to "
+                f"{self.receiver_email}."
+            )

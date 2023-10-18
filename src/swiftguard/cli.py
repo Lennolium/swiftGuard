@@ -99,7 +99,7 @@ def exit_handler(signum=None, frame=None, error=False):
     else:
         code = 0
         LOGGER.info("Exiting the application properly ...")
-        
+
     sys.exit(code)
 
 
@@ -132,6 +132,8 @@ def main():
     # Print worker start message, but only if not logging to stdout.
     if "stdout" not in config["Application"]["log"]:
         print("Start guarding the USB ports ...", file=sys.stdout)
+
+
 
     # Create worker and start main worker loop.
     Workers.config = config

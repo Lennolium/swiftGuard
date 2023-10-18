@@ -21,6 +21,8 @@ import platform
 import re
 import sys
 
+import cpuinfo
+
 # Constants.
 CURRENT_PLATFORM = platform.uname()[0].upper()  # 'DARWIN' / 'LINUX' ...
 CURRENT_MODE = sys.modules["__main__"].__file__[-6:-3]  # 'app' / 'cli'
@@ -41,6 +43,8 @@ else:
 DEVICE_RE = [
     re.compile(".+ID\s(?P<id>\w+:\w+)"),  # noqa: W605
     re.compile("0x([0-9a-z]{4})"),
+    re.compile("(^[a-zA-Z0-9'_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"),
+    re.compile("(^[a-zA-Z0-9'_.+-]+\.[a-zA-Z0-9-.]+$)"),
 ]
 
 # Resource paths.
@@ -63,3 +67,35 @@ DARK = {
     "app-icon": ":/resources/dark/statusbar-macos@2x.png",
     "app-logo": ":/resources/logo-macos@2x.png",
 }
+
+
+def get_size(bytes_inp, suffix="B"):
+    """
+    Scale bytes to its proper format
+    e.g:
+        1253656 => '1.20MB'
+        1253656678 => '1.17GB'
+    """
+    factor = 1024
+    for unit in ["", "K", "M", "G", "T", "P"]:
+        if bytes_inp < factor:
+            return f"{bytes_inp:.0f}{unit}{suffix}"
+        bytes_inp /= factor
+
+
+if CURRENT_PLATFORM == "DARWIN":
+    sys_os = "macOS"
+    sys_version = str(platform.mac_ver()[0])
+else:
+    sys_os = platform.linux_distribution()[0]
+    sys_version = str(platform.linux_distribution()[1])
+
+SYSTEM_INFO = [
+    sys_os,
+    sys_version,
+    os.getlogin(),
+    platform.uname().node,
+    cpuinfo.get_cpu_info()["brand_raw"],
+    get_size(os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")),
+    platform.python_version(),
+]

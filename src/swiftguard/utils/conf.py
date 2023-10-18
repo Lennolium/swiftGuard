@@ -85,6 +85,7 @@ def validate(config):
     conf_default = {
         "Application": ["version", "log", "log_level", "check_updates"],
         "User": ["autostart", "action", "delay", "check_interval"],
+        "Email": ["enabled", "name", "email", "smtp"],
         "Whitelist": ["usb", "bluetooth"],
     }
 
@@ -155,6 +156,37 @@ def validate(config):
     if float(config["User"]["check_interval"]) <= 0:
         config["User"]["check_interval"] = "0.5"
         default_needed = True
+
+    if config["Email"]["enabled"] not in ["0", "1"]:
+        config["Email"]["enabled"] = "0"
+        config["Email"]["name"] = ""
+        config["Email"]["email"] = ""
+        config["Email"]["smtp"] = ""
+        default_needed = True
+
+    if config["Email"]["name"] != "":
+        if not config["Email"]["name"].replace(" ", "").isalpha():
+            config["Email"]["enabled"] = "0"
+            config["Email"]["name"] = ""
+            config["Email"]["email"] = ""
+            config["Email"]["smtp"] = ""
+            default_needed = True
+
+    if config["Email"]["email"] != "":
+        if not const.DEVICE_RE[2].match(config["Email"]["email"]):
+            config["Email"]["enabled"] = "0"
+            config["Email"]["name"] = ""
+            config["Email"]["email"] = ""
+            config["Email"]["smtp"] = ""
+            default_needed = True
+
+    if config["Email"]["smtp"] != "":
+        if not const.DEVICE_RE[3].match(config["Email"]["smtp"]):
+            config["Email"]["enabled"] = "0"
+            config["Email"]["name"] = ""
+            config["Email"]["email"] = ""
+            config["Email"]["smtp"] = ""
+            default_needed = True
 
     # If default values were needed, write config file on disk.
     if default_needed:
