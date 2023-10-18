@@ -140,13 +140,11 @@ class NotificationMail:
         Dear {self.name},
         I am writing to inform you that swiftGuard has detected a manipulation
         of the {interface} interface on your system. An unauthorized device 
-        has 
-        been 
-        {info_action}. This could potentially indicate an attempt to 
+        has been {info_action}. This could potentially indicate an attempt to 
         access or tamper with your system.
         
         Detailed Information:
-        _______________________________________________
+        ___________________________________________________
         Date: {self.info_date}
         Time: {self.info_time}
         Device: {info_device}
@@ -154,7 +152,7 @@ class NotificationMail:
         Counter-Measure: {info_counter_measure}
         User: {self.info_user}
         System: {self.info_system}
-        _______________________________________________
+        ___________________________________________________
         
         If you believe this modification was legitimate, or you are aware of 
         the changes, please disregard this message. However, if you suspect any 
@@ -392,7 +390,7 @@ class NotificationMail:
             # TLS connection.
             elif self.port == "587":
                 context = ssl.create_default_context()
-                with smtplib.SMTP_SSL(self.host, 587, timeout=1) as server:
+                with smtplib.SMTP(self.host, 587, timeout=1) as server:
                     server.starttls(context=context)
                     server.login(self.sender_email, self.password)
                     server.sendmail(

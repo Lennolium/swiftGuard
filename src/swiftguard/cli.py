@@ -133,8 +133,6 @@ def main():
     if "stdout" not in config["Application"]["log"]:
         print("Start guarding the USB ports ...", file=sys.stdout)
 
-
-
     # Create worker and start main worker loop.
     Workers.config = config
     worker = Worker("USB")
