@@ -276,13 +276,14 @@ respectfully.
 
 ## Roadmap
 
-| **Now**                   | **Next**                                             | **Later**               |
-|---------------------------|------------------------------------------------------|-------------------------|
-| Unit tests                | Linux support                                        | CI/CD                   |
-| Code quality              | Bluetooth detection                                  | Website/Docs/Wiki       |
-| Translations              | Auto update                                          | Encrypted configuration |
-| Package for Apple silicon | Auto start                                           | Code sign (Apple)       |
-| Security audit            | More actions (wipe ram, delete files/folders, email) | User defined actions    |
+| **Now**                                | **Next**                                             | **Later**                   |
+|----------------------------------------|------------------------------------------------------|-----------------------------|
+| Unit tests                             | Linux support                                        | CI/CD                       |
+| Code quality                           | Bluetooth and WiFi detection (Apple Watch)           | Website/Docs/Wiki           |
+| Custom system wide hotkey for defusing | Auto update (yet: just notifying)                    | Encrypted configuration     |
+| E-Mail notification                    | Native Apple silicon support                         | Code sign (Apple)           |
+| Countdown dialog                       | More actions (wipe ram, delete files/folders, email) | User defined actions        |
+| Passwort protected defusing (Dialog)   | Translations                                         | Professional security audit |
 
 &nbsp;
 
