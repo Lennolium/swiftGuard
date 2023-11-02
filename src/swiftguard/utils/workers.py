@@ -47,8 +47,8 @@ def shutdown():
     # AppleScript: slower, but only way to shut down without sudo.
     osascript_path = "/usr/bin/osascript"
     sd_process = subprocess.run(  # nosec B603
-        [osascript_path, "-e", 'tell app "System Events" to shut down'],
-    )
+            [osascript_path, "-e", 'tell app "System Events" to shut down'],
+            )
 
     # Check exit code of osascript for success.
     if sd_process.returncode != 0:
@@ -73,8 +73,8 @@ def hibernate():
     # Second method/try (AppleScript, slower).
     osascript_path = "/usr/bin/osascript"
     subprocess.run(  # nosec B603
-        [osascript_path, "-e", 'tell app "System Events" to sleep'],
-    )
+            [osascript_path, "-e", 'tell app "System Events" to sleep'],
+            )
 
     # Return to prevent multiple execution.
     return
@@ -87,6 +87,7 @@ class Workers(QObject):
     tampered_sig = Signal()
     tampered = False
     config = None
+    mail = None
     defused = False
 
 
@@ -121,16 +122,17 @@ class Worker(Workers):
         # Parse allowed devices from config file.
         try:
             allowed_devices = literal_eval(
-                f"[{self.config['Whitelist'][self.interface.lower()]}]"
-            )
+                    f"[{self.config['Whitelist'][self.interface.lower()]}]"
+                    )
             return allowed_devices
 
         except Exception as e:
             raise e from RuntimeError(
-                f"Could not parse allowed devices from config "
-                f"file. Please check your config file at {const.CONFIG_FILE} "
-                f"for right formatting.\nExiting ... \nError: {str(e)}"
-            )
+                    f"Could not parse allowed devices from config "
+                    f"file. Please check your config file at "
+                    f"{const.CONFIG_FILE} "
+                    f"for right formatting.\nExiting ... \nError: {str(e)}"
+                    )
 
     def update(self):
         # Get the allowed devices from config file.
@@ -169,9 +171,9 @@ class Worker(Workers):
 
         # Start the main working loop.
         LOGGER.info(
-            f"Start guarding the {self.interface} interface ..."
-            f"{devices_state(self.interface)}"
-        )
+                f"Start guarding the {self.interface} interface ..."
+                f"{devices_state(self.interface)}"
+                )
         self.running = True
 
         # Main loop.
@@ -209,23 +211,22 @@ class Worker(Workers):
             # Not whitelisted device was added.
             elif current_devices_count > self.start_devices_count:
                 dev = current_devices_count - self.start_devices_count
-                LOGGER.warning(
-                    f"Non-whitelisted {self.interface}-device added:"
-                    f" {str(dev)[9:-5]}."
-                )
+                dev_action = "connected"
 
             # Not whitelisted device was removed.
             else:
                 dev = self.start_devices_count - current_devices_count
-                LOGGER.warning(
-                    f"Non-whitelisted {self.interface}-device removed:"
-                    f" {str(dev)[9:-5]}."
-                )
+                dev_action = "disconnected"
 
-            # Log current state.
             LOGGER.warning(
-                f"Manipulation detected!{devices_state(self.interface)}"
-            )
+                    f"Non-whitelisted {self.interface}-device {dev_action}:"
+                    f" {str(dev)[9:-5]}."
+                    )
+
+            # Log current state of connected devices.
+            LOGGER.warning(
+                    f"MANIPULATION DETECTED!{devices_state(self.interface)}"
+                    )
 
             # Emit tampered_sig signal to main app: Worker detected a
             # manipulation.
@@ -241,8 +242,8 @@ class Worker(Workers):
             if delay != 0:
                 # Log that countdown started.
                 LOGGER.warning(
-                    f"Countdown till {action} started: {delay} s.",
-                )
+                        f"Countdown till {action} started: {delay} s.",
+                        )
 
                 for i in range(delay):
                     QThread.sleep(1)
@@ -252,25 +253,37 @@ class Worker(Workers):
                         # Reset defused variable.
                         self.defused = False
                         LOGGER.warning(
-                            "The Countdown was defused by user! Remaining "
-                            f"time: {delay - i} s.",
-                        )
+                                "The Countdown was defused by user! Remaining "
+                                f"time: {delay - i} s.",
+                                )
 
                         return
 
                 # Log that countdown ended.
                 LOGGER.warning("The Countdown ended. No defuse in time!")
 
+            # Send notification email if enabled.
+            try:
+                if self.config["Email"]["enabled"] == "1" and self.mail:
+                    self.mail.send(
+                            device=str(dev)[9:-5].replace("'", ""),
+                            action=dev_action,
+                            counter_measure=action,
+                            interface=self.interface,
+                            )
+            # We do not want to stop the worker if the email could not
+            # be sent -> so we catch the exception and continue.
+            except Exception as e:
+                LOGGER.error(
+                        f"Failed to send notification email. Error: {str(e)}"
+                        )
+
             # Execute action.
-            LOGGER.warning(
-                f"Now executing action: {action}."
-                f"{devices_state(self.interface)}"
-            )
+            LOGGER.warning(f"Now executing action: {action}.")
 
             if action == "hibernate":
                 hibernate()
             else:
                 shutdown()
 
-        # Exit the function and return.
         return

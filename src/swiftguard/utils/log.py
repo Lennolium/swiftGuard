@@ -45,8 +45,7 @@ class LogCount(logging.Handler):
 
 def create_logger(counter):
     # Prepare directory for log file.
-    if not os.path.isdir(os.path.dirname(const.LOG_FILE)):
-        os.mkdir(os.path.dirname(const.LOG_FILE))
+    os.makedirs(os.path.dirname(const.LOG_FILE), exist_ok=True)
 
     # Create root logger.
     logger = logging.getLogger()

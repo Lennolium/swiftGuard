@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 """
-__init__.py: Package initializer.
+__init__.py: TODO: Headline...
+
+TODO: Description...
 """
 
 # Header.

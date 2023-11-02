@@ -66,6 +66,60 @@ else
     _error "Using old pre-compiled resource file."
 fi
 
+# Generate sha256 hash file of installer and check it.
+_info "Generating SHA256SUMS file for in-app integrity check ..."
+cd src/swiftguard
+sha256sum "install/dev.lennolium.swiftguard.plist" > install/SHA256SUMS
+sha256sum "install/RELEASE_KEY.asc" >> install/SHA256SUMS
+sha256sum "install/swiftguard.ini" >> install/SHA256SUMS
+sha256sum "install/swiftguard.service" >> install/SHA256SUMS
+sha256sum "resources/ACKNOWLEDGMENTS" >> install/SHA256SUMS
+sha256sum "resources/mail-template.txt" >> install/SHA256SUMS
+sha256sum "resources/mail-template.html" >> install/SHA256SUMS
+sha256sum "resources/resources_rc.py" >> install/SHA256SUMS
+sha256sum "utils/__init__.py" >> install/SHA256SUMS
+sha256sum "utils/autostart.py" >> install/SHA256SUMS
+sha256sum "utils/conf.py" >> install/SHA256SUMS
+sha256sum "utils/enc.py" >> install/SHA256SUMS
+sha256sum "utils/hash.py" >> install/SHA256SUMS
+sha256sum "utils/helpers.py" >> install/SHA256SUMS
+sha256sum "utils/listeners.py" >> install/SHA256SUMS
+sha256sum "utils/log.py" >> install/SHA256SUMS
+sha256sum "utils/notif.py" >> install/SHA256SUMS
+sha256sum "utils/upgrade.py" >> install/SHA256SUMS
+sha256sum "utils/workers.py" >> install/SHA256SUMS
+sha256sum "__init__.py" >> install/SHA256SUMS
+sha256sum "__main__.py" >> install/SHA256SUMS
+sha256sum "const.py" >> install/SHA256SUMS
+if sha256sum -c install/SHA256SUMS
+then
+    _ok "SHA256SUMS file successfully generated and checked."
+else
+    _error "SHA256SUMS file check failed!"
+    exit 1
+fi
+
+_info "Generating PGP detached signature for SHA256SUMS file ..."
+release_key=$(grep "GPG_RELEASE_FP = .*" < const.py | sed 's/^.*GPG_RELEASE_FP *= *"\(.*\)"$/\1/')
+# echo "$release_key" | gpg --import
+if gpg --default-key $release_key --armor --yes --detach-sign install/SHA256SUMS
+then
+    _ok "PGP signature successfully generated."
+else
+    _error "PGP signature generation failed!"
+    exit 1
+fi
+if gpg --verify install/SHA256SUMS.asc install/SHA256SUMS
+then
+    _ok "Verified generated signature."
+else
+    _error "PGP signature check failed!"
+    exit 1
+fi
+
+# Back to project root dir.
+cd ../..
+
 # Creating dist folder.
 mkdir -p dist/
 
@@ -90,12 +144,13 @@ fi
 
 # Activate venv and install requirements.
 source venv/bin/activate
+pip install --upgrade pip
 pip install -r requirements.txt
 pip install --upgrade PyInstaller pyinstaller-hooks-contrib
 
 # Build the app.
 _info "Building the .app file. This can take a while ..."
-if pyinstaller "pyinstaller.spec"
+if pyinstaller --noconfirm "pyinstaller.spec"
 then
     _ok "PyInstaller successfully created build."
     _ok "Find swiftGuard.app in /dist folder."

@@ -71,7 +71,7 @@ rm -R dmg/*
 _info ".dmg building started. This can take a while ..."
 if create-dmg \
   --volname "swiftGuard" \
-  --volicon "img/dmg-icon/dmg-icon-macos@2x.icns" \
+  --volicon "img/dmg-icon/dmg-icon-macos.icns" \
   --background "img/dmg-bg/dmg-bg-macos@2x.png" \
   --window-pos 200 120 \
   --window-size 660 400 \

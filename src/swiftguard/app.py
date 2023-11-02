@@ -56,24 +56,107 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
     )
+from quickmachotkey import ModifierKey, VirtualKey, mask, quickHotKey
+from quickmachotkey.constants import cmdKey, shiftKey
 
 from swiftguard import const
 # pylint: disable=unused-import
 # noinspection PyUnresolvedReferences
 from swiftguard.resources import resources_rc  # noqa: F401
-from swiftguard.utils import conf, helpers, listeners
+from swiftguard.utils import conf, helpers, listeners, notif
 from swiftguard.utils.autostart import add_autostart, del_autostart
-from swiftguard.utils.helpers import (
-    check_updates,
-    startup,
-    usb_devices,
-    )
 from swiftguard.utils.log import LogCount, create_logger, set_level_dest
 from swiftguard.utils.workers import Worker, Workers
 
 # Root logger and log counter.
 LOG_COUNT = LogCount()
 LOGGER = create_logger(LOG_COUNT)
+
+
+class MockConf:
+    # Mock config class for integrating quickMacHotKey with the standard
+    # swiftguard config handling.
+    path = None
+
+    def __init__(self, vk: VirtualKey, mk: mask) -> None:
+        self.fullyQualifiedName: str = "__main__.handler"
+        self.virtualKey: VirtualKey = vk
+        self.modifierMask: ModifierKey = mk
+
+    def loadConfiguration(self, _) -> tuple[VirtualKey, ModifierKey]:
+        return self.virtualKey, self.modifierMask
+
+    def saveConfiguration(self, _, vk: VirtualKey, mk: mask) -> None:
+        self.virtualKey: VirtualKey = vk
+        self.modifierMask: mask = mk
+
+
+class HotkeySelector(QWidget):
+    def __init__(self, config):
+        super(HotkeySelector, self).__init__()
+        self.setAttribute(Qt.WA_DeleteOnClose)
+        self.setGeometry(300, 300, 250, 150)
+        self.config = config
+
+    def keyPressEvent(self, event):
+        key_name = (str(event.text())).upper()
+        key_id = int(event.nativeVirtualKey())
+        key_raw = event.key()
+        modifier_name = str(event.modifiers().name)
+        modifier_id = event.modifiers()
+
+        print("KEYS:", key_name, key_id, key_raw, modifier_name, modifier_id)
+
+        # Sanity check.
+        if key_name != "":
+            if ((not key_name.isalnum()) or len(key_name) != 1 or
+                    modifier_name != "NoModifier"):
+                # Key not allowed.
+                print("not allowed:", key_name)
+                print("---" * 10)
+                return
+
+            # For now, we only allow the keys A-Z, 0-9.
+            if key_id not in const.KEYS_QM:
+                print("not allowed:", key_id)
+                print("---" * 10)
+                return
+
+            print("allowed", key_id)
+            # self.key_pressed(key_id, None)
+
+            # Convert from QuickMacHotKey to Qt.
+            qt_key = const.KEYS_QT[const.KEYS_QM.index(1)]
+            print("QTTT:", qt_key, qt_key == Qt.Key_S)
+
+            # Convert from QuickMacHotKey to Qt.
+            qm_key = const.KEYS_QM[const.KEYS_QT.index(Qt.Key_S)]
+            print("QMM:", qm_key, qm_key == 1)
+
+        else:
+            # We only allow these modifiers.
+            modifiers = {"ShiftModifier": 512,  # Shift
+                         "ControlModifier": 256,  # Cmd
+                         "AltModifier": 2048,  # Option
+                         "MetaModifier": 4096,  # Control
+                         }
+
+            if modifier_name not in modifiers.keys():
+                print("mod not allowed:", modifier_name)
+                print("---" * 10)
+                return
+
+            modifier_id = modifiers[modifier_name]
+
+            print("mod allowed:", modifier_id
+                  )
+            # self.key_pressed(None, modifier_id)
+
+            # --> save modifier_name to instance variable!
+            # --> function set_hotkey() gets its values from the
+            # instance variable
+
+        print("---" * 10)
 
 
 class CustomDialog(QDialog):
@@ -103,6 +186,7 @@ class CustomDialog(QDialog):
 
         # Call the __init__ function of the parent class QDialog.
         super().__init__()
+        self.setAttribute(Qt.WA_DeleteOnClose)
 
         if header is None:
             header = ""
@@ -204,11 +288,15 @@ class ToggleEntry:
             # This is done to support different icons for ON and OFF,
             # and not only ON -> checkmark, OFF -> no icon.
             if isinstance(self.icon, QIcon):
-                self.entry.setIcon(QIcon(self.icon))
+                icon_on = QIcon(self.icon)
+                icon_on.setIsMask(True)
+                self.entry.setIcon(icon_on)
                 self.entry.setText(self.states[0])
                 self.entry.setToolTip(self.states[0])
             else:
-                self.entry.setIcon(QIcon(self.icon[0]))
+                icon_on = QIcon(self.icon[0])
+                icon_on.setIsMask(True)
+                self.entry.setIcon(icon_on)
                 self.entry.setText(self.states[0].lstrip())
                 self.entry.setToolTip(self.states[0].lstrip())
 
@@ -218,7 +306,9 @@ class ToggleEntry:
                 self.entry.setText(self.states[1])
                 self.entry.setToolTip(self.states[1])
             else:
-                self.entry.setIcon(QIcon(self.icon[1]))
+                icon_off = QIcon(self.icon[1])
+                icon_off.setIsMask(True)
+                self.entry.setIcon(icon_off)
                 self.entry.setText(self.states[1].lstrip())
                 self.entry.setToolTip(self.states[1].lstrip())
 
@@ -245,7 +335,9 @@ class ToggleEntry:
                 self.entry.setText(self.states[1])
                 self.entry.setToolTip(self.states[1])
             else:
-                self.entry.setIcon(QIcon(self.icon[1]))
+                icon_off = QIcon((self.icon[1]))
+                icon_off.setIsMask(True)
+                self.entry.setIcon(icon_off)
                 self.entry.setText(self.states[1].lstrip())
                 self.entry.setToolTip(self.states[1].lstrip())
 
@@ -263,11 +355,15 @@ class ToggleEntry:
             self.checked = True
 
             if isinstance(self.icon, QIcon):
-                self.entry.setIcon(QIcon(self.icon))
+                icon_on = QIcon(self.icon)
+                icon_on.setIsMask(True)
+                self.entry.setIcon(icon_on)
                 self.entry.setText(self.states[0])
                 self.entry.setToolTip(self.states[0])
             else:
-                self.entry.setIcon(QIcon(self.icon[0]))
+                icon_on = QIcon(self.icon[0])
+                icon_on.setIsMask(True)
+                self.entry.setIcon(icon_on)
                 self.entry.setText(self.states[0].lstrip())
                 self.entry.setToolTip(self.states[0].lstrip())
 
@@ -280,16 +376,16 @@ class ToggleEntry:
 
 class SubMenu:
     """
-    Creates a submenu and provides management functions for submenu
+    Creates a menu_devices and provides management functions for menu_devices
     entries.
 
-    :param name: The name of the submenu.
+    :param name: The name of the menu_devices.
     :type name: str
     :param exclusive: A boolean value indicating whether only one entry
-        in the submenu can be selected at a time.
+        in the menu_devices can be selected at a time.
     :type exclusive: bool
     :param entries: A variable number of entries to be added to the
-        submenu.
+        menu_devices.
     :type entries: ToggleEntry or tuple[ToggleEntry, ...]
 
     :methods:
@@ -301,13 +397,13 @@ class SubMenu:
         """
         Initialize a SubMenu instance.
 
-        :param name: The name of the submenu.
+        :param name: The name of the menu_devices.
         :type name: str
         :param exclusive: A boolean value indicating whether only one
-            entry in the submenu can be selected at a time.
+            entry in the menu_devices can be selected at a time.
         :type exclusive: bool
         :param entries: A variable number of entries to be added to the
-            submenu.
+            menu_devices.
         :type entries: ToggleEntry | tuple[ToggleEntry, ...]
 
         :return: None
@@ -327,10 +423,10 @@ class SubMenu:
 
     def toggle_excl(self, entry_clicked):
         """
-        Toggles exclusive entries within the submenu.
+        Toggles exclusive entries within the menu_devices.
 
         This function is used to toggle between exclusive entries within
-        the submenu. When one entry is clicked, it gets toggled to the
+        the menu_devices. When one entry is clicked, it gets toggled to the
         active state, while others are toggled off.
 
         :param entry_clicked: The entry that was clicked and should be
@@ -396,8 +492,6 @@ class TrayApp:
             alarm.
         - config_update: Update the application configuration based on
             user input.
-        - theme_update: Update the application theme based on system
-            settings.
         - update_box: Display an update message if a new version is
             available.
         - create_tray_icon: Create and configure the system tray icon
@@ -409,13 +503,13 @@ class TrayApp:
             author.
         - handle_exception: Custom exception handler for uncaught
             exceptions.
-        - exit_handler: Handle application exit and cleanup tasks.
+        - exit_handle: Handle application exit and cleanup tasks.
 
     :param None:
     :return: None
     """
 
-    def __init__(self):
+    def __init__(self, change_hotkey):
         """
         Initialize the TrayApp instance.
 
@@ -436,27 +530,32 @@ class TrayApp:
 
         # Register handlers for clean exit of program.
         for sig in [
-            signal.SIGINT,
-            signal.SIGTERM,
-            signal.SIGQUIT,
-            signal.SIGABRT,
-        ]:
-            signal.signal(sig, self.exit_handler)
+                signal.SIGINT,
+                signal.SIGTERM,
+                signal.SIGQUIT,
+                signal.SIGABRT,
+                ]:
+            signal.signal(sig, self.exit_handle)
 
         # Set the exception hook.
         sys.excepthook = self.handle_exception
 
-        # Initialize the style hints and connect the signal to the theme
-        # update function (for registering real-time theme changes).
-        self.style_hints = self.app.styleHints()
-        self.style_hints.colorSchemeChanged.connect(self.theme_update)
+        # Set the hotkey change function.
+        self.change_hotkey = change_hotkey
 
-        # Call the theme update function to set the initial theme.
-        self.resources = None
-        self.theme_update()
+        # Real-time theme changes (not needed anymore).
+        # self.style_hints = self.app.styleHints()
+        # self.style_hints.colorSchemeChanged.connect(self.theme_update)
 
         # Initialize the config and run startup checks.
-        self.config = startup()
+        self.config = helpers.startup()
+
+        # Apply the config-set global hotkey (default: Cmd+Shift+D).
+        hotkey_key = int(self.config["Hotkeys"]["key"])
+        hotkey_mods = literal_eval(
+                f"[{self.config['Hotkeys']['modifiers']}]"
+                )
+        self.change_hotkey(hotkey_key, hotkey_mods)
 
         # Set log level (1,2,3,4,5) and destination (file, syslog, stdout).
         set_level_dest(LOGGER, self.config)
@@ -472,9 +571,10 @@ class TrayApp:
 
         self.menu_tray = None
         self.menu_settings = None
-        self.submenu = None
+        self.menu_devices = None
         self.menu_enabled = None
         self.menu_tamper = None
+        self.menu_hotkey = None
 
         # Create and display the system tray icon with its menu.
         self.app_icon = self.create_tray_icon()
@@ -504,10 +604,21 @@ class TrayApp:
         # After full initialization, check for updates and show
         # messageBox if update is available.
         if self.config["Application"]["check_updates"] == "1":
-            if new_vers := check_updates():
-                self.update_box(new_vers)
+            if update_info := helpers.check_updates():
+                self.update_box(update_info)
 
-        print(self.app.launch_time)
+        # TODO: remove/change
+        # print(self.app.launch_time)
+
+        # enc.main()
+
+    def lool(self):
+        print("LOOL")
+        self.menu_enabled.entry.setShortcut(QKeySequence("Ctrl+Shift+S"))
+
+    def hotkey_settings(self):
+        self.hotkey_selector = HotkeySelector(self.config)
+        self.hotkey_selector.show()
 
     def menu_devices_update(self):
         """
@@ -528,49 +639,49 @@ class TrayApp:
 
         # Get the allowed devices.
         current_allow = literal_eval(
-            "[" + self.config["Whitelist"]["usb"] + "]"
-        )
+                "[" + self.config["Whitelist"]["usb"] + "]"
+                )
 
         # Remove allowed devices from start devices.
         for device in current_allow:
             if device in current_connect_copy:
                 current_connect_copy.remove(device)
 
-        # Clear the submenu of all entries.
-        self.submenu.clear()
+        # Clear the menu_devices of all entries.
+        self.menu_devices.clear()
 
-        # Add all whitelisted devices to the submenu.
+        # Add all whitelisted devices to the menu_devices.
         for device in current_allow:
             device_name = str(device[3])
             device_action = ToggleEntry(
-                self.whitelist_update,
-                [device_name, f"      {device_name}"],
-                QIcon(self.resources["checkmark"]),
-                True,
-                full_name=device,
-            )
+                    self.whitelist_update,
+                    [device_name, f"      {device_name}"],
+                    QIcon(const.RES["check"]),
+                    True,
+                    full_name=device,
+                    )
 
-            self.submenu.addAction(device_action.entry)
+            self.menu_devices.addAction(device_action.entry)
 
-        # Add the remaining currently connected devices to the submenu.
+        # Add the remaining currently connected devices to the menu_devices.
         for device in current_connect_copy:
             device_name = str(device[3])
             device_action = ToggleEntry(
-                self.whitelist_update,
-                [device_name, f"      {device_name}"],
-                QIcon(self.resources["checkmark"]),
-                False,
-                full_name=device,
-            )
+                    self.whitelist_update,
+                    [device_name, f"      {device_name}"],
+                    QIcon(const.RES["check"]),
+                    False,
+                    full_name=device,
+                    )
 
-            self.submenu.addAction(device_action.entry)
+            self.menu_devices.addAction(device_action.entry)
 
         # If whitelist is empty and no devices are connected, add a
         # dummy entry ("Searching").
         if not current_allow and not current_connect:
-            submenu_dummy = QAction("Searching ...", self.submenu)
+            submenu_dummy = QAction("Searching ...", self.menu_devices)
             submenu_dummy.setEnabled(False)
-            self.submenu.addAction(submenu_dummy)
+            self.menu_devices.addAction(submenu_dummy)
 
     def whitelist_update(self, device_menu, checked):
         """
@@ -600,8 +711,8 @@ class TrayApp:
                     self.config["Whitelist"]["usb"] = str(allowed)[1:-1]
 
                     LOGGER.info(
-                        f"Remove device from whitelist: {device_menu}."
-                    )
+                            f"Remove device from whitelist: {device_menu}."
+                            )
 
                     break
 
@@ -614,7 +725,7 @@ class TrayApp:
             return
 
         # Add device to whitelist.
-        curr = usb_devices()
+        curr = helpers.usb_devices()
         for device in curr:
             if device == device_menu:
                 if self.config["Whitelist"]["usb"] == "":
@@ -649,6 +760,11 @@ class TrayApp:
         """
 
         if state == "Guarding":
+            # Create mail object and give worker access to it.
+            if self.config["Email"]["enabled"] == "1":
+                mail = notif.NotificationMail(self.config)
+                Workers.mail = mail
+
             # Initialize the worker object with config.
             Workers.config = self.config
             Workers.defused = False
@@ -685,8 +801,24 @@ class TrayApp:
                 pass
 
             LOGGER.info(
-                "STOPPED guarding the USB interface ...",
-            )
+                    "STOPPED guarding the USB interface ...",
+                    )
+
+    def hotkey_handle(self):
+        # If hotkeys are disabled, return.
+        if self.config["Hotkeys"]["enabled"] == "0":
+            return
+
+        # Manipulation: Defuse the alarm.
+        elif self.menu_tamper.isVisible():
+            self.defuse()
+            return
+
+        # No Alarm: Start/Stop the worker.
+        else:
+            # wait for the worker to finish
+            self.menu_enabled.toggle()
+            return
 
     def defuse(self):
         """
@@ -725,7 +857,7 @@ class TrayApp:
         LOGGER.info("The worker was STOPPED after defusing!")
 
         self.menu_settings.setDisabled(False)
-        self.submenu.setDisabled(False)
+        self.menu_devices.setDisabled(False)
 
     def manipulation(self):
         """
@@ -745,7 +877,7 @@ class TrayApp:
         # Prevent changing the settings or adding devices to whitelist,
         # while the alarm is active (Manipulation detected).
         self.menu_settings.setDisabled(True)
-        self.submenu.setDisabled(True)
+        self.menu_devices.setDisabled(True)
 
     def config_update(self, button, state=None):
         """
@@ -806,29 +938,32 @@ class TrayApp:
         # Write the updated config to disk.
         conf.write(self.config)
 
-    def theme_update(self):
-        # Get the current system theme.
-        theme_os = self.style_hints.colorScheme().name.upper()
+    # def theme_update(self):
+    #     # Get the current system theme.
+    #     theme_os = self.style_hints.colorScheme().name.upper()
+    #
+    #     LOGGER.debug(f"Application theme: {theme_os}.")
+    #
+    #     # Set the application resources based on the current theme.
+    #     self.resources = const.LIGHT if theme_os == "LIGHT" else const.DARK
+    #
+    #     # If the app is starting, no need to update the icons before
+    #     # the tray icon is even created -> return here.
+    #     if not hasattr(self, "app_icon"):
+    #         return
+    #
+    #     # Actually we dont need the force updating anymore... I think
+    #     return
+    #
+    #     # Update all icons by deleting and recreating the tray menu.
+    #     self.app_icon.deleteLater()
+    #     self.app_icon = self.create_tray_icon()
+    #     self.app_icon.show()
+    #
+    #     # Update the device menu
+    #     self.menu_devices_update()
 
-        LOGGER.debug(f"Application theme: {theme_os}.")
-
-        # Set the application resources based on the current theme.
-        self.resources = const.LIGHT if theme_os == "LIGHT" else const.DARK
-
-        # If the app is starting, no need to update the icons before
-        # the tray icon is even created -> return here.
-        if not hasattr(self, "app_icon"):
-            return
-
-        # Update all icons by deleting and recreating the tray menu.
-        self.app_icon.deleteLater()
-        self.app_icon = self.create_tray_icon()
-        self.app_icon.show()
-
-        # Update the device menu
-        self.menu_devices_update()
-
-    def update_box(self, new_vers):
+    def update_box(self, update_info):
         """
         The update_box function is used to display a message box
         informing the user that an update is available. The function
@@ -847,22 +982,29 @@ class TrayApp:
         msg_box = QMessageBox()
         msg_box.setWindowTitle("swiftGuard")
 
+        new_version = update_info[0]
+        new_features = update_info[1]
+        new_features_formatted = ""
+        for i, feature in enumerate(new_features):
+            new_features_formatted += f"» {feature}\n"
+
+            # Show max 4 new features.
+            if i == 4:
+                break
+
         # Bold text.
         msg_box.setText(
-            f"Update Available!\n\n"
-            f"Installed: {__version__}\nLatest Release: "
-            f"{new_vers}\n"
-        )
+                f"Update Available!\n\n"
+                f"Installed: {__version__}\nLatest Release: "
+                f"{new_version}\n\nNew Features:"
+                )
 
         # Smaller, informative text.
-        msg_box.setInformativeText(
-            "Keeping swiftGuard up to date is advisable due to "
-            "its rapid development cycle, ensuring security enhancements, "
-            "bug fixes, and continuous improvements.\n"
-        )
+        msg_box.setInformativeText(f"{new_features_formatted}"
+                                   )
 
         # Add app logo.
-        pixmap = QPixmap(self.resources["app-logo"])
+        pixmap = QPixmap(const.RES["app"])
         msg_box.setIconPixmap(pixmap)
 
         # Add update button.
@@ -883,9 +1025,7 @@ class TrayApp:
 
         # Open website in browser in new tab.
         if msg_box.clickedButton() == msg_button:
-            webbrowser.open_new_tab(
-                "https://github.com/Lennolium/swiftGuard/releases/latest"
-            )
+            webbrowser.open_new_tab(const.URLS["latest"])
 
         # Disable future update messages.
         if cb.isChecked():
@@ -908,29 +1048,40 @@ class TrayApp:
         tray_icon = QSystemTrayIcon()
         tray_icon.setToolTip("swiftGuard")
 
-        tray_icon.setIcon(QIcon(self.resources["app-icon"]))
+        # Set the app icon.
+        icon = QIcon(const.RES["tray"])
+        icon.setIsMask(True)  # Dark mode fix for macOS.
+        tray_icon.setIcon(icon)
 
         self.menu_tray = QMenu()
 
-        # Create a submenu for "Devices" initially disabled.
-        self.submenu = self.menu_tray.addMenu("Devices")
-        self.submenu.setIcon(QIcon(self.resources["usb-connection"]))
-        submenu_dummy = QAction("Searching ...", self.submenu)
-        submenu_dummy.setEnabled(False)
-        self.submenu.addAction(submenu_dummy)
+        # Create a menu_devices for "Devices" initially disabled.
+        menu_devices_icon = QIcon(QIcon(const.RES["usb"]))
+        menu_devices_icon.setIsMask(True)
+        self.menu_devices = self.menu_tray.addMenu("Devices")
+        self.menu_devices.setIcon(menu_devices_icon)
+        menu_devices_dummy = QAction("Searching ...", self.menu_devices)
+        menu_devices_dummy.setEnabled(False)
+        self.menu_devices.addAction(menu_devices_dummy)
 
-        # Add an "Enabled" menu item and connect it to submenu creation.
+        # Add an "Enabled" menu item and connect it to menu_devices creation.
         self.menu_enabled = ToggleEntry(
-            self.worker_handle,
-            ["Guarding", "      Inactive"],
-            [
-                QIcon(self.resources["shield-check"]),
-                QIcon(self.resources["shield-slash"]),
-            ],
-            bool(self.worker._isRunning),
-        )
+                self.worker_handle,
+                ["Guarding", "      Inactive"],
+                [
+                        QIcon(const.RES["guarding"]),
+                        QIcon(const.RES["inactive"]),
+                        ],
+                bool(self.worker._isRunning),
+                )
 
-        self.menu_enabled.entry.setShortcut(QKeySequence(Qt.CTRL | Qt.Key_E))
+        # TODO: sync with hotkey from config!
+        self.menu_hotkey = QKeySequence(Qt.CTRL | Qt.SHIFT |
+                                        Qt.Key_D
+                                        )
+
+        self.menu_enabled.entry.setShortcut(QKeySequence(self.menu_hotkey))
+
         if self.worker.tampered_var:
             self.menu_enabled.entry.setVisible(False)
         else:
@@ -939,12 +1090,12 @@ class TrayApp:
 
         # Create hidden "Manipulation" menu item.
         self.menu_tamper = QAction("Manipulation", self.menu_tray)
-        self.menu_tamper.setIcon(QIcon(self.resources["shield-tamper"]))
+        self.menu_tamper.setIcon(QIcon(const.RES["tamper"]))
         if self.worker.tampered_var:
             self.menu_tamper.setVisible(True)
         else:
             self.menu_tamper.setVisible(False)
-        self.menu_tamper.setShortcut(QKeySequence(Qt.CTRL | Qt.Key_E))
+        self.menu_tamper.setShortcut(QKeySequence(self.menu_hotkey))
         self.menu_tray.addAction(self.menu_tamper)
         self.menu_tamper.triggered.connect(self.defuse)
 
@@ -954,75 +1105,76 @@ class TrayApp:
         self.menu_settings = QMenu("      Settings", self.menu_tray)
         self.menu_tray.addMenu(self.menu_settings)
 
-        # Create an "Action" submenu within "Settings."
+        # Create an "Action" menu_devices within "Settings."
         entry01 = ToggleEntry(
-            self.config_update,
-            ["Shutdown", "      Shutdown"],
-            QIcon(self.resources["checkmark"]),
-            self.config["User"]["action"] == "shutdown",
-        )
+                self.config_update,
+                ["Shutdown", "      Shutdown"],
+                QIcon(const.RES["check"]),
+                self.config["User"]["action"] == "shutdown",
+                )
 
         entry02 = ToggleEntry(
-            self.config_update,
-            ["Hibernate", "      Hibernate"],
-            QIcon(self.resources["checkmark"]),
-            self.config["User"]["action"] == "hibernate",
-        )
+                self.config_update,
+                ["Hibernate", "      Hibernate"],
+                QIcon(const.RES["check"]),
+                self.config["User"]["action"] == "hibernate",
+                )
 
         submenu2 = SubMenu("      Action", True, entry01, entry02)
 
         self.menu_settings.addMenu(submenu2.submenu)
 
-        # Create a "Delay" submenu within "Settings."
+        # Create a "Delay" menu_devices within "Settings."
         entry04 = ToggleEntry(
-            self.config_update,
-            ["0 s", "      0 s"],
-            QIcon(self.resources["checkmark"]),
-            self.config["User"]["delay"] == "0",
-        )
+                self.config_update,
+                ["0 s", "      0 s"],
+                QIcon(const.RES["check"]),
+                self.config["User"]["delay"] == "0",
+                )
 
         entry05 = ToggleEntry(
-            self.config_update,
-            ["5 s", "      5 s"],
-            QIcon(self.resources["checkmark"]),
-            self.config["User"]["delay"] == "5",
-        )
+                self.config_update,
+                ["5 s", "      5 s"],
+                QIcon(const.RES["check"]),
+                self.config["User"]["delay"] == "5",
+                )
 
         entry06 = ToggleEntry(
-            self.config_update,
-            ["10 s", "      10 s"],
-            QIcon(self.resources["checkmark"]),
-            self.config["User"]["delay"] == "10",
-        )
+                self.config_update,
+                ["10 s", "      10 s"],
+                QIcon(const.RES["check"]),
+                self.config["User"]["delay"] == "10",
+                )
 
         entry07 = ToggleEntry(
-            self.config_update,
-            ["30 s", "      30 s"],
-            QIcon(self.resources["checkmark"]),
-            self.config["User"]["delay"] == "30",
-        )
+                self.config_update,
+                ["30 s", "      30 s"],
+                QIcon(const.RES["check"]),
+                self.config["User"]["delay"] == "30",
+                )
 
         entry08 = ToggleEntry(
-            self.config_update,
-            ["60 s", "      60 s"],
-            QIcon(self.resources["checkmark"]),
-            self.config["User"]["delay"] == "60",
-        )
+                self.config_update,
+                ["60 s", "      60 s"],
+                QIcon(const.RES["check"]),
+                self.config["User"]["delay"] == "60",
+                )
 
         submenu3 = SubMenu(
-            "      Delay", True, entry04, entry05, entry06, entry07, entry08
-        )
+                "      Delay", True, entry04, entry05, entry06, entry07,
+                entry08
+                )
 
         self.menu_settings.addMenu(submenu3.submenu)
 
-        # Add an "Autostart" menu item in "Settings" submenu.
+        # Add an "Autostart" menu item in "Settings" menu_devices.
         entry09 = ToggleEntry(
-            self.config_update,
-            ["Autostart", "      Autostart"],
-            QIcon(self.resources["checkmark"]),
-            self.config["User"]["autostart"] == "1",
-            full_name="Autostart",
-        )
+                self.config_update,
+                ["Autostart", "      Autostart"],
+                QIcon(const.RES["check"]),
+                self.config["User"]["autostart"] == "1",
+                full_name="Autostart",
+                )
 
         self.menu_settings.addAction(entry09.entry)
 
@@ -1041,7 +1193,7 @@ class TrayApp:
         # Create an "Exit" menu item and connect it to the exit handler.
         menu_exit = QAction("      Exit", self.menu_tray)
         menu_exit.setShortcut(QKeySequence(Qt.CTRL | Qt.Key_Q))
-        menu_exit.triggered.connect(self.exit_handler)
+        menu_exit.triggered.connect(self.exit_handle)
         self.menu_tray.addAction(menu_exit)
 
         # Set the system tray menu.
@@ -1062,10 +1214,10 @@ class TrayApp:
         """
 
         msg_box = CustomDialog(
-            f"{const.APP_PATH}/resources/ACKNOWLEDGMENTS",
-            "Acknowledgements",
-            "swiftGuard uses the following third-party libraries:",
-        )
+                f"{const.APP_PATH}/resources/ACKNOWLEDGMENTS",
+                "Acknowledgements",
+                "swiftGuard uses the following third-party libraries:",
+                )
 
         msg_box.exec()
 
@@ -1087,30 +1239,32 @@ class TrayApp:
 
         # Smaller, informative text.
         msg_box.setInformativeText(
-            "1. Click the 'Guarding/Inactive' entry to start or pause the "
-            "guarding of your USB ports\n\n"
-            "2. The devices menu displays all allowed and connected "
-            "devices. Allowed Devices are indicated with a checkmark, "
-            "even if they are not connected.\n\n"
-            "3. To add or remove a Device from the whitelist, simply "
-            "click on the corresponding device entry.\n\n"
-            "4. If manipulation is detected by swiftGuard, an alert will "
-            "appear in the main menu. Clicking on it will reset the "
-            "alarm. The Exit button will not work.\n\n"
-            "5. You can set a delay (0 - 60 seconds) and an action "
-            "(Shutdown or Hibernate) in the settings menu. The delay "
-            "determines how long swiftGuard will wait for you to reset "
-            "the alarm before executing the action.\n\n"
-            "Notes: swiftGuard alerts you if devices are removed "
-            "that were connected before or while the application was started, "
-            "except you add them to the whitelist. Connecting new devices "
-            "will always trigger an alert, if these devices are not "
-            "whitelisted. For running the script in standalone mode, check "
-            "the project repository on GitHub for instructions.\n"
-        )
+                "1. Click the 'Guarding/Inactive' entry to start or pause the "
+                "guarding of your USB ports\n\n"
+                "2. The devices menu displays all allowed and connected "
+                "devices. Allowed Devices are indicated with a checkmark, "
+                "even if they are not connected.\n\n"
+                "3. To add or remove a Device from the whitelist, simply "
+                "click on the corresponding device entry.\n\n"
+                "4. If manipulation is detected by swiftGuard, an alert will "
+                "appear in the main menu. Clicking on it will reset the "
+                "alarm. The Exit button will not work.\n\n"
+                "5. You can set a delay (0 - 60 seconds) and an action "
+                "(Shutdown or Hibernate) in the settings menu. The delay "
+                "determines how long swiftGuard will wait for you to reset "
+                "the alarm before executing the action.\n\n"
+                "Notes: swiftGuard alerts you if devices are removed "
+                "that were connected before or while the application was "
+                "started, "
+                "except you add them to the whitelist. Connecting new devices "
+                "will always trigger an alert, if these devices are not "
+                "whitelisted. For running the script in standalone mode, "
+                "check "
+                "the project repository on GitHub for instructions.\n"
+                )
 
         # Add app logo.
-        pixmap = QPixmap(self.resources["app-logo"])
+        pixmap = QPixmap(const.RES["app"])
         msg_box.setIconPixmap(pixmap)
 
         # Add documentation button.
@@ -1129,16 +1283,16 @@ class TrayApp:
         # Open website in browser in new tab.
         if msg_box.clickedButton() == doc_button:
             webbrowser.open_new_tab(
-                "https://github.com/Lennolium/swiftGuard/wiki"
-            )
+                    "https://github.com/Lennolium/swiftGuard/wiki"
+                    )
         elif msg_box.clickedButton() == email_button:
             webbrowser.open_new_tab(
-                "mailto:lennart-haack@mail.de?subject=swiftGuard%3A%20I"
-                "%20need%20assistance&body=Dear%20Lennart%2C%0A%0AI'm"
-                "%20using%20your%20application%20'swiftGuard'%2C%20but"
-                "%20I%20did%20run%20into%20some%20problems%20and%20I"
-                "%20need%20assistance%20with%20the%20following%3A"
-            )
+                    "mailto:lennart-haack@mail.de?subject=swiftGuard%3A%20I"
+                    "%20need%20assistance&body=Dear%20Lennart%2C%0A%0AI'm"
+                    "%20using%20your%20application%20'swiftGuard'%2C%20but"
+                    "%20I%20did%20run%20into%20some%20problems%20and%20I"
+                    "%20need%20assistance%20with%20the%20following%3A"
+                    )
 
     def about(self):
         """
@@ -1156,31 +1310,37 @@ class TrayApp:
 
         # Bold text.
         msg_box.setText(
-            f"swiftGuard\n\nVersion {__version__} ({__build__})\n\n\nMade "
-            f"with ❤️ by Lennolium" + "                                       "
-        )
+                f"swiftGuard\n\nVersion {__version__} ({__build__})\n\n\nMade "
+                f"with ❤️ by Lennolium" + "                                  "
+                                          "     "
+                )
 
         # Smaller, informative text.
         msg_box.setInformativeText(
-            "\n👋🏻 Lennart Haack \n"
-            "📨 lennart-haack@mail.de \n"
-            "🔑 F452 A252 1A91 043C A02D 4C06 5BE3 C31E F9DF CEA7\n\n"
-            "swiftGuard is free software: you can redistribute it and/or "
-            "modify it under the terms of the GNU General Public License as "
-            "published by the Free Software Foundation, either version 3 of "
-            "the License, or (at your option) any later version."
-            "This program is distributed in the hope that it will be useful, "
-            "but WITHOUT ANY WARRANTY; without even the implied warranty of "
-            "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the "
-            "GNU General Public License for more details. "
-            "You should have received a copy of the GNU General Public "
-            "License along with this program. If not, see \n\n"
-            "< https://www.gnu.org/licenses/ >.\n"
-            "< https://github.com/Lennolium/swiftGuard/blob/main/LICENSE >\n"
-        )
+                "\n👋🏻 Lennart Haack \n"
+                "📨 lennart-haack@mail.de \n"
+                "🔑 F452 A252 1A91 043C A02D 4C06 5BE3 C31E F9DF CEA7\n\n"
+                "swiftGuard is free software: you can redistribute it and/or "
+                "modify it under the terms of the GNU General Public License "
+                "as "
+                "published by the Free Software Foundation, either version 3 "
+                "of "
+                "the License, or (at your option) any later version."
+                "This program is distributed in the hope that it will be "
+                "useful, "
+                "but WITHOUT ANY WARRANTY; without even the implied warranty "
+                "of "
+                "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the "
+                "GNU General Public License for more details. "
+                "You should have received a copy of the GNU General Public "
+                "License along with this program. If not, see \n\n"
+                "< https://www.gnu.org/licenses/ >.\n"
+                "< https://github.com/Lennolium/swiftGuard/blob/main/LICENSE "
+                ">\n"
+                )
 
         # Add app logo.
-        pixmap = QPixmap(self.resources["app-logo"])
+        pixmap = QPixmap(const.RES["app"])
         msg_box.setIconPixmap(pixmap)
 
         # Add documentation button.
@@ -1188,8 +1348,8 @@ class TrayApp:
 
         # Add project and close button.
         acknow_button = msg_box.addButton(
-            "Acknowledgments", QMessageBox.HelpRole
-        )
+                "Acknowledgments", QMessageBox.HelpRole
+                )
         msg_box.addButton("Close", QMessageBox.NoRole)
 
         # Make text selectable and copyable.
@@ -1200,7 +1360,7 @@ class TrayApp:
 
         # Open website in browser in new tab.
         if msg_box.clickedButton() == project_button:
-            webbrowser.open_new_tab("https://github.com/Lennolium/swiftGuard")
+            webbrowser.open_new_tab(const.URLS["project"])
         elif msg_box.clickedButton() == acknow_button:
             self.acknowledgements()
 
@@ -1208,7 +1368,7 @@ class TrayApp:
         """
         The handle_exception function is a custom exception handler that
         logs uncaught exceptions to the log file with the level
-        CRITICAL. Finally, it calls the exit_handler function to exit
+        CRITICAL. Finally, it calls the exit_handle function to exit
         the program.
 
         :param exc_type: Store the exception type
@@ -1223,20 +1383,22 @@ class TrayApp:
             return
 
         LOGGER.critical(
-            "Uncaught Exception:",
-            exc_info=(exc_type, exc_value, exc_traceback),
-        )
+                "Uncaught Exception:",
+                exc_info=(exc_type, exc_value, exc_traceback),
+                )
 
-        self.exit_handler(error=True)
+        # TODO: Open custom error dialog to inform user about the error.
 
-    def exit_handler(self, signum=None, frame=None, error=False):
+        self.exit_handle(error=True)
+
+    def exit_handle(self, signum=None, frame=None, error=False):
         """
         Handle application exit and cleanup.
 
         This function performs cleanup tasks and ensures that the
         application exits gracefully when the user chooses to close it.
 
-        :param signum: Identify the signal that caused the exit_handler
+        :param signum: Identify the signal that caused the exit_handle
             to be called
         :param frame: Reference the frame object that called function
         :param error: If True, an error occurred which caused the exit
@@ -1270,9 +1432,9 @@ class TrayApp:
         # If error is True, an error occurred which caused the exit.
         if error:
             LOGGER.critical(
-                "A critical error occurred that caused the application "
-                "to exit unexpectedly."
-            )
+                    "A critical error occurred that caused the application "
+                    "to exit unexpectedly."
+                    )
             self.app.quit()
             sys.exit(1)
 
@@ -1293,8 +1455,38 @@ def main():
     :return: None
     """
 
-    # Create the tray application instance.
-    tray = TrayApp()
+    # Initialize the global hotkey handler.
+    mock_config = MockConf(vk=VirtualKey(2), mk=mask(cmdKey, shiftKey))
+
+    @quickHotKey(
+            virtualKey=VirtualKey(1),  # D
+            modifierMask=mask(ModifierKey(256),  # shiftKey
+                              ModifierKey(512)
+                              ),  # cmdKey
+            configurator=mock_config,
+            )
+    def handler() -> None:
+        LOGGER.debug("Hotkey pressed!")
+        tray.hotkey_handle()
+        print("Hotkey pressed!")
+
+        # TODO: remove
+        # tray.hotkey_settings()
+        # tray.lool()
+        # hotkey_change(1, [256, 512])
+
+    def hotkey_change(key_id: int, mods: list[int]) -> None:
+        LOGGER.debug(f"Hotkeys changed. Key: {key_id}, Modifiers: {mods}.")
+        mod_mask = [ModifierKey(mod) for mod in mods]
+
+        handler.configure(virtualKey=VirtualKey(key_id),
+                          modifierMask=mask(*mod_mask)
+                          )
+
+        # tray.menu_enabled.entry.setShortcut(QKeySequence("Ctrl+Shift+S"))
+
+    # Create the tray application instance and pass the hotkey changer.
+    tray = TrayApp(hotkey_change)
 
     # Set general application information.
     tray.app.setApplicationDisplayName("swiftGuard")

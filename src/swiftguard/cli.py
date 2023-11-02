@@ -41,6 +41,7 @@ __status__ = "Development"
 import signal
 import sys
 
+from swiftguard.utils import notif
 from swiftguard.utils.helpers import startup
 from swiftguard.utils.log import LogCount, create_logger, set_level_dest
 from swiftguard.utils.workers import Worker, Workers
@@ -54,7 +55,7 @@ def handle_exception(exc_type, exc_value, exc_traceback):
     """
     The handle_exception function is a custom exception handler that
     logs uncaught exceptions to the log file with the level CRITICAL.
-    Finally, it calls the exit_handler function to exit the program.
+    Finally, it calls the exit_handle function to exit the program.
 
     :param exc_type: Store the exception type
     :param exc_value: Get the exception value
@@ -68,33 +69,33 @@ def handle_exception(exc_type, exc_value, exc_traceback):
         return
 
     LOGGER.critical(
-        "Uncaught Exception:",
-        exc_info=(exc_type, exc_value, exc_traceback),
-    )
+            "Uncaught Exception:",
+            exc_info=(exc_type, exc_value, exc_traceback),
+            )
 
-    exit_handler(error=True)
+    exit_handle(error=True)
 
 
-def exit_handler(signum=None, frame=None, error=False):
+def exit_handle(signum=None, frame=None, error=False):
     """
-    The exit_handler function is a signal handler that catches the
+    The exit_handle function is a signal handler that catches the
     SIGINT and SIGTERM signals. It then prints out a message to the
     log file, and exits with status 0.
 
-    :param signum: Identify the signal that caused the exit_handler
+    :param signum: Identify the signal that caused the exit_handle
         to be called
     :param frame: Reference the frame object that called function
     :param error: If True, an error occurred which caused the exit
-    :return: The exit_handler function
+    :return: The exit_handle function
     """
 
     # If error is True, an error occurred which caused the exit.
     if error:
         code = 1
         LOGGER.critical(
-            "A critical error occurred that caused the application "
-            "to exit unexpectedly."
-        )
+                "A critical error occurred that caused the application "
+                "to exit unexpectedly."
+                )
 
     else:
         code = 0
@@ -118,7 +119,7 @@ def main():
 
     # Register handlers for clean exit of program.
     for sig in [signal.SIGINT, signal.SIGTERM, signal.SIGQUIT]:
-        signal.signal(sig, exit_handler)
+        signal.signal(sig, exit_handle)
 
     # Set the exception hook.
     sys.excepthook = handle_exception
@@ -132,6 +133,11 @@ def main():
     # Print worker start message, but only if not logging to stdout.
     if "stdout" not in config["Application"]["log"]:
         print("Start guarding the USB ports ...", file=sys.stdout)
+
+    # Create mail object and give worker access to it.
+    if config["Email"]["enabled"] == "1":
+        mail = notif.NotificationMail(config)
+        Workers.mail = mail
 
     # Create worker and start main worker loop.
     Workers.config = config

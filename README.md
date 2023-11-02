@@ -142,7 +142,7 @@ regulations. swiftGuard helps maintain compliance by preventing unauthorized dat
 
 ## Installation
 
-1. Obtain the most recent version by downloading it from [Releases](https://github.com/Lennolium/swiftGuard/releases).
+1. Obtain the most recent version by downloading it from [Releases](https://github.com/Lennolium/swiftGuard/releases/latest).
 2. Open the downloaded `swiftGuard.dmg` file.
 3. Drag the swiftGuard application into the Applications folder.
 4. Open the swiftGuard application from the Applications folder (by right-clicking and selecting `Open`, see Note below)
@@ -152,14 +152,15 @@ permissions by macOS.
 7. Automatic startup at login can be enabled in the app's settings menu.
 
 &nbsp;
-> **Important**: Make sure you use FileVault, macOS's built-in disk encryption feature, encrypt your entire disk, 
+> **Important**: Make sure you use FileVault, macOS's built-in disk encryption feature, to encrypt your entire disk, 
 > ensuring that your data remains secure even if your device falls into the wrong hands. 
 > Otherwise, unauthorized users may gain access to your data easily: `System Preferences > Security & Privacy > Security > FileVault` > Do NOT enable iCloud Recovery!
 
 >__Note:__ If you get a warning that the application is from an _unidentified developer_, you have to open
 >`System Preferences > Security & Privacy > Security` and click `Open Anyway`
->to allow the application to run. 
+>to allow the application to run.
 
+See [INSTALL.md](https://github.com/Lennolium/swiftGuard/blob/main/INSTALL.md) for further details and instructions if you are upgrading from an older version.
 &nbsp;
 
 <!--- Usage -->

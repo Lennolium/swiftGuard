@@ -46,26 +46,25 @@ def create(force_restore=False):
         return
     try:
         # If no config directory exists, create it.
-        if not os.path.isdir(os.path.dirname(const.CONFIG_FILE)):
-            os.mkdir(os.path.dirname(const.CONFIG_FILE))
+        os.makedirs(os.path.dirname(const.CONFIG_FILE), exist_ok=True)
 
         # Copy config file to config dir or overwrite existing one.
         shutil.copy(
-            os.path.join(const.APP_PATH, "install", "swiftguard.ini"),
-            const.CONFIG_FILE,
-        )
+                os.path.join(const.APP_PATH, "install", "swiftguard.ini"),
+                const.CONFIG_FILE,
+                )
 
     except Exception as e:
         raise e from RuntimeError(
-            f"Could not create config file at {const.CONFIG_FILE}!\n"
-            f"Error: {str(e)}"
-        )
+                f"Could not create config file at {const.CONFIG_FILE}!\n"
+                f"Error: {str(e)}"
+                )
 
     if force_restore:
         LOGGER.warning(
-            f"Config file at {const.CONFIG_FILE} was overwritten with "
-            f"default values."
-        )
+                f"Config file at {const.CONFIG_FILE} was overwritten with "
+                f"default values."
+                )
         return
 
     LOGGER.info(f"Created config file at {const.CONFIG_FILE}.")
@@ -83,17 +82,18 @@ def validate(config):
     """
 
     conf_default = {
-        "Application": ["version", "log", "log_level", "check_updates"],
-        "User": ["autostart", "action", "delay", "check_interval"],
-        "Email": ["enabled", "name", "email", "smtp", "port"],
-        "Whitelist": ["usb", "bluetooth"],
-    }
+            "Application": ["version", "log", "log_level", "check_updates"],
+            "User": ["autostart", "action", "delay", "check_interval"],
+            "Email": ["enabled", "name", "email", "smtp", "port"],
+            "Hotkeys": ["enabled", "key", "modifiers"],
+            "Whitelist": ["usb", "bluetooth"],
+            }
 
     for key, value in conf_default.items():
         for item in value:
             if not config.has_option(key, item):
                 create(force_restore=True)
-                config.read(const.CONFIG_FILE, encoding="utf-8")
+                config.read(const.CONFIG_FILE, "r", encoding="utf-8")
 
                 # Further checks are not needed, because of overwrite.
                 return config
@@ -162,7 +162,7 @@ def validate(config):
         config["Email"]["name"] = ""
         config["Email"]["email"] = ""
         config["Email"]["smtp"] = ""
-        config["Email"]["port"] = "465"
+        config["Email"]["port"] = ""
         default_needed = True
 
     if config["Email"]["name"] != "":
@@ -171,7 +171,7 @@ def validate(config):
             config["Email"]["name"] = ""
             config["Email"]["email"] = ""
             config["Email"]["smtp"] = ""
-            config["Email"]["port"] = "465"
+            config["Email"]["port"] = ""
             default_needed = True
 
     if config["Email"]["email"] != "":
@@ -180,7 +180,7 @@ def validate(config):
             config["Email"]["name"] = ""
             config["Email"]["email"] = ""
             config["Email"]["smtp"] = ""
-            config["Email"]["port"] = "465"
+            config["Email"]["port"] = ""
             default_needed = True
 
     if config["Email"]["smtp"] != "":
@@ -189,24 +189,43 @@ def validate(config):
             config["Email"]["name"] = ""
             config["Email"]["email"] = ""
             config["Email"]["smtp"] = ""
-            config["Email"]["port"] = "465"
+            config["Email"]["port"] = ""
             default_needed = True
 
-    if config["Email"]["port"] not in ["465", "587"]:
+    if config["Email"]["port"] not in ["465", "587", ""]:
         config["Email"]["enabled"] = "0"
         config["Email"]["name"] = ""
         config["Email"]["email"] = ""
         config["Email"]["smtp"] = ""
-        config["Email"]["port"] = "465"
+        config["Email"]["port"] = ""
         default_needed = True
+
+    # Check for valid hotkeys.
+    if config["Hotkeys"]["enabled"] not in ["0", "1"]:
+        config["Hotkeys"]["enabled"] = "1"
+        config["Hotkeys"]["key"] = "2"  # D
+        config["Hotkeys"]["modifiers"] = "256, 512"  # Cmd, Shift
+        default_needed = True
+
+    if int(config["Hotkeys"]["key"]) not in const.KEYS_QM:
+        config["Hotkeys"]["key"] = "2"  # D
+        config["Hotkeys"]["modifiers"] = "256, 512"  # Cmd, Shift
+        default_needed = True
+
+    for mod in config["Hotkeys"]["modifiers"].split(", "):
+        if int(mod) not in const.MODS_QM:
+            config["Hotkeys"]["key"] = "2"  # D
+            config["Hotkeys"]["modifiers"] = "256, 512"  # Cmd, Shift
+            default_needed = True
 
     # If default values were needed, write config file on disk.
     if default_needed:
         LOGGER.warning(
-            f"One or more values in {const.CONFIG_FILE} were incorrect or not "
-            f"set. Corrected them to default values and wrote config file "
-            f"on disk.",
-        )
+                f"One or more values in {const.CONFIG_FILE} were incorrect "
+                f"or not "
+                f"set. Corrected them to default values and wrote config file "
+                f"on disk.",
+                )
         write(config)
 
     return config
@@ -228,9 +247,9 @@ def load(config):
         config.read(const.CONFIG_FILE, encoding="utf-8")
 
     except (
-        configparser.MissingSectionHeaderError,
-        configparser.ParsingError,
-    ) as e:
+            configparser.MissingSectionHeaderError,
+            configparser.ParsingError,
+            ) as e:
         LOGGER.error(f"Error while parsing config file: {str(e)}.")
         create(force_restore=True)
         config.read(const.CONFIG_FILE, encoding="utf-8")
