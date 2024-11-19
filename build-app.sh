@@ -9,13 +9,6 @@ _error()   { echo "\033[31m[ERROR]\033[0m $1" ; }
 _warn()   { echo "\033[33m[WARN]\033[0m $1" ; }
 _logo()   { echo "\033[1m $1\033[0m" ; }
 
-target_arch=$(grep "app_arch = .*" < pyinstaller.spec | sed "s/^.*app_arch *= *'\(.*\)'$/\1/")
-if [ "$(uname -m)" != "$target_arch" ]; then
-    _warn "You are using $(uname -m) architecture. This script will switch to $target_arch now."
-    arch -x86_64 "$0" $*
-    exit
-fi
-
 # Header
 echo ""
 echo ""
@@ -137,7 +130,7 @@ rm -Rf build/*
 # Check if venv is created and do so if not.
 if ! [ -d "./venv" ] ; then
     _info "Creating virtual environment, so we do not pollute the system."
-    python3 -m venv venv
+    python3.11 -m venv venv
 else
     _ok "Looks like a virtual environment (venv) is already created."
 fi

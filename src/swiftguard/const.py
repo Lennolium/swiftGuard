@@ -133,7 +133,7 @@ GPG_RELEASE_KEY = f"{USER_HOME}/Library/Integrity/swiftguard/RELEASE_KEY.asc"
 os.makedirs(GPG_DIR, exist_ok=True)
 GPG_STORE = gnupg.GPG(
         gnupghome=GPG_DIR,
-        gpgbinary="/usr/local/bin/gpg",
+        gpgbinary="/opt/homebrew/bin/gpg",
         )
 GPG_STORE.encoding = "utf-8"
 

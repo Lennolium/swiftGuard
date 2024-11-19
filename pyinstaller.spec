@@ -73,7 +73,7 @@ hidden_imports = extract_modules()
 ########################## User Configuration ##########################
 
 # Intel: x86_64, Apple Silicon: arm64.
-app_arch = 'x86_64'
+app_arch = 'arm64'
 
 # Name.
 app_name = 'swiftGuard'
@@ -99,7 +99,8 @@ added_files = [
     ('README.md', '.'),
     ('LICENSE', '.'),
     ('ACKNOWLEDGMENTS', '.'),
-    ('/usr/local/bin/gpg', '.'),
+    ('/opt/homebrew/bin/gpg', '.'),
+    ('venv/lib/python3.11/site-packages/quickmachotkey', 'quickmachotkey'),
     # ('/usr/local/lib/libgcrypt.20.dylib', '.'),
     # ('/usr/local/lib/libassuan.0.dylib', '.'),
     # ('/usr/local/lib/libnpth.0.dylib', '.'),
