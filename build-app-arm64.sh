@@ -23,9 +23,9 @@ _logo " ------------------------------------------------------------------------
 echo ""
 echo ""
 
-target_arch="x86_64"
+target_arch="arm64"
 if [ "$(uname -m)" != "$target_arch" ]; then
-    _warn "You are using $(uname -m) architecture. Run build-app-arm.sh instead."
+    _warn "You are using $(uname -m) architecture. Run build-app.sh instead."
     exit
 fi
 
@@ -148,7 +148,7 @@ pip install --upgrade PyInstaller pyinstaller-hooks-contrib
 
 # Build the app.
 _info "Building the .app file. This can take a while ..."
-if pyinstaller --noconfirm "pyinstaller.spec"
+if pyinstaller --noconfirm "pyinstaller.spec" -- arm64
 then
     _ok "PyInstaller successfully created build."
     _ok "Find swiftGuard.app in /dist folder."
