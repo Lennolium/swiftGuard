@@ -142,7 +142,7 @@ regulations. swiftGuard helps maintain compliance by preventing unauthorized dat
 
 ## Installation
 
-1. Obtain the most recent version by downloading it from [Releases](https://github.com/Lennolium/swiftGuard/releases/latest) (Apple Silicon M1/M2/M3/M4: swiftGuard_arm64.dmg, Intel: swiftGuard.dmg)
+1. Obtain the most recent version by downloading it from [Releases](https://github.com/Lennolium/swiftGuard/releases/latest) tab (Apple Silicon M1/M2/M3/M4: `swiftGuard_arm64.dmg`, Intel: `swiftGuard.dmg`).
 2. Open the downloaded `swiftGuard.dmg` file.
 3. Drag the swiftGuard application into the Applications folder.
 4. Open the swiftGuard application from the Applications folder (by right-clicking and selecting `Open`, see Note below)
