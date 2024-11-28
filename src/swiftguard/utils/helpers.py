@@ -286,6 +286,7 @@ def apple_lookup(name, bcd):  # sourcery skip: move-assign
             "15.05": "iPhone 15 Plus",
             "16.01": "iPhone 15 Pro",
             "16.02": "iPhone 15 Pro Max",
+            "17.01": "iPhone 16 Pro",
             }
 
     ipods = {

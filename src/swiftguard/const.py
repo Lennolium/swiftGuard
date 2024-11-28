@@ -29,6 +29,7 @@ from PySide6.QtCore import Qt
 
 # Constants.
 CURRENT_PLATFORM = platform.uname()[0].upper()  # 'DARWIN' / 'LINUX' ...
+CURRENT_ARCH = platform.uname()[4]  # 'x86_64' / 'arm64' ...
 CURRENT_MODE = sys.modules["__main__"].__file__[-6:-3]  # 'app' / 'cli'
 USER_HOME = os.path.expanduser("~")
 CONFIG_FILE = f"{USER_HOME}/Library/Preferences/swiftguard/swiftguard.ini"
@@ -133,7 +134,7 @@ GPG_RELEASE_KEY = f"{USER_HOME}/Library/Integrity/swiftguard/RELEASE_KEY.asc"
 os.makedirs(GPG_DIR, exist_ok=True)
 GPG_STORE = gnupg.GPG(
         gnupghome=GPG_DIR,
-        gpgbinary="/usr/local/bin/gpg",
+        gpgbinary="/opt/homebrew/bin/gpg" if CURRENT_ARCH == "arm64" else "/usr/local/bin/gpg",
         )
 GPG_STORE.encoding = "utf-8"
 
