@@ -95,3 +95,5 @@ body:
           required: true
         - label: I confirm that I have searched the [Discussion Tab](https://github.com/Lennolium/swiftGuard/discussions) for similar requests and this is __not__ a duplicate.
           required: true
+        - label: I confirm that I have checked the [Roadmap](https://github.com/Lennolium/swiftGuard#roadmap) and this feature is not already planned.
+          required: true
