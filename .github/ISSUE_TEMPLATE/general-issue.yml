@@ -1,0 +1,158 @@
+name: "\U0001F41B Report an Issue"
+description: "For all general issues regarding the package"
+title: "Issue: "
+labels: [ "bug", ]
+assignees:
+  - Lennolium
+body:
+  - type: markdown
+    attributes:
+      value: |
+        <!--- Logo and Header -->
+         <div align="center">  
+         <picture>
+           <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Lennolium/simple-useragent/main/img/banner_dark.png" 
+         width="500vw">
+           <source media="(prefers-color-scheme: light)" 
+         srcset="https://raw.githubusercontent.com/Lennolium/simple-useragent/main/img/banner_light.png" 
+         width="500vw">
+           <img alt="simple-useragent banner" src="https://raw.githubusercontent.com/Lennolium/simple-useragent/main/img/banner_light.png" 
+         width="500vw">
+         </picture>
+         </div>
+        
+         <h2 align="center">General Issue Submit Form</h2>
+         <div align="center">
+           Provide the following information properly, which will help me to resolve your issue quickly.
+           If you need further help with this form, please do not hesitate and contact me via <a href="mailto:simple-useragent@lennolium.dev">email</a>.
+           Also make sure to check the issues tab for similar issues before submitting this form to avoid duplicates. 
+           For reporting all <b>general questions and ideas</b>, please open a discussion in the <a href="https://github.com/Lennolium/simple-useragent/discussions/new/choose">Discussion tab</a>.
+           <br>
+           <br>
+        
+           <a href="https://github.com/Lennolium/simple-useragent/issues" > 
+             <img src="https://img.shields.io/github/issues-raw/Lennolium/simple-useragent?style=flat-square&label=Open%20Issues&color=deepskyblue" alt="open issues" >
+           </a>
+        
+           <a href="https://github.com/Lennolium/simple-useragent/issues?q=is%3Aissue+is%3Aclosed" > 
+             <img src="https://img.shields.io/github/issues-closed-raw/Lennolium/simple-useragent?style=flat-square&label=Closed%20Issues&color=aliceblue" alt="closed issues" >
+           </a>  
+        
+         </div>
+         <br>
+         <br>
+
+  - type: input
+    id: category
+    attributes:
+      label: Category
+      description: What kind of issue are you reporting?
+      placeholder: Crash, Bug, Connection-Errors, ...
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        <br>
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Also tell us briefly about the issue and provide all necessary information. You can also attach screenshots and files here.
+      placeholder: I'm facing an issue with ...
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        <br>
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating System
+      description: Which operating system are you using? (e.g. Windows, macOS, Linux, Android, iOS, ...)
+      placeholder: Operating System name and version
+    validations:
+      required: true
+
+
+  - type: markdown
+    attributes:
+      value: |
+        <br>
+
+  - type: input
+    id: python
+    attributes:
+      label: Python Version
+      description: "Which version of Python are you using? (e.g. 3.12, 3.11, ...)"
+      placeholder: Version number
+    validations:
+      required: true
+
+
+  - type: markdown
+    attributes:
+      value: |
+        <br>
+
+  - type: dropdown
+    id: list
+    attributes:
+      label: Installation Method
+      description: "How did you install the package?"
+      multiple: false
+      options:
+        - PyPI (pip)
+        - Release (GitHub)
+        - From Source (GitHub)
+        - Other
+      default: 0
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        <br>
+
+  - type: input
+    id: version
+    attributes:
+      label: Package Version
+      description: "What version of the package are you running? In Python: `simple_useragent.__version__`, pip: `pip show simple-useragent`."
+      placeholder: Latest, 0.1.0, 0.1.1, Legacy, ...
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        <br>
+
+  - type: textarea
+    id: other-info
+    attributes:
+      label: Further Information
+      description: Please paste any further information maybe needed here.
+      render: shell
+
+  - type: markdown
+    attributes:
+      value: |
+        <br>
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Agreements
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/Lennolium/simple-useragent/blob/master/.github/CODE_OF_CONDUCT.md)
+      options:
+        - label: I agree to follow this project's Code of Conduct.
+          required: true
+        - label: I confirm that I have searched the issue tracker for similar issues and this is not a duplicate.
+          required: true
