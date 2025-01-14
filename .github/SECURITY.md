@@ -16,7 +16,7 @@ Please report security vulnerabilities by filling out the following template:
 ```
 
 Please send the above info, along with any other information you feel
-is pertinent to: [lennart-haack@mail.de](mailto:lennart-haack@mail.de?subject=%5BSECURITY%20VULN%5D&body=Hello%20Lennart%2C%0A%0A)
+is pertinent to: [swiftguard@lennolium.dev](mailto:simple-useragent@lennolium.dev?subject=%5BSECURITY%20VULN%5D&body=Hello%20Lennart%2C%0A%0A)
 
 In addition, you may request that the project provide you a patched
 release in advance of the release announcement, however, I can not
