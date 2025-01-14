@@ -1,5 +1,5 @@
 name: "\U0001F41B Report an Issue"
-description: "For all general issues regarding the package"
+description: "For general issues and bugs regarding the application."
 title: "Issue: "
 labels: [ "bug", ]
 assignees:
@@ -11,12 +11,12 @@ body:
         <!--- Logo and Header -->
          <div align="center">  
          <picture>
-           <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Lennolium/simple-useragent/main/img/banner_dark.png" 
+           <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Lennolium/swiftGuard/main/img/banner/banner_dark.png" 
          width="500vw">
            <source media="(prefers-color-scheme: light)" 
-         srcset="https://raw.githubusercontent.com/Lennolium/simple-useragent/main/img/banner_light.png" 
+         srcset="https://raw.githubusercontent.com/Lennolium/swiftGuard/main/img/banner/banner_light.png" 
          width="500vw">
-           <img alt="simple-useragent banner" src="https://raw.githubusercontent.com/Lennolium/simple-useragent/main/img/banner_light.png" 
+           <img alt="swiftGuard banner" src="https://raw.githubusercontent.com/Lennolium/swiftGuard/main/img/banner/banner_light.png" 
          width="500vw">
          </picture>
          </div>
@@ -24,18 +24,18 @@ body:
          <h2 align="center">General Issue Submit Form</h2>
          <div align="center">
            Provide the following information properly, which will help me to resolve your issue quickly.
-           If you need further help with this form, please do not hesitate and contact me via <a href="mailto:simple-useragent@lennolium.dev">email</a>.
+           If you need further help with this form, please do not hesitate and contact me via <a href="mailto:swiftGuard@lennolium.dev">email</a>.
            Also make sure to check the issues tab for similar issues before submitting this form to avoid duplicates. 
-           For reporting all <b>general questions and ideas</b>, please open a discussion in the <a href="https://github.com/Lennolium/simple-useragent/discussions/new/choose">Discussion tab</a>.
+           For reporting all <b>general questions and ideas</b>, please open a discussion in the <a href="https://github.com/Lennolium/swiftGuard/discussions/new/choose">Discussion tab</a>.
            <br>
            <br>
         
-           <a href="https://github.com/Lennolium/simple-useragent/issues" > 
-             <img src="https://img.shields.io/github/issues-raw/Lennolium/simple-useragent?style=flat-square&label=Open%20Issues&color=deepskyblue" alt="open issues" >
+           <a href="https://github.com/Lennolium/swiftGuard/issues" > 
+             <img src="https://img.shields.io/github/issues-raw/Lennolium/swiftGuard?style=flat-square&label=Open%20Issues&color=deepskyblue" alt="open issues" >
            </a>
         
-           <a href="https://github.com/Lennolium/simple-useragent/issues?q=is%3Aissue+is%3Aclosed" > 
-             <img src="https://img.shields.io/github/issues-closed-raw/Lennolium/simple-useragent?style=flat-square&label=Closed%20Issues&color=aliceblue" alt="closed issues" >
+           <a href="https://github.com/Lennolium/swiftGuard/issues?q=is%3Aissue+is%3Aclosed" > 
+             <img src="https://img.shields.io/github/issues-closed-raw/Lennolium/swiftGuard?style=flat-square&label=Closed%20Issues&color=aliceblue" alt="closed issues" >
            </a>  
         
          </div>
@@ -70,30 +70,38 @@ body:
       value: |
         <br>
 
-  - type: input
+  - type: dropdown
     id: os
     attributes:
       label: Operating System
-      description: Which operating system are you using? (e.g. Windows, macOS, Linux, Android, iOS, ...)
-      placeholder: Operating System name and version
+      description: Which operating system are you using? (e.g. Windows, macOS, Linux, Android, iOS, ...)"
+      multiple: false
+      options:
+        - macOS
+        - Linux (please specify distribution)
+        - Windows
+        - Other (please specify)
+      default: 0
     validations:
       required: true
-
 
   - type: markdown
     attributes:
       value: |
         <br>
 
-  - type: input
-    id: python
-    attributes:
-      label: Python Version
-      description: "Which version of Python are you using? (e.g. 3.12, 3.11, ...)"
-      placeholder: Version number
-    validations:
-      required: true
 
+  - type: input
+    id: os version
+    attributes:
+      label: Operating System Version
+      description: "Which version of the OS are you using? (e.g. macOS 12.0.1 / Monterey, Windows 11, Ubuntu 21.10, ...)"
+      placeholder: Version number or name
+
+  - type: markdown
+    attributes:
+      value: |
+        <br>
 
   - type: markdown
     attributes:
@@ -104,13 +112,12 @@ body:
     id: list
     attributes:
       label: Installation Method
-      description: "How did you install the package?"
+      description: "How did you install the application?"
       multiple: false
       options:
-        - PyPI (pip)
         - Release (GitHub)
         - From Source (GitHub)
-        - Other
+        - Other (please specify)
       default: 0
     validations:
       required: true
@@ -121,11 +128,11 @@ body:
         <br>
 
   - type: input
-    id: version
+    id: app-version
     attributes:
-      label: Package Version
-      description: "What version of the package are you running? In Python: `simple_useragent.__version__`, pip: `pip show simple-useragent`."
-      placeholder: Latest, 0.1.0, 0.1.1, Legacy, ...
+      label: Application Version
+      description: "What version of the application are you running? Click the `Question Mark` icon or check logs at `~/Library/Logs/dev.lennolium.swiftguard/swiftguard.log`."
+      placeholder: Latest, 0.1.0, 0.0.1, Legacy, ...
     validations:
       required: true
 
@@ -138,7 +145,7 @@ body:
     id: other-info
     attributes:
       label: Further Information
-      description: Please paste any further information maybe needed here.
+      description: Please paste the last 50 lines of your log file `~/Library/Logs/dev.lennolium.swiftguard/swiftguard.log` here.
       render: shell
 
   - type: markdown
@@ -150,7 +157,7 @@ body:
     id: terms
     attributes:
       label: Agreements
-      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/Lennolium/simple-useragent/blob/master/.github/CODE_OF_CONDUCT.md)
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/Lennolium/swiftGuard/blob/master/.github/CODE_OF_CONDUCT.md)
       options:
         - label: I agree to follow this project's Code of Conduct.
           required: true
