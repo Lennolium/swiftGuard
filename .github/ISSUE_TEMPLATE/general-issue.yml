@@ -92,7 +92,7 @@ body:
 
 
   - type: input
-    id: os version
+    id: os-version
     attributes:
       label: Operating System Version
       description: "Which version of the OS are you using? (e.g. macOS 12.0.1 / Monterey, Windows 11, Ubuntu 21.10, ...)"
