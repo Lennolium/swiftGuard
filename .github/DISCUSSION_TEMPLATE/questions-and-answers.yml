@@ -36,7 +36,6 @@ body:
          <br>
          <br>
 
-
   - type: dropdown
     id: category
     attributes:
@@ -72,13 +71,6 @@ body:
       value: |
         <br>
 
-  - type: input
-    id: os
-    attributes:
-      label: Operating System
-      description: Which operating system are you using? (e.g. Windows, macOS, Linux, Android, iOS, ...)"
-      placeholder: Operating System name and version
-
   - type: dropdown
     id: os
     attributes:
@@ -98,7 +90,7 @@ body:
         <br>
 
   - type: input
-    id: os version
+    id: os-version
     attributes:
       label: Operating System Version
       description: "Which version of the operating system are you using? (e.g. macOS 12.0.1 / Monterey, Windows 11, Ubuntu 21.10, ...)"
@@ -110,7 +102,7 @@ body:
         <br>
 
   - type: dropdown
-    id: list
+    id: install
     attributes:
       label: Installation Method
       description: "How did you install the application?"
