@@ -1,11 +1,11 @@
 blank_issues_enabled: false
 contact_links:
   - name: ❓ Support Question
-    url: https://github.com/Lennolium/swiftGuard/discussions/new/choose
+    url: https://github.com/Lennolium/simple-useragent/discussions/new?category=questions-and-answers
     about: Get friendly support from the community on the forum.
 
-  - name: ✨ Request a feature
-    url: https://github.com/Lennolium/swiftGuard/discussions/2
+  - name: ✨ Request a Feature
+    url: https://github.com/Lennolium/simple-useragent/discussions/new?category=feature-requests
     about: Learn how to request a new feature.
 
   - name: 🤵 Get Professional Support & Customizations
