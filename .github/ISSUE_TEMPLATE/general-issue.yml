@@ -58,6 +58,7 @@ body:
         - Compatibility Issues
         - Documentation unclear/wrong
         - Other
+      default: 0
     validations:
       required: true
 
@@ -88,7 +89,7 @@ body:
       multiple: false
       options:
         - macOS
-        - Linux (specify distro)
+        - Linux
         - Windows
         - Other
       default: 0
@@ -106,11 +107,6 @@ body:
       label: Operating System Version
       description: "Which version of the OS are you using? (e.g. macOS 12.0.1 / Monterey, Windows 11, Ubuntu 21.10, ...)"
       placeholder: Version number or name
-
-  - type: markdown
-    attributes:
-      value: |
-        <br>
 
   - type: markdown
     attributes:
@@ -166,13 +162,13 @@ body:
     id: terms
     attributes:
       label: Agreements
-      description: "By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/Lennolium/swiftGuard/blob/master/.github/CODE_OF_CONDUCT.md)"
+      description: "By submitting this issue, you acknowledge that you have read, understood, and agreed to the following terms:"
       options:
-        - label: I agree to follow this project's Code of Conduct.
+        - label: I have read and agree to follow this project's [Code of Conduct](https://github.com/Lennolium/swiftGuard/blob/master/.github/CODE_OF_CONDUCT.md).
           required: true
         - label: I confirm that I have searched the [Issue Tracker](https://github.com/Lennolium/swiftGuard/blob/master/.github/CODE_OF_CONDUCT.md) for similar issues and this is __not__ a duplicate.
           required: true
         - label: I am not reporting a personal or third party security vulnerability. If you are, read the [Security Policy](https://github.com/Lennolium/swiftGuard/blob/main/.github/SECURITY.md).
           required: true
-        - label: _(Optional)_ I want to appear in the commit description as a contributor to a bug fix.
+        - label: _(Optional)_ I want to appear in the commit description as a contributor to the bug fix.
           required: false
