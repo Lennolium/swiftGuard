@@ -42,6 +42,7 @@ body:
       label: Category
       description: About what do you have a question?
       options:
+        - General
         - Installation
         - Features/Functionality
         - Usage
@@ -78,6 +79,7 @@ body:
       description: Which operating system are you using? (e.g. Windows, macOS, Linux, Android, iOS, ...)"
       multiple: false
       options:
+        - Select OS
         - macOS
         - Linux (please specify distribution)
         - Windows
@@ -102,12 +104,30 @@ body:
         <br>
 
   - type: dropdown
+    id: os-arch
+    attributes:
+      label: Operating System Architecture
+      description: "Which architecture is your OS running on? (For macOS, open `Terminal` and type `uname -m`.)"
+      multiple: false
+      options:
+        - Select Architecture
+        - arm64
+        - x86_64
+      default: 0
+
+  - type: markdown
+    attributes:
+      value: |
+        <br>
+
+  - type: dropdown
     id: install
     attributes:
       label: Installation Method
       description: "How did you install the application?"
       multiple: false
       options:
+        - Select Method
         - Release (GitHub)
         - From Source (GitHub)
         - Other (please specify)
@@ -152,3 +172,4 @@ body:
           required: true
         - label: I confirm that I have searched the [Discussion Tab](https://github.com/Lennolium/swiftGuard/discussions) for similar questions and this is __not__ a duplicate.
           required: true
+
