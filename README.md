@@ -127,7 +127,7 @@ A few reasons to use this tool:
 - __Anti-Forensic Measures:__ In case the police or other thugs break in. The police often use a [mouse jiggler](https://en.wikipedia.org/wiki/Mouse_jiggler)
 to prevent the screen saver or sleep mode from being activated.
 - __Prevent Data Exfiltration:__ You do not want someone adding or copying documents to or from your computer via USB.
-- __Public Environments:__ If you frequently use your Mac in public places like libraries or cafes, swiftGuard 
+- __Public Environments:__ If you frequently use your Mac in public places like libraries or cafés, swiftGuard 
 acts as an additional layer of security against physical attacks in a [potentially vulnerable](https://www.ccn.com/fbi-illegally-stole-ross-ulbrichts-laptop-brought-silk-road/) setting.
 - __Server Protection:__ You want to improve the security of your home or company server (e.g. your Raspberry Pi, NAS, etc.).
 - __Data Protection Regulations:__ Many industries and organizations are subject to strict data protection 
@@ -266,9 +266,9 @@ improving documentation, or spreading awareness - your involvement strengthens t
 respectfully.
 
 - __Bug Report:__ If you are experiencing an issue while using the application, please [create an issue](https://github.com/Lennolium/swiftGuard/issues/new/choose).
-- __Feature Request:__ Make this project better by [submitting a feature request](https://github.com/Lennolium/swiftGuard/discussions/2).
+- __Feature Request:__ Make this project better by [submitting a feature request](https://github.com/Lennolium/swiftGuard/discussions/new?category=feature-requests).
 - __Documentation:__ Improve our documentation by [adding a wiki page](https://github.com/Lennolium/swiftGuard/wiki).
-- __Community Support:__ Help others on [GitHub Discussions](https://github.com/Lennolium/swiftGuard/discussions).
+- __Community Support:__ Help others on [GitHub Discussions](https://github.com/Lennolium/swiftGuard/discussions/categories/questions-and-answers).
 - __Security Report:__ Report critical security issues via our [template](https://github.com/Lennolium/swiftGuard/blob/main/.github/SECURITY.md).
 
 &nbsp;
