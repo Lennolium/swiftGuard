@@ -114,7 +114,25 @@ body:
         <br>
 
   - type: dropdown
-    id: list
+    id: os-arch
+    attributes:
+      label: Operating System Architecture
+      description: "Which architecture is your OS running on? (For macOS, open `Terminal` and type `uname -m`.)"
+      multiple: false
+      options:
+        - arm64
+        - x86_64
+      default: 0
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        <br>
+
+  - type: dropdown
+    id: install
     attributes:
       label: Installation Method
       description: "How did you install the application?"
