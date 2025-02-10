@@ -1,0 +1,35 @@
+<RCC>
+  <qresource>
+    <file>icns/light/power.svg</file>
+    <file>icns/light/checkmark_off.svg</file>
+    <file>icns/light/checkmark.svg</file>
+    <file>icns/light/powersleep.svg</file>
+    <file>icns/chevron.down.black.svg</file>
+    <file>icns/chevron.up.black.svg</file>
+    <file>icns/light/bg.png</file>
+    <file>icns/dark/bg.png</file>
+    <file>icns/dark/gear-hover.svg</file>
+    <file>icns/dark/gear.svg</file>
+    <file>icns/dark/questionmark-hover.svg</file>
+    <file>icns/dark/questionmark.svg</file>
+    <file>icns/dark/swiftGuard-text-dark.png</file>
+    <file>icns/dark/xmark-hover.svg</file>
+    <file>icns/dark/xmark.svg</file>
+    <file>icns/light/questionmark-hover.svg</file>
+    <file>icns/light/xmark-hover.svg</file>
+    <file>icns/light/gear-hover.svg</file>
+    <file>icns/cable.connector.svg</file>
+    <file>icns/chevron.down.svg</file>
+    <file>icns/chevron.up.svg</file>
+    <file>icns/light/gear.svg</file>
+    <file>icns/light/questionmark.svg</file>
+    <file>icns/light/swiftGuard-text-light.png</file>
+    <file>icns/light/xmark.svg</file>
+    <file>thms/dark.qss</file>
+    <file>thms/light.qss</file>
+    <file>icns/swiftGuard-icon.png</file>
+    <file>icns/swiftGuard-tray.png</file>
+    <file>icns/circle.fill.gray.svg</file>
+    <file>icns/circle.fill.svg</file>
+  </qresource>
+</RCC>

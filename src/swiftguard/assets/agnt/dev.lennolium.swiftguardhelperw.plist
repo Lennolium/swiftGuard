@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+        <key>Label</key>
+        <string>dev.lennolium.swiftguardhelperw</string>
+        <key>Program</key>
+        <string>$PATH_PLACEHOLDER/dev.lennolium.swiftguardhelperw</string>
+        <key>ProgramArguments</key>
+        <array>
+            <string>$PATH_PLACEHOLDER/dev.lennolium.swiftguardhelperw</string>
+        </array>
+        <key>AssociatedBundleIdentifiers</key>
+        <array>
+            <string>dev.lennolium.swiftguard</string>
+        </array>
+        <key>TeamIdentifier</key>
+        <string>A33JVN6W5M</string>
+        <key>RunAtLoad</key>
+        <true/>
+        <key>KeepAlive</key>
+        <false/>
+        <key>ExitTimeOut</key>
+        <integer>5</integer>
+        <key>ThrottleInterval</key>
+        <integer>10</integer>
+        <key>StandardErrorPath</key>
+        <string>/tmp/dev.lennolium.swiftguardhelper.err</string>
+        <key>StandardOutPath</key>
+        <string>/tmp/dev.lennolium.swiftguardhelper.out</string>
+        <key>Sockets</key>
+        <dict>
+            <key>Listeners</key>
+            <dict>
+                <key>SockPathName</key>
+                <string>/var/run/dev.lennolium.swiftguard.sock</string>
+                <key>SockType</key>
+                <string>stream</string>
+                <key>SockFamily</key>
+                <string>Unix</string>
+            </dict>
+        </dict>
+        <key>EnvironmentVariables</key>
+        <dict>
+            <key>PATH</key>
+            <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        </dict>
+</dict>
+</plist>

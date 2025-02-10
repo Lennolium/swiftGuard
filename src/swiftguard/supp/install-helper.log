@@ -1,0 +1,168 @@
+----------------------------------------
+2024-12-19 16:48:21: Starting installation of helper and its wrapper binary.
+
+Variables:
+LOG_FILE: /Users/lennart/Documents/Programmieren/CharmProjects/Privat/Projekte/swiftguard-redesign/src/swiftguard/supp/install-helper.log
+SCRIPT_DIR: /Users/lennart/Documents/Programmieren/CharmProjects/Privat/Projekte/swiftguard-redesign/src/swiftguard
+SUDOERS_FILE: /etc/sudoers.d/dev.lennolium.swiftguardhelperw
+HELPER_BINARY: /Users/lennart/Documents/Programmieren/CharmProjects/Privat/Projekte/swiftguard-redesign/src/swiftguard/bin/dev.lennolium.swiftguardhelper
+HELPER_EXPECTED_HASH: db6d2557c3cb97aa353195b911a5f826fe16c72774a936d6151a18cad063802a
+WRAPPER_BINARY: /Users/lennart/Documents/Programmieren/CharmProjects/Privat/Projekte/swiftguard-redesign/src/swiftguard/bin/dev.lennolium.swiftguardhelperw
+WRAPPER_EXPECTED_HASH: 95021c49035a20a727fd3b164ade188eab12a4a0062f4b32716d0f24e8340c9b
+CURRENT_USER: lennart
+SUDOERS_LINE: lennart ALL=(ALL) NOPASSWD: /Users/lennart/Documents/Programmieren/CharmProjects/Privat/Projekte/swiftguard-redesign/src/swiftguard/bin/dev.lennolium.swiftguardhelperw
+
+Success: Found helper binary.
+Success: Helper binary has correct SHA256 hash.
+Success: Wrapper binary has correct SHA256 hash.
+Success: Current user is lennart.
+Success: Created sudoers file.
+/etc/sudoers.d/dev.lennolium.swiftguardhelperw: parsed OK
+Success: Sudoers file was checked for syntax errors.
+Success: Sudoers file has correct permissions.
+Success: Helper binary installed successfully.
+----------------------------------------
+----------------------------------------
+2024-12-19 16:57:40: Starting installation of helper and its wrapper binary.
+
+Variables:
+LOG_FILE: /Users/lennart/Documents/Programmieren/CharmProjects/Privat/Projekte/swiftguard-redesign/src/swiftguard/supp/install-helper.log
+SCRIPT_DIR: /Users/lennart/Documents/Programmieren/CharmProjects/Privat/Projekte/swiftguard-redesign/src/swiftguard
+SUDOERS_FILE: /etc/sudoers.d/dev.lennolium.swiftguardhelperw
+HELPER_BINARY: /Applications/swifthelper.app/Contents/Resources/dev.lennolium.swiftguardhelper
+HELPER_EXPECTED_HASH: db6d2557c3cb97aa353195b911a5f826fe16c72774a936d6151a18cad063802a
+WRAPPER_BINARY: /Applications/swifthelper.app/Contents/Resources/dev.lennolium.swiftguardhelperw
+WRAPPER_EXPECTED_HASH: 95021c49035a20a727fd3b164ade188eab12a4a0062f4b32716d0f24e8340c9b
+CURRENT_USER: lennart
+SUDOERS_LINE: lennart ALL=(ALL) NOPASSWD: /Users/lennart/Documents/Programmieren/CharmProjects/Privat/Projekte/swiftguard-redesign/src/swiftguard/bin/dev.lennolium.swiftguardhelperw
+
+Success: Found helper binary.
+Success: Helper binary has correct SHA256 hash.
+Success: Wrapper binary has correct SHA256 hash.
+Success: Current user is lennart.
+Success: Created sudoers file.
+/etc/sudoers.d/dev.lennolium.swiftguardhelperw: parsed OK
+Success: Sudoers file was checked for syntax errors.
+Success: Sudoers file has correct permissions.
+Success: Helper binary installed successfully.
+----------------------------------------
+----------------------------------------
+2024-12-20 11:03:07: Starting installation of helper and its wrapper binary.
+
+Variables:
+LOG_FILE: /Users/lennart/Documents/Programmieren/CharmProjects/Privat/Projekte/swiftguard-redesign/src/swiftguard/supp/install-helper.log
+SCRIPT_DIR: /Users/lennart/Documents/Programmieren/CharmProjects/Privat/Projekte/swiftguard-redesign/src/swiftguard
+SUDOERS_FILE: /etc/sudoers.d/dev.lennolium.swiftguardhelperw
+HELPER_BINARY: /Applications/swifthelper.app/Contents/Resources/dev.lennolium.swiftguardhelper
+HELPER_EXPECTED_HASH: db6d2557c3cb97aa353195b911a5f826fe16c72774a936d6151a18cad063802a
+WRAPPER_BINARY: /Applications/swifthelper.app/Contents/Resources/dev.lennolium.swiftguardhelperw
+WRAPPER_EXPECTED_HASH: 95021c49035a20a727fd3b164ade188eab12a4a0062f4b32716d0f24e8340c9b
+CURRENT_USER: lennart
+SUDOERS_LINE: lennart ALL=(ALL) NOPASSWD: /Users/lennart/Documents/Programmieren/CharmProjects/Privat/Projekte/swiftguard-redesign/src/swiftguard/bin/dev.lennolium.swiftguardhelperw
+
+Success: Found helper binary.
+Success: Helper binary has correct SHA256 hash.
+Success: Wrapper binary has correct SHA256 hash.
+Success: Current user is lennart.
+Success: Created sudoers file.
+/etc/sudoers.d/dev.lennolium.swiftguardhelperw: parsed OK
+Success: Sudoers file was checked for syntax errors.
+Success: Sudoers file has correct permissions.
+Success: Helper binary installed successfully.
+----------------------------------------
+----------------------------------------
+2024-12-20 11:33:47: Starting installation of helper and its wrapper binary.
+
+Variables:
+LOG_FILE: /Users/lennart/Documents/Programmieren/CharmProjects/Privat/Projekte/swiftguard-redesign/src/swiftguard/supp/install-helper.log
+SCRIPT_DIR: /Users/lennart/Documents/Programmieren/CharmProjects/Privat/Projekte/swiftguard-redesign/src/swiftguard
+SUDOERS_FILE: /etc/sudoers.d/dev_lennolium_swiftguardhelper
+HELPER_BINARY: /Users/lennart/Documents/Programmieren/CharmProjects/Privat/Projekte/swiftguard-redesign/src/swiftguard/bin/dev.lennolium.swiftguardhelper
+HELPER_EXPECTED_HASH: db6d2557c3cb97aa353195b911a5f826fe16c72774a936d6151a18cad063802a
+WRAPPER_BINARY: /Users/lennart/Documents/Programmieren/CharmProjects/Privat/Projekte/swiftguard-redesign/src/swiftguard/bin/dev.lennolium.swiftguardhelperw
+WRAPPER_EXPECTED_HASH: 95021c49035a20a727fd3b164ade188eab12a4a0062f4b32716d0f24e8340c9b
+CURRENT_USER: lennart
+SUDOERS_LINE: lennart ALL=(ALL) NOPASSWD: sha256:db6d2557c3cb97aa353195b911a5f826fe16c72774a936d6151a18cad063802a /Users/lennart/Documents/Programmieren/CharmProjects/Privat/Projekte/swiftguard-redesign/src/swiftguard/bin/dev.lennolium.swiftguardhelper
+
+Success: Found helper binary.
+Success: Helper binary has correct SHA256 hash.
+Success: Wrapper binary has correct SHA256 hash.
+Success: Current user is lennart.
+Success: Created sudoers file.
+/etc/sudoers.d/dev_lennolium_swiftguardhelper: parsed OK
+Success: Sudoers file was checked for syntax errors.
+Success: Sudoers file has correct permissions.
+Success: Helper binary installed successfully.
+----------------------------------------
+----------------------------------------
+2024-12-20 11:37:59: Starting installation of helper and its wrapper binary.
+
+Variables:
+LOG_FILE: /Users/lennart/Documents/Programmieren/CharmProjects/Privat/Projekte/swiftguard-redesign/src/swiftguard/supp/install-helper.log
+SCRIPT_DIR: /Users/lennart/Documents/Programmieren/CharmProjects/Privat/Projekte/swiftguard-redesign/src/swiftguard
+SUDOERS_FILE: /etc/sudoers.d/dev_lennolium_swiftguardhelper
+HELPER_BINARY: /Users/lennart/Documents/Programmieren/CharmProjects/Privat/Projekte/swiftguard-redesign/src/swiftguard/bin/dev.lennolium.swiftguardhelper
+HELPER_EXPECTED_HASH: db6d2557c3cb97aa353195b911a5f826fe16c72774a936d6151a18cad063802a
+WRAPPER_BINARY: /Users/lennart/Documents/Programmieren/CharmProjects/Privat/Projekte/swiftguard-redesign/src/swiftguard/bin/dev.lennolium.swiftguardhelperw
+WRAPPER_EXPECTED_HASH: 95021c49035a20a727fd3b164ade188eab12a4a0062f4b32716d0f24e8340c9b
+CURRENT_USER: lennart
+SUDOERS_LINE: lennart ALL=(ALL) NOPASSWD: sha256:db6d2557c3cb97aa353195b911a5f826fe16c72774a936d6151a18cad063802a /Users/lennart/Documents/Programmieren/CharmProjects/Privat/Projekte/swiftguard-redesign/src/swiftguard/bin/dev.lennolium.swiftguardhelper
+
+Success: Found helper binary.
+Success: Helper binary has correct SHA256 hash.
+Success: Wrapper binary has correct SHA256 hash.
+Success: Current user is lennart.
+Success: Created sudoers file.
+/etc/sudoers.d/dev_lennolium_swiftguardhelper: parsed OK
+Success: Sudoers file was checked for syntax errors.
+Success: Sudoers file has correct permissions.
+Success: Helper binary installed successfully.
+----------------------------------------
+----------------------------------------
+2024-12-20 11:41:54: Starting installation of helper and its wrapper binary.
+
+Variables:
+LOG_FILE: /Users/lennart/Documents/Programmieren/CharmProjects/Privat/Projekte/swiftguard-redesign/src/swiftguard/supp/install-helper.log
+SCRIPT_DIR: /Users/lennart/Documents/Programmieren/CharmProjects/Privat/Projekte/swiftguard-redesign/src/swiftguard
+SUDOERS_FILE: /etc/sudoers.d/dev_lennolium_swiftguardhelper
+HELPER_BINARY: /Applications/swifthelper.app/Contents/Resources/dev.lennolium.swiftguardhelper
+HELPER_EXPECTED_HASH: db6d2557c3cb97aa353195b911a5f826fe16c72774a936d6151a18cad063802a
+WRAPPER_BINARY: /Applications/swifthelper.app/Contents/Resources/dev.lennolium.swiftguardhelperw
+WRAPPER_EXPECTED_HASH: 95021c49035a20a727fd3b164ade188eab12a4a0062f4b32716d0f24e8340c9b
+CURRENT_USER: lennart
+SUDOERS_LINE: lennart ALL=(ALL) NOPASSWD: sha256:db6d2557c3cb97aa353195b911a5f826fe16c72774a936d6151a18cad063802a /Applications/swifthelper.app/Contents/Resources/dev.lennolium.swiftguardhelper
+
+Success: Found helper binary.
+Success: Helper binary has correct SHA256 hash.
+Success: Wrapper binary has correct SHA256 hash.
+Success: Current user is lennart.
+Success: Created sudoers file.
+/etc/sudoers.d/dev_lennolium_swiftguardhelper: parsed OK
+Success: Sudoers file was checked for syntax errors.
+Success: Sudoers file has correct permissions.
+Success: Helper binary installed successfully.
+----------------------------------------
+----------------------------------------
+2024-12-20 11:44:34: Starting installation of helper and its wrapper binary.
+
+Variables:
+LOG_FILE: /Users/lennart/Documents/Programmieren/CharmProjects/Privat/Projekte/swiftguard-redesign/src/swiftguard/supp/install-helper.log
+SCRIPT_DIR: /Users/lennart/Documents/Programmieren/CharmProjects/Privat/Projekte/swiftguard-redesign/src/swiftguard
+SUDOERS_FILE: /etc/sudoers.d/dev_lennolium_swiftguardhelper
+HELPER_BINARY: /Applications/swifthelper.app/Contents/Resources/dev.lennolium.swiftguardhelper
+HELPER_EXPECTED_HASH: db6d2557c3cb97aa353195b911a5f826fe16c72774a936d6151a18cad063802a
+WRAPPER_BINARY: /Applications/swifthelper.app/Contents/Resources/dev.lennolium.swiftguardhelperw
+WRAPPER_EXPECTED_HASH: 95021c49035a20a727fd3b164ade188eab12a4a0062f4b32716d0f24e8340c9b
+CURRENT_USER: lennart
+SUDOERS_LINE: lennart ALL=(ALL) NOPASSWD: sha256:db6d2557c3cb97aa353195b911a5f826fe16c72774a936d6151a18cad063802a /Applications/swifthelper.app/Contents/Resources/dev.lennolium.swiftguardhelper
+
+Success: Found helper binary.
+Success: Helper binary has correct SHA256 hash.
+Success: Wrapper binary has correct SHA256 hash.
+Success: Current user is lennart.
+Success: Created sudoers file.
+/etc/sudoers.d/dev_lennolium_swiftguardhelper: parsed OK
+Success: Sudoers file was checked for syntax errors.
+Success: Sudoers file has correct permissions.
+Success: Helper binary installed successfully.
+----------------------------------------

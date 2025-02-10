@@ -1,0 +1,74 @@
+/* ########## Hide all frame borders ########## */
+QFrame{
+        border: 0px;
+        border-style: none;
+}
+
+#centralwidget{
+		background-color: rgb(33, 33, 35);
+        border-radius: 16px;
+		border-width: 1.0px;
+		border-color: rgb(38, 40, 43);
+		border-style: outset;
+
+		background-image: url(':/icns/dark/bg.png');
+        background-repeat: no-repeat;
+        background-position: right bottom;
+}
+
+#usb_left QPushButton{
+		background-color: transparent;
+		color: rgb(252, 252, 252);
+		text-align:left;
+		letter-spacing: 1.8px;
+		font-weight: 700;
+}
+
+
+#usb_allowed{
+		background-color: transparent;
+		color: rgb(252, 252, 252);
+		text-align:left;
+		letter-spacing: 0.7px;
+		font-weight: 600;
+        border: none;
+}
+
+
+#usb_dropdown{
+		background-color: rgb(53, 55, 57);
+		border-bottom-left-radius: 16px;
+		border-bottom-right-radius: 16px;
+		border-color: rgb(48, 50, 53);
+		border-width: 1.0px;
+		border-style: inset;
+}
+
+
+#usb_dropdown QPushButton{
+		background-color: transparent;
+		color: rgb(190, 190, 190);
+		letter-spacing: 0.8px;
+		font-weight: 700;
+        border: none;
+        text-align: left;
+        max-width: 212px;
+        white-space: nowrap;
+}
+
+#usb_dropdown QPushButton:hover{
+		color: rgb(145, 145, 145);
+}
+
+#usb_dropdown QPushButton:checked{
+		color: rgb(245, 245, 245);
+}
+
+#usb_dropdown QPushButton:checked:hover{
+		color: rgb(210, 210, 210);
+}
+
+
+#ctrl_frame QPushButton{
+		background-color: transparent;
+}

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>ExitTimeOut</key>
+    <integer>5</integer>
+    <key>KeepAlive</key>
+		<false/>
+	<key>Label</key>
+	<string>dev.lennolium.swiftguard</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>$PATH_PLACEHOLDER/MacOS/swiftGuard</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+    <key>TeamIdentifier</key>
+    <string>A33JVN6W5M</string>
+</dict>
+</plist>

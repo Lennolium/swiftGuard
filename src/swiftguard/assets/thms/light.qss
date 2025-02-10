@@ -1,0 +1,110 @@
+/* ########## Hide all frame borders ########## */
+QFrame{
+        border: 0px;
+        border-style: none;
+}
+
+#centralwidget{
+		background-color: rgb(253, 253, 255);
+        border-radius: 16px;
+		border-width: 1.5px;
+		border-color: rgb(232, 234, 239);
+		border-style: outset;
+
+        background-image: url(':/icns/light/bg.png');
+        background-repeat: no-repeat;
+        background-position: right bottom;
+
+}
+
+
+#usb_left QPushButton{
+		background-color: transparent;
+		color: rgb(252, 252, 252);
+		text-align:left;
+		letter-spacing: 1.8px;
+		font-weight: 700;
+}
+
+
+#usb_allowed{
+		background-color: transparent;
+		color: rgb(252, 252, 252);
+		text-align:left;
+		letter-spacing: 0.7px;
+		font-weight: 600;
+         border: none;
+}
+
+
+
+/*
+#usb_count{
+    background-color: rgb(239, 147, 157);
+    color: rgb(252, 252, 252);
+    font-weight: 600;
+    text-align:center;
+    border-radius: 9.4px;
+}
+*/
+
+
+#usb_dropdown{
+		background-color: rgb(247, 246, 251);
+		border-bottom-left-radius: 16px;
+		border-bottom-right-radius: 16px;
+		border-color: rgb(232, 234, 239);
+		border-width: 1.5px;
+		border-style: inset;
+}
+
+#usb_dropdown QPushButton{
+		background-color: transparent;
+		color: rgb(164, 165, 172);
+		letter-spacing: 0.8px;
+		font-weight: 700;
+         border: none;
+         text-align: left;
+         max-width: 212px;
+         white-space: nowrap;
+}
+
+#usb_dropdown QPushButton:hover{
+		color: rgb(118, 118, 118);
+}
+
+#usb_dropdown QPushButton:checked{
+		color: rgb(68, 68, 68);
+}
+
+#usb_dropdown QPushButton:checked:hover{
+		color: rgb(0, 0, 0);
+}
+
+
+#ctrl_frame QPushButton{
+		background-color: transparent;
+}
+
+/** NEEW **/
+
+#counter_left QPushButton,#countdown_left QPushButton{
+		background-color: transparent;
+		color: rgb(52, 52, 52);
+		text-align:left;
+		font-weight: 600;
+}
+
+#counter_button,#countdown_button{
+         background: rgb(237, 236, 241);
+         border-radius: 9px;
+}
+
+
+#counter_icon,#countdown_text{
+    color: rgb(52, 52, 52);
+    font-weight: 600;
+    text-align:center;
+    border: none;
+}
+
