@@ -325,7 +325,7 @@ alt="Pyre" >
 
 ## Contributors
 
-Thank you so much for giving feedback, implementing features and improving the code and project.
+Thank you so much for giving feedback, implementing features and improving the code and project!
 
 <a href = "https://github.com/Lennolium/swiftGuard/graphs/contributors">
   <img src = "https://contrib.rocks/image?repo=Lennolium/swiftguard"/>
